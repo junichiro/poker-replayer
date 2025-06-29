@@ -12,6 +12,7 @@
     "declaration": false,
     "declarationMap": false,
     "importHelpers": false,
+    "downlevelIteration": false,
     
     // Jest compatibility
     "moduleResolution": "node",
@@ -44,6 +45,7 @@
   "exclude": [
     "node_modules",
     "dist",
-    "coverage"
+    "coverage",
+    "src/index.ts"
   ]
 }
