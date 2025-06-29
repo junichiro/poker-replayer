@@ -256,12 +256,10 @@ function areActionHistoryPropsEqual(
     return false;
   }
 
-  // For performance, only do deep comparison for small arrays
-  if (prevProps.actions.length < 100) {
-    for (let i = 0; i < prevProps.actions.length; i++) {
-      if (prevProps.actions[i] !== nextProps.actions[i]) {
-        return false;
-      }
+  // Always compare array content regardless of length to ensure correctness
+  for (let i = 0; i < prevProps.actions.length; i++) {
+    if (prevProps.actions[i] !== nextProps.actions[i]) {
+      return false;
     }
   }
 

@@ -101,25 +101,17 @@ function areTablePropsEqual(prevProps: TableProps, nextProps: TableProps): boole
 
   // Compare array lengths
   if (prevProps.players.length !== nextProps.players.length ||
-      prevProps.currentPlayers?.length !== nextProps.currentPlayers?.length ||
+      (prevProps.currentPlayers?.length ?? 0) !== (nextProps.currentPlayers?.length ?? 0) ||
       prevProps.boardCards.length !== nextProps.boardCards.length ||
       prevProps.pots.length !== nextProps.pots.length) {
     return false;
   }
 
-  // For board cards, do a shallow comparison (they're string primitives)
-  if (prevProps.boardCards.some((card, i) => card !== nextProps.boardCards[i])) {
-    return false;
-  }
-
-  // For small arrays, do reference comparison of items
-  if (prevProps.players.length < 10) {
-    for (let i = 0; i < prevProps.players.length; i++) {
-      if (prevProps.players[i] !== nextProps.players[i]) {
-        return false;
-      }
-    }
-  }
+  // Shallowly compare array contents regardless of length to ensure correctness
+  if (prevProps.players.some((p, i) => p !== nextProps.players[i])) return false;
+  if ((prevProps.currentPlayers ?? []).some((p, i) => p !== (nextProps.currentPlayers ?? [])[i])) return false;
+  if (prevProps.boardCards.some((c, i) => c !== nextProps.boardCards[i])) return false;
+  if (prevProps.pots.some((p, i) => p !== nextProps.pots[i])) return false;
 
   return true;
 }

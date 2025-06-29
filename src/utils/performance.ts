@@ -123,15 +123,16 @@ export function withPerformanceTracking<P extends object>(
   
   const WrappedComponent = React.memo((props: P) => {
     const { startRender, endRender } = useRenderTracker(displayName);
-    
-    // Track render start
-    const renderInfo = React.useMemo(() => {
-      return startRender() || { componentName: displayName, startTime: 0 };
-    }, [displayName, startRender]);
+    const renderInfoRef = React.useRef<RenderInfo>();
+
+    // This must run on every render to capture the correct start time.
+    renderInfoRef.current = startRender() || { componentName: displayName, startTime: 0 };
     
     // Track render end
     React.useEffect(() => {
-      endRender(renderInfo);
+      if (renderInfoRef.current) {
+        endRender(renderInfoRef.current);
+      }
     });
     
     return React.createElement(Component, props);
