@@ -1,0 +1,25 @@
+{
+  "name": "poker-hand-replay",
+  "version": "0.1.0",
+  "description": "React component for replaying PokerStars hand histories",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "test-parser": "npx tsx test-parser.ts"
+  },
+  "keywords": [
+    "poker",
+    "pokerstars",
+    "hand-history",
+    "replay",
+    "react"
+  ],
+  "author": "junichiro",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
