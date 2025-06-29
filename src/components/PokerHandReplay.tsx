@@ -3,7 +3,7 @@
  * This component has been split into smaller, reusable components as part of Phase 2
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { PokerStarsParser } from '../parser/PokerStarsParser';
 import { Table } from './Table';
 import { Controls } from './Controls';
@@ -13,8 +13,16 @@ import {
   Player, 
   ReplayConfig, 
   ActionChangeCallback, 
-  ReplayEventCallback 
+  ReplayEventCallback
 } from '../types';
+import { 
+  applyTheme, 
+  applySize, 
+  applyTableShape, 
+  applyCardDesign, 
+  applyAnimationConfig,
+  getSystemColorScheme
+} from '../utils/customization';
 
 export interface PokerHandReplayProps {
   /** Raw hand history string to parse and replay */
@@ -36,14 +44,23 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   onReplayEvent,
   className = ''
 }) => {
-  // Configuration with defaults
+  // Configuration with defaults and enhanced customization support
   const {
     autoPlay = false,
     animationSpeed = 1.0,
     theme = 'dark',
     showAllCards = false,
-    enableSounds = false
+    enableSounds: _enableSounds = false,
+    size = 'medium',
+    customColors,
+    tableShape = 'oval',
+    cardDesign = 'standard',
+    animations
   } = config;
+
+  // Refs for DOM manipulation
+  const replayRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
 
   // State management
   const [hand, setHand] = useState<PokerHand | null>(null);
@@ -124,6 +141,47 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     setCurrentPlayers(newPlayers);
   }, [currentActionIndex, hand]);
 
+  // Apply customization options to DOM elements
+  useEffect(() => {
+    if (!replayRef.current) return;
+
+    // Apply theme
+    applyTheme(replayRef.current, theme, customColors);
+    
+    // Apply size
+    applySize(replayRef.current, size);
+    
+    // Apply card design
+    applyCardDesign(replayRef.current, cardDesign);
+    
+    // Apply animation configuration
+    applyAnimationConfig(replayRef.current, animations || {}, animationSpeed);
+  }, [theme, customColors, size, cardDesign, animations, animationSpeed]);
+
+  // Apply table shape to table element
+  useEffect(() => {
+    if (!tableRef.current) return;
+    applyTableShape(tableRef.current, tableShape);
+  }, [tableShape]);
+
+  // Auto theme detection for 'auto' theme
+  useEffect(() => {
+    if (theme === 'auto' && replayRef.current) {
+      const _systemTheme = getSystemColorScheme();
+      
+      // Listen for system theme changes
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = () => {
+        if (replayRef.current && theme === 'auto') {
+          applyTheme(replayRef.current, 'auto', customColors);
+        }
+      };
+      
+      mediaQuery.addListener(handleChange);
+      return () => mediaQuery.removeListener(handleChange);
+    }
+  }, [theme, customColors]);
+
   // Control functions
   const playPause = useCallback(() => {
     if (isPlaying) {
@@ -182,7 +240,11 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   if (error) {
     return (
-      <div className={`poker-replay error ${className}`} data-theme={theme}>
+      <div 
+        ref={replayRef}
+        className={`poker-replay error ${className}`} 
+        data-theme={theme}
+      >
         <div className="error-message">
           <h3>Error parsing hand history</h3>
           <p>{error}</p>
@@ -193,14 +255,22 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   if (!hand) {
     return (
-      <div className={`poker-replay loading ${className}`} data-theme={theme}>
+      <div 
+        ref={replayRef}
+        className={`poker-replay loading ${className}`} 
+        data-theme={theme}
+      >
         <div className="loading-message">Loading hand...</div>
       </div>
     );
   }
 
   return (
-    <div className={`poker-replay ${className}`} data-theme={theme}>
+    <div 
+      ref={replayRef}
+      className={`poker-replay ${className}`} 
+      data-theme={theme}
+    >
       <div className="hand-info">
         <h2>Hand #{hand.id}</h2>
         <div className="hand-details">
@@ -210,14 +280,16 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
         </div>
       </div>
 
-      <Table
-        table={hand.table}
-        players={hand.players}
-        currentPlayers={currentPlayers}
-        boardCards={currentBoard}
-        pots={hand.pots}
-        showAllCards={showAllCards}
-      />
+      <div ref={tableRef} className="table-area">
+        <Table
+          table={hand.table}
+          players={hand.players}
+          currentPlayers={currentPlayers}
+          boardCards={currentBoard}
+          pots={hand.pots}
+          showAllCards={showAllCards}
+        />
+      </div>
 
       <Controls
         isPlaying={isPlaying}

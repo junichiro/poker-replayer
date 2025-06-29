@@ -7,7 +7,6 @@ import {
   Street,
   ActionType,
   ParserResult,
-  ParserError,
   PlayingCard,
   PLAYING_CARD_REGEX,
   CollectedAction,
@@ -547,7 +546,7 @@ export class PokerStarsParser {
     // Calculate side pot structure based on all-in amounts and active players
     if (allInAmounts.length > 0) {
       let prevAmount = 0;
-      const totalActivePlayers = this.activePlayers.size + this.allInPlayers.size;
+      const _totalActivePlayers = this.activePlayers.size + this.allInPlayers.size;
       
       allInAmounts.forEach((amount, index) => {
         // Include both remaining all-in players and active non-all-in players
@@ -572,7 +571,7 @@ export class PokerStarsParser {
     return calculation;
   }
 
-  private parsePotLines(collectedActions: CollectedAction[], potCalculation: PotCalculation): Pot[] {
+  private parsePotLines(_collectedActions: CollectedAction[], _potCalculation: PotCalculation): Pot[] {
     const pots: Pot[] = [];
     
     while (this.hasMoreLines()) {
@@ -676,7 +675,7 @@ export class PokerStarsParser {
         pot.isSplit = true;
         
         // Check for odd chip scenarios
-        const evenSplit = pot.amount / relevantActions.length;
+        const _evenSplit = pot.amount / relevantActions.length;
         const hasOddChip = pot.amount % relevantActions.length !== 0;
         
         if (hasOddChip) {

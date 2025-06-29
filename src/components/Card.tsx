@@ -172,6 +172,7 @@ export const Card: React.FC<CardProps> = (props) => {
       className={`card card-${size} ${isRed ? 'red' : 'black'} ${className}`}
       style={style}
       data-testid={testId}
+      data-suit={suit}
     >
       <div className="card-rank">{rank}</div>
       <div className="card-suit">{suitSymbol[suit]}</div>
