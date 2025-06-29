@@ -283,6 +283,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       mediaQuery.addListener(handleChange);
       return () => mediaQuery.removeListener(handleChange);
     }
+    
+    // Return undefined for other code paths
+    return undefined;
   }, [theme, customColors]);
 
   // Control functions

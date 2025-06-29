@@ -29,7 +29,9 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
     "format:check": "prettier --check src/**/*.{ts,tsx}",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "typecheck:build": "tsc --noEmit --project tsconfig.build.json",
+    "typecheck:test": "tsc --noEmit --project tsconfig.test.json",
     "clean": "rm -rf dist coverage",
     "prepublishOnly": "npm run clean && npm run build && npm run test:ci && npm run lint",
     "prepack": "npm run build"
@@ -107,6 +109,11 @@
   "jest": {
     "preset": "ts-jest",
     "testEnvironment": "node",
+    "transform": {
+      "^.+\\.tsx?$": ["ts-jest", {
+        "tsconfig": "tsconfig.test.json"
+      }]
+    },
     "roots": [
       "<rootDir>/src",
       "<rootDir>/tests"
@@ -117,9 +124,17 @@
     ],
     "collectCoverageFrom": [
       "src/**/*.ts",
+      "src/**/*.tsx",
       "!src/**/*.d.ts",
       "!src/**/index.ts"
     ],
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/src/$1",
+      "^@/components/(.*)$": "<rootDir>/src/components/$1",
+      "^@/utils/(.*)$": "<rootDir>/src/utils/$1",
+      "^@/types/(.*)$": "<rootDir>/src/types/$1",
+      "^@/parser/(.*)$": "<rootDir>/src/parser/$1"
+    },
     "coverageDirectory": "coverage",
     "coverageReporters": [
       "text",

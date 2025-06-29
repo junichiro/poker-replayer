@@ -1,0 +1,44 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Build-specific optimizations
+    "target": "ES2020",
+    "module": "ESNext",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    
+    // Library-specific settings
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "sourceMap": true,
+    "inlineSources": false,
+    
+    // Optimizations for library builds
+    "removeComments": true,
+    "stripInternal": true,
+    "importsNotUsedAsValues": "remove",
+    
+    // Ensure compatibility
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    
+    // Less strict for unused variables in build
+    "noUnusedLocals": false,
+    "noUnusedParameters": false
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "src/**/*.test.*",
+    "src/**/*.spec.*",
+    "node_modules",
+    "dist",
+    "tests",
+    "coverage",
+    "test-*.ts"
+  ]
+}

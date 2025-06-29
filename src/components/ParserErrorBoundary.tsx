@@ -7,18 +7,38 @@
 
 import React from 'react';
 import { ErrorBoundary, ErrorFallbackProps } from './ErrorBoundary';
-// import { ParserError } from '../parser/PokerStarsParser';
+export interface ParserErrorDetails {
+  line?: number;
+  context?: string;
+  column?: number;
+  expected?: string;
+  actual?: string;
+}
 
 export interface ParserErrorFallbackProps extends ErrorFallbackProps {
   /** Original hand history text for retry */
   handHistory?: string;
   /** Parser-specific error details */
-  parserError?: unknown;
+  parserError?: ParserErrorDetails;
 }
 
 /**
  * Specialized error fallback for parser errors
  */
+/**
+ * Type guard to check if an unknown value is a ParserErrorDetails
+ */
+function isParserErrorDetails(value: unknown): value is ParserErrorDetails {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (typeof (value as ParserErrorDetails).line === 'number' || 
+     typeof (value as ParserErrorDetails).line === 'undefined') &&
+    (typeof (value as ParserErrorDetails).context === 'string' || 
+     typeof (value as ParserErrorDetails).context === 'undefined')
+  );
+}
+
 const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
   error,
   retry,
@@ -28,6 +48,9 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
   parserError
 }) => {
   const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  // Use type guard to safely access parser error properties
+  const safeParserError = isParserErrorDetails(parserError) ? parserError : undefined;
 
   const handleCopyHandHistory = () => {
     if (handHistory && navigator.clipboard) {
@@ -111,13 +134,13 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
           <div className="error-info">
             <p><strong>Error:</strong> {error.message}</p>
             <p><strong>Time:</strong> {new Date(error.timestamp).toLocaleString()}</p>
-            {parserError && (
+            {safeParserError && (
               <>
-                {parserError.line && (
-                  <p><strong>Line:</strong> {parserError.line}</p>
+                {safeParserError.line && (
+                  <p><strong>Line:</strong> {safeParserError.line}</p>
                 )}
-                {parserError.context && (
-                  <p><strong>Context:</strong> {parserError.context}</p>
+                {safeParserError.context && (
+                  <p><strong>Context:</strong> {safeParserError.context}</p>
                 )}
               </>
             )}
@@ -157,10 +180,10 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
           <div className="debug-content">
             <h4>Stack Trace</h4>
             <pre className="stack-trace">{error.stack}</pre>
-            {parserError && (
+            {safeParserError && (
               <>
                 <h4>Parser Error</h4>
-                <pre>{JSON.stringify(parserError, null, 2)}</pre>
+                <pre>{JSON.stringify(safeParserError, null, 2)}</pre>
               </>
             )}
           </div>
