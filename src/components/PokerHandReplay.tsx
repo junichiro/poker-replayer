@@ -11,7 +11,7 @@ import { ActionHistory } from './ActionHistory';
 import { ParserErrorBoundary } from './ParserErrorBoundary';
 import { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
 import { LoadingSpinner, ProgressSpinner, Skeleton } from './LoadingSpinner';
-import { useLoading, useAsyncOperation } from '../utils/loading';
+import { useLoading } from '../utils/loading';
 import { useRetry, retryPredicates } from '../utils/retry';
 import { 
   PokerHand, 
@@ -99,6 +99,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     exponentialBackoff: true,
     isRetryable: retryPredicates.parserErrors,
     onRetry: (attempt, error) => {
+      // eslint-disable-next-line no-console
       console.log(`Retry attempt ${attempt} for parsing error:`, error.message);
       onReplayEvent?.('retry', { attempt, error });
     },
@@ -108,14 +109,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     }
   });
 
-  const asyncOperation = useAsyncOperation({
-    timeout: 30000,
-    retry: {
-      maxAttempts: 3,
-      delay: 1000,
-      exponentialBackoff: true
-    }
-  });
+  // Remove redundant asyncOperation - we'll use retryState directly
 
   // Enhanced parsing with loading states and error recovery
   const parseHandHistory = useCallback(async (handHistoryText: string) => {
@@ -141,15 +135,18 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       return;
     }
 
-    // Enhanced parsing with loading and retry capabilities
-    const result = await asyncOperation.execute(async () => {
+    // Enhanced parsing with unified retry and loading state
+    const result = await retryState.executeWithRetry(async () => {
+      loading.startLoading('Parsing hand history...');
       loading.updateProgress(10, 'Initializing parser...');
+      
       const parser = new PokerStarsParser();
       
       loading.updateProgress(30, 'Parsing hand history...');
       const parseResult = parser.parse(handHistoryText);
       
       if (!parseResult.success) {
+        loading.finishLoading(new Error(parseResult.error.message));
         throw new Error(parseResult.error.message);
       }
       
@@ -162,9 +159,10 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       await new Promise(resolve => setTimeout(resolve, 100));
       
       loading.updateProgress(100, 'Hand ready!');
+      loading.finishLoading();
       
       return parseResult.hand;
-    }, 'Parsing hand history...');
+    });
 
     if (result.success && result.data) {
       setHand(result.data!);
@@ -183,7 +181,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       setIsInitialLoad(false);
       onReplayEvent?.('parseError', { error: result.error });
     }
-  }, [asyncOperation, loading, autoPlay, onReplayEvent, enableLoadingStates]);
+  }, [retryState, loading, autoPlay, onReplayEvent, enableLoadingStates]);
 
   // Parse hand history on mount or when handHistory changes
   useEffect(() => {
@@ -451,6 +449,21 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   }
 
   // Main component with error boundaries
+  // At this point, hand should never be null since we handle loading/error states above
+  if (!hand) {
+    return (
+      <div 
+        ref={replayRef}
+        className={`poker-replay error ${className}`} 
+        data-theme={theme}
+      >
+        <div className="enhanced-error">
+          <p>No hand data available</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={replayRef}

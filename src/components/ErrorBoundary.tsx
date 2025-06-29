@@ -262,8 +262,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       severity: this.determineSeverity(error),
       context: {
         retryCount: this.state.retryCount,
-        props: this.props,
-        userAgent: navigator.userAgent
+        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
       }
     };
 

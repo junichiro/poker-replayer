@@ -340,25 +340,42 @@ export function createMockAsync<T>(
 }
 
 /**
- * Higher-order function to wrap async functions with automatic loading state
+ * Custom hook for async functions with automatic loading state
+ * Use this instead of withLoading to comply with Rules of Hooks
  */
-export function withLoading<TArgs extends unknown[], TReturn>(
+export function useAsyncFunction<TArgs extends unknown[], TReturn>(
   asyncFn: (...args: TArgs) => Promise<TReturn>,
   options: LoadingOptions = {}
 ) {
-  return (...args: TArgs) => {
-    const loading = useLoading(options);
-    
-    const wrappedFn = useCallback(async () => {
-      const result = await loading.execute(() => asyncFn(...args));
+  const loading = useLoading(options);
+  
+  const execute = useCallback(async (...args: TArgs) => {
+    loading.startLoading();
+    try {
+      const result = await asyncFn(...args);
+      loading.finishLoading();
       return result;
-    }, [loading, ...args]);
+    } catch (error) {
+      loading.finishLoading(error as Error);
+      throw error;
+    }
+  }, [asyncFn, loading]);
 
-    return {
-      ...loading,
-      execute: wrappedFn
-    };
+  return {
+    ...loading,
+    execute
   };
+}
+
+/**
+ * @deprecated Use useAsyncFunction instead to comply with Rules of Hooks
+ */
+export function withLoading<TArgs extends unknown[], TReturn>(
+  asyncFn: (...args: TArgs) => Promise<TReturn>,
+  _options: LoadingOptions = {}
+) {
+  // This is a simplified fallback that doesn't use hooks
+  return (...args: TArgs) => asyncFn(...args);
 }
 
 /**
