@@ -8,9 +8,28 @@ import {
   ActionType,
   ParserResult,
   ParserError,
+  PlayingCard,
+  PLAYING_CARD_REGEX,
   CollectedAction,
   PotCalculation
 } from '../types';
+
+/**
+ * Validates if a string is a valid playing card and returns it as PlayingCard type
+ */
+function toPlayingCard(cardString: string): PlayingCard {
+  if (!PLAYING_CARD_REGEX.test(cardString)) {
+    throw new Error(`Invalid card format: ${cardString}. Expected format: rank + suit (e.g., "As", "Kh")`);
+  }
+  return cardString as PlayingCard;
+}
+
+/**
+ * Safely converts an array of strings to PlayingCard array
+ */
+function toPlayingCardArray(cardStrings: string[]): PlayingCard[] {
+  return cardStrings.map(toPlayingCard);
+}
 
 export class PokerStarsParser {
   private lines: string[];
@@ -64,7 +83,7 @@ export class PokerStarsParser {
     const { blinds, ante } = this.parseBlindsAndAnte();
     const holeCards = this.parseHoleCards();
     const actions: Action[] = [];
-    const board: string[] = [];
+    const board: PlayingCard[] = [];
     
     // Add blinds and ante as actions
     actions.push(...blinds);
@@ -77,7 +96,7 @@ export class PokerStarsParser {
     // Parse flop
     const flopCards = this.parseFlop();
     if (flopCards.length > 0) {
-      board.push(...flopCards);
+      board.push(...toPlayingCardArray(flopCards));
       const flopActions = this.parseStreetActions('flop');
       actions.push(...flopActions);
     }
@@ -85,7 +104,7 @@ export class PokerStarsParser {
     // Parse turn
     const turnCard = this.parseTurn();
     if (turnCard) {
-      board.push(turnCard);
+      board.push(toPlayingCard(turnCard));
       const turnActions = this.parseStreetActions('turn');
       actions.push(...turnActions);
     }
@@ -93,7 +112,7 @@ export class PokerStarsParser {
     // Parse river
     const riverCard = this.parseRiver();
     if (riverCard) {
-      board.push(riverCard);
+      board.push(toPlayingCard(riverCard));
       const riverActions = this.parseStreetActions('river');
       actions.push(...riverActions);
     }
@@ -720,7 +739,7 @@ export class PokerStarsParser {
     for (const player of players) {
       const cards = holeCards.get(player.name);
       if (cards) {
-        player.cards = cards;
+        player.cards = [toPlayingCard(cards[0]), toPlayingCard(cards[1])];
         player.isHero = true;
       }
     }

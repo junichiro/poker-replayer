@@ -10,6 +10,8 @@
  * @public
  */
 
+import type { ReactNode, CSSProperties } from 'react';
+
 /**
  * Represents the different streets/phases of a poker hand
  * @public
@@ -54,8 +56,8 @@ export interface Player {
   name: string;
   /** The starting chip count for this hand */
   chips: number;
-  /** The player's hole cards (if known), represented as a tuple of two card strings */
-  cards?: [string, string];
+  /** The player's hole cards (if known), represented as a tuple of two valid playing cards */
+  cards?: [PlayingCard, PlayingCard];
   /** Whether this player is the hero (main player being observed) */
   isHero?: boolean;
   /** The player's position at the table (relative to the button) */
@@ -132,7 +134,7 @@ export interface PokerHand {
   /** Chronological sequence of all actions taken during the hand */
   actions: Action[];
   /** Community cards shown on the board (flop, turn, river) */
-  board: string[];
+  board: PlayingCard[];
   /** All pots created during the hand (main pot and any side pots) */
   pots: Pot[];
 }
@@ -227,3 +229,112 @@ export type ActionChangeCallback = (action: Action, index: number) => void;
  * @public
  */
 export type ReplayEventCallback = (event: 'start' | 'pause' | 'resume' | 'end' | 'reset') => void;
+
+// =============================================================================
+// COMPONENT PROP TYPES
+// =============================================================================
+
+/**
+ * Common base props that most components can accept
+ * @public
+ */
+export interface BaseComponentProps {
+  /** Custom CSS class name for styling */
+  className?: string;
+  /** React children elements */
+  children?: ReactNode;
+  /** Data test ID for testing purposes */
+  'data-testid'?: string;
+  /** Custom inline styles */
+  style?: CSSProperties;
+}
+
+/**
+ * Size variants for components that support different sizes
+ * @public
+ */
+export type ComponentSize = 'small' | 'medium' | 'large';
+
+/**
+ * Visual theme options for components
+ * @public
+ */
+export type ComponentTheme = 'light' | 'dark' | 'auto';
+
+/**
+ * Animation speed variants for components with animations
+ * @public
+ */
+export type AnimationSpeed = 'slow' | 'normal' | 'fast' | number;
+
+/**
+ * Playing card representation with strict validation
+ * @public
+ */
+export type PlayingCard = `${CardRank}${CardSuit}`;
+
+/**
+ * Valid card ranks in poker
+ * @public
+ */
+export type CardRank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'T' | 'J' | 'Q' | 'K' | 'A';
+
+/**
+ * Valid card suits in poker
+ * @public
+ */
+export type CardSuit = 'h' | 'd' | 'c' | 's';
+
+/**
+ * Regular expression pattern for validating playing card format
+ * Matches format: rank + suit (e.g., "As", "Kh", "2c", "Tc")
+ * @public
+ */
+export const PLAYING_CARD_REGEX = /^[2-9TJQKA][hdcs]$/;
+
+/**
+ * Card display variants using discriminated union
+ * @public
+ */
+export type CardVariant = 
+  | { variant: 'visible'; card: PlayingCard }
+  | { variant: 'hidden' }
+  | { variant: 'placeholder' };
+
+/**
+ * Player state variants using discriminated union
+ * @public
+ */
+export type PlayerState = 
+  | { state: 'active'; chips: number }
+  | { state: 'all-in'; chips: 0; allInAmount: number }
+  | { state: 'folded'; chips: number }
+  | { state: 'disconnected'; chips: number; reason?: string }
+  | { state: 'timeout'; chips: number; reason?: string };
+
+/**
+ * Control button states and their associated data
+ * @public
+ */
+export type ControlState = 
+  | { type: 'play'; enabled: boolean }
+  | { type: 'pause'; enabled: boolean }
+  | { type: 'step'; direction: 'forward' | 'backward'; enabled: boolean }
+  | { type: 'reset'; enabled: boolean };
+
+/**
+ * Validation constraints for numeric props
+ * @public
+ */
+export interface NumericConstraints {
+  /** Minimum allowed value (inclusive) */
+  min?: number;
+  /** Maximum allowed value (inclusive) */
+  max?: number;
+  /** Value must be an integer */
+  integer?: boolean;
+  /** Value must be positive (> 0) */
+  positive?: boolean;
+  /** Value must be non-negative (>= 0) */
+  nonNegative?: boolean;
+}
