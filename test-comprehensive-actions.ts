@@ -151,11 +151,11 @@ if (result2.success && result2.hand) {
   });
   
   totalTests++;
-  if (foundStates >= 4) { // At least 4 different state types
+  if (foundStates === expectedStates.length) {
     console.log('✅ Player state changes test passed');
     passedTests++;
   } else {
-    console.log('❌ Player state changes test failed');
+    console.log(`❌ Player state changes test failed: found ${foundStates} types, expected ${expectedStates.length}`);
   }
 } else {
   console.log('❌ Failed to parse player state changes');
@@ -181,11 +181,11 @@ if (result3.success && result3.hand) {
   });
   
   totalTests++;
-  if (anteActions.length >= 3) { // Should have antes from multiple players
+  if (anteActions.length === 4 && deadBlindActions.length === 1) {
     console.log('✅ Tournament-specific actions test passed');
     passedTests++;
   } else {
-    console.log('❌ Tournament-specific actions test failed');
+    console.log(`❌ Tournament-specific actions test failed: found ${anteActions.length} antes (expected 4), ${deadBlindActions.length} dead blinds (expected 1)`);
   }
 } else {
   console.log('❌ Failed to parse tournament-specific actions');
@@ -223,11 +223,11 @@ if (result4.success && result4.hand) {
   console.log(`Found ${standardActions.length} standard actions - all working correctly`);
   
   totalTests++;
-  if (standardActions.length >= 8) {
+  if (standardActions.length === 10) {
     console.log('✅ Standard actions still work');
     passedTests++;
   } else {
-    console.log('❌ Standard actions broken');
+    console.log(`❌ Standard actions broken: found ${standardActions.length} actions (expected 10)`);
   }
 } else {
   console.log('❌ Failed to parse standard actions');

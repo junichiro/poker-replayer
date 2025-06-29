@@ -1,5 +1,5 @@
 export type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-export type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected' | 'muck' | 'timeout' | 'disconnect' | 'reconnect' | 'sitout' | 'return' | 'allin';
+export type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected' | 'muck' | 'timeout' | 'disconnect' | 'reconnect' | 'sitout' | 'return';
 export type Position = 'BB' | 'SB' | 'BTN' | 'CO' | 'HJ' | 'MP' | 'EP' | 'UTG';
 
 export interface TableInfo {

@@ -182,9 +182,17 @@ export class PokerStarsParser {
     
     while (this.hasMoreLines() && this.getLine().includes('posts')) {
       const line = this.getLine();
+      
+      // Standard blind patterns
       const smallBlindMatch = line.match(/([^:]+): posts small blind \$?([\d.]+)/);
       const bigBlindMatch = line.match(/([^:]+): posts big blind \$?([\d.]+)/);
+      
+      // Ante patterns
       const anteMatch = line.match(/([^:]+): posts the ante \$?([\d.]+)/);
+      
+      // Tournament-specific patterns
+      const combinedBlindMatch = line.match(/([^:]+): posts small & big blinds \$?([\d.]+)/);
+      const deadBlindMatch = line.match(/([^:]+): posts dead blind \$?([\d.]+)/);
       
       if (smallBlindMatch) {
         blinds.push(this.createAction('blind', smallBlindMatch[1], parseFloat(smallBlindMatch[2]), 'preflop'));
@@ -192,6 +200,10 @@ export class PokerStarsParser {
         blinds.push(this.createAction('blind', bigBlindMatch[1], parseFloat(bigBlindMatch[2]), 'preflop'));
       } else if (anteMatch) {
         ante.push(this.createAction('ante', anteMatch[1], parseFloat(anteMatch[2]), 'preflop'));
+      } else if (combinedBlindMatch) {
+        blinds.push(this.createAction('blind', combinedBlindMatch[1], parseFloat(combinedBlindMatch[2]), 'preflop'));
+      } else if (deadBlindMatch) {
+        blinds.push(this.createAction('blind', deadBlindMatch[1], parseFloat(deadBlindMatch[2]), 'preflop'));
       }
       
       this.nextLine();
@@ -332,23 +344,6 @@ export class PokerStarsParser {
           amount = parseFloat(match[1]);
         }
         
-        return this.createAction(pattern.type, player, amount, street);
-      }
-    }
-    
-    // Tournament-specific patterns
-    const tournamentPatterns = [
-      { regex: /([^:]+): posts the ante \$?([\d.]+)/, type: 'ante' as ActionType },
-      { regex: /([^:]+): posts small & big blinds \$?([\d.]+)/, type: 'blind' as ActionType },
-      { regex: /([^:]+): posts dead blind \$?([\d.]+)/, type: 'blind' as ActionType }
-    ];
-    
-    // Check for tournament-specific actions
-    for (const pattern of tournamentPatterns) {
-      const match = line.match(pattern.regex);
-      if (match) {
-        const player = match[1];
-        const amount = parseFloat(match[2]);
         return this.createAction(pattern.type, player, amount, street);
       }
     }
