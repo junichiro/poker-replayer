@@ -394,7 +394,17 @@ Total pot 3 | Rake 0`;
       
       if (result.success) {
         const playersWithCards = result.hand.players.filter(p => p.cards);
-        expect(playersWithCards.length).toBeGreaterThan(0);
+        expect(playersWithCards).toHaveLength(2);
+
+        // Note: Currently the parser marks any player with dealt cards as hero
+        // This test documents the current behavior and should be updated when
+        // the parser logic is improved to only mark the actual hero
+        const heroPlayers = result.hand.players.filter(p => p.isHero);
+        expect(heroPlayers.length).toBeGreaterThan(0);
+        
+        // At least the 'Hero' player should be marked as hero
+        const heroPlayer = result.hand.players.find(p => p.name === 'Hero');
+        expect(heroPlayer?.isHero).toBe(true);
       }
     });
   });

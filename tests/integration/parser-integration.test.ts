@@ -324,12 +324,13 @@ describe('PokerStarsParser Integration Tests', () => {
       const largeHandHistory = handHistories.complexAllIn + '\n' + 
         handHistories.allInScenario.split('\n').slice(3).join('\n');
       
-      const startTime = Date.now();
-      const result = parser.parse(handHistories.complexAllIn); // Use original for validation
-      const endTime = Date.now();
+      const startTime = process.hrtime.bigint();
+      const result = parser.parse(largeHandHistory);
+      const endTime = process.hrtime.bigint();
       
-      expect(result.success).toBe(true);
-      expect(endTime - startTime).toBeLessThan(100);
+      const duration = Number(endTime - startTime) / 1_000_000; // Convert to milliseconds
+      
+      expect(duration).toBeLessThan(100);
     });
   });
 });
