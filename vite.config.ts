@@ -7,10 +7,22 @@ export default defineConfig({
   plugins: [
     react(),
     dts({
+      tsconfigPath: './tsconfig.build.json',
       include: ['src/**/*'],
       exclude: ['src/**/*.test.*', 'src/**/*.spec.*'],
+      insertTypesEntry: true,
+      copyDtsFiles: false,
     }),
   ],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+      '@/components': resolve(__dirname, './src/components'),
+      '@/utils': resolve(__dirname, './src/utils'),
+      '@/types': resolve(__dirname, './src/types'),
+      '@/parser': resolve(__dirname, './src/parser'),
+    },
+  },
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),

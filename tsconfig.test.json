@@ -1,0 +1,51 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    // Test environment settings
+    "target": "ES2020",
+    "module": "CommonJS",
+    "noEmit": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    
+    // Override emit options for tests
+    "declaration": false,
+    "declarationMap": false,
+    "importHelpers": false,
+    "downlevelIteration": false,
+    
+    // Jest compatibility
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "resolveJsonModule": true,
+    
+    // Test-specific type checking
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    
+    // Enhanced testing experience
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    
+    // Test environment libraries
+    "types": ["jest", "node"],
+    "lib": ["ES2020", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "src/**/*",
+    "tests/**/*",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "test-*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "coverage",
+    "src/index.ts"
+  ]
+}
