@@ -1,11 +1,113 @@
 /**
  * Playback controls component for replay functionality
+ * 
+ * @example
+ * ```tsx
+ * <Controls
+ *   isPlaying={false}
+ *   currentActionIndex={5}
+ *   totalActions={20}
+ *   onPlayPause={() => console.log('play/pause')}
+ *   onPrevious={() => console.log('previous')}
+ *   onNext={() => console.log('next')}
+ *   onReset={() => console.log('reset')}
+ * />
+ * ```
  */
 
 import React from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
+import { BaseComponentProps, NumericConstraints } from '../types';
 
-export interface ControlsProps {
+/**
+ * Callback function signatures for control actions
+ * @public
+ */
+export interface ControlCallbacks {
+  /** 
+   * Callback for play/pause button
+   * @param isPlaying - Current playing state before the action
+   */
+  onPlayPause: (isPlaying: boolean) => void;
+  /** 
+   * Callback for previous action button
+   * @param currentIndex - Current action index before going to previous
+   */
+  onPrevious: (currentIndex: number) => void;
+  /** 
+   * Callback for next action button
+   * @param currentIndex - Current action index before going to next
+   */
+  onNext: (currentIndex: number) => void;
+  /** 
+   * Callback for reset button
+   * @param currentIndex - Current action index before reset
+   */
+  onReset: (currentIndex: number) => void;
+}
+
+/**
+ * Enhanced props interface for Controls component with validation
+ * @public
+ */
+export interface ControlsProps extends BaseComponentProps {
+  /** 
+   * Whether playback is currently active
+   */
+  isPlaying: boolean;
+  
+  /** 
+   * Current action index (-1 means before first action)
+   * Must be >= -1 and < totalActions
+   * @constraint integer, >= -1
+   */
+  currentActionIndex: number & NumericConstraints;
+  
+  /** 
+   * Total number of actions in the hand
+   * Must be a positive integer
+   * @constraint integer, > 0
+   */
+  totalActions: number & NumericConstraints;
+  
+  /** Callback functions for control actions */
+  callbacks: ControlCallbacks;
+  
+  /**
+   * Size of the control icons
+   * @default 20
+   */
+  iconSize?: number;
+  
+  /**
+   * Whether to show action counter
+   * @default true
+   */
+  showCounter?: boolean;
+  
+  /**
+   * Custom labels for buttons (for internationalization)
+   */
+  labels?: {
+    play?: string;
+    pause?: string;
+    previous?: string;
+    next?: string;
+    reset?: string;
+  };
+  
+  /**
+   * Whether controls are disabled
+   * @default false
+   */
+  disabled?: boolean;
+}
+
+/**
+ * Legacy props interface for backward compatibility
+ * @deprecated Use ControlsProps instead
+ */
+export interface ControlsPropsLegacy extends BaseComponentProps {
   /** Whether playback is currently active */
   isPlaying: boolean;
   /** Current action index (-1 means before first action) */
@@ -20,59 +122,158 @@ export interface ControlsProps {
   onNext: () => void;
   /** Callback for reset button */
   onReset: () => void;
-  /** Custom CSS class */
-  className?: string;
 }
 
-export const Controls: React.FC<ControlsProps> = ({
-  isPlaying,
-  currentActionIndex,
-  totalActions,
-  onPlayPause,
-  onPrevious,
-  onNext,
-  onReset,
-  className = ''
-}) => {
+/**
+ * Combined props type supporting both new and legacy APIs
+ */
+export type ControlsAllProps = ControlsProps | ControlsPropsLegacy;
+
+/**
+ * Default props for the Controls component
+ */
+const defaultProps = {
+  iconSize: 20,
+  showCounter: true,
+  disabled: false,
+  className: '',
+  labels: {
+    play: 'Play',
+    pause: 'Pause',
+    previous: 'Previous action',
+    next: 'Next action',
+    reset: 'Reset to beginning',
+  },
+} satisfies Partial<ControlsProps>;
+
+/**
+ * Type guard to check if props use the legacy API
+ */
+function isLegacyProps(props: ControlsAllProps): props is ControlsPropsLegacy {
+  return 'onPlayPause' in props && typeof props.onPlayPause === 'function';
+}
+
+/**
+ * Runtime validation for numeric constraints
+ */
+function validateNumericProp(value: number, propName: string, constraints: {
+  min?: number;
+  max?: number;
+  integer?: boolean;
+}): void {
+  if (constraints.integer && !Number.isInteger(value)) {
+    console.warn(`${propName} must be an integer, got: ${value}`);
+  }
+  if (constraints.min !== undefined && value < constraints.min) {
+    console.warn(`${propName} must be >= ${constraints.min}, got: ${value}`);
+  }
+  if (constraints.max !== undefined && value > constraints.max) {
+    console.warn(`${propName} must be <= ${constraints.max}, got: ${value}`);
+  }
+}
+
+/**
+ * Enhanced Controls component with improved TypeScript typing
+ */
+export const Controls: React.FC<ControlsAllProps> = (props) => {
+  const {
+    isPlaying,
+    currentActionIndex,
+    totalActions,
+    className = defaultProps.className,
+    style,
+    'data-testid': testId
+  } = props;
+
+  // Extract callbacks and other props based on API version
+  let callbacks: ControlCallbacks;
+  let iconSize: number;
+  let showCounter: boolean;
+  let labels: NonNullable<ControlsProps['labels']>;
+  let disabled: boolean;
+
+  if (isLegacyProps(props)) {
+    // Legacy API - convert to new callback format
+    callbacks = {
+      onPlayPause: () => props.onPlayPause(),
+      onPrevious: () => props.onPrevious(),
+      onNext: () => props.onNext(),
+      onReset: () => props.onReset(),
+    };
+    iconSize = defaultProps.iconSize;
+    showCounter = defaultProps.showCounter;
+    labels = defaultProps.labels;
+    disabled = defaultProps.disabled;
+  } else {
+    // New API
+    callbacks = props.callbacks;
+    iconSize = props.iconSize ?? defaultProps.iconSize;
+    showCounter = props.showCounter ?? defaultProps.showCounter;
+    labels = { ...defaultProps.labels, ...props.labels };
+    disabled = props.disabled ?? defaultProps.disabled;
+  }
+
+  // Runtime validation
+  validateNumericProp(currentActionIndex, 'currentActionIndex', { 
+    min: -1, 
+    integer: true,
+    max: totalActions - 1 
+  });
+  validateNumericProp(totalActions, 'totalActions', { 
+    min: 0, 
+    integer: true 
+  });
+
   const isAtStart = currentActionIndex === -1;
   const isAtEnd = currentActionIndex >= totalActions - 1;
 
   return (
-    <div className={`controls ${className}`}>
+    <div 
+      className={`controls ${className}`}
+      style={style}
+      data-testid={testId}
+    >
       <button 
-        onClick={onReset} 
-        disabled={isAtStart}
-        title="Reset to beginning"
+        onClick={() => callbacks.onReset(currentActionIndex)} 
+        disabled={disabled || isAtStart}
+        title={labels.reset}
+        aria-label={labels.reset}
       >
-        <RotateCcw size={20} />
+        <RotateCcw size={iconSize} />
       </button>
       
       <button 
-        onClick={onPrevious} 
-        disabled={isAtStart}
-        title="Previous action"
+        onClick={() => callbacks.onPrevious(currentActionIndex)} 
+        disabled={disabled || isAtStart}
+        title={labels.previous}
+        aria-label={labels.previous}
       >
-        <SkipBack size={20} />
+        <SkipBack size={iconSize} />
       </button>
       
       <button 
-        onClick={onPlayPause}
-        title={isPlaying ? "Pause" : "Play"}
+        onClick={() => callbacks.onPlayPause(isPlaying)}
+        disabled={disabled}
+        title={isPlaying ? labels.pause : labels.play}
+        aria-label={isPlaying ? labels.pause : labels.play}
       >
-        {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+        {isPlaying ? <Pause size={iconSize} /> : <Play size={iconSize} />}
       </button>
       
       <button 
-        onClick={onNext} 
-        disabled={isAtEnd}
-        title="Next action"
+        onClick={() => callbacks.onNext(currentActionIndex)} 
+        disabled={disabled || isAtEnd}
+        title={labels.next}
+        aria-label={labels.next}
       >
-        <SkipForward size={20} />
+        <SkipForward size={iconSize} />
       </button>
       
-      <div className="action-counter">
-        {currentActionIndex + 1} / {totalActions}
-      </div>
+      {showCounter && (
+        <div className="action-counter" aria-label={`Action ${currentActionIndex + 1} of ${totalActions}`}>
+          {currentActionIndex + 1} / {totalActions}
+        </div>
+      )}
     </div>
   );
 };
