@@ -15,7 +15,7 @@
  * ```
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 import { BaseComponentProps, NumericConstraints } from '../types';
 
@@ -173,9 +173,9 @@ function validateNumericProp(value: number, propName: string, constraints: {
 }
 
 /**
- * Enhanced Controls component with improved TypeScript typing
+ * Enhanced Controls component with improved TypeScript typing and performance optimization
  */
-export const Controls: React.FC<ControlsAllProps> = (props) => {
+const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
   const {
     isPlaying,
     currentActionIndex,
@@ -185,33 +185,43 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
     'data-testid': testId
   } = props;
 
-  // Extract callbacks and other props based on API version
-  let callbacks: ControlCallbacks;
-  let iconSize: number;
-  let showCounter: boolean;
-  let labels: NonNullable<ControlsProps['labels']>;
-  let disabled: boolean;
+  // Memoize callbacks and props based on API version to prevent unnecessary re-renders
+  const { callbacks, iconSize, showCounter, labels, disabled } = useMemo(() => {
+    let callbacksResult: ControlCallbacks;
+    let iconSizeResult: number;
+    let showCounterResult: boolean;
+    let labelsResult: NonNullable<ControlsProps['labels']>;
+    let disabledResult: boolean;
 
-  if (isLegacyProps(props)) {
-    // Legacy API - convert to new callback format
-    callbacks = {
-      onPlayPause: () => props.onPlayPause(),
-      onPrevious: () => props.onPrevious(),
-      onNext: () => props.onNext(),
-      onReset: () => props.onReset(),
+    if (isLegacyProps(props)) {
+      // Legacy API - convert to new callback format
+      callbacksResult = {
+        onPlayPause: () => props.onPlayPause(),
+        onPrevious: () => props.onPrevious(),
+        onNext: () => props.onNext(),
+        onReset: () => props.onReset(),
+      };
+      iconSizeResult = defaultProps.iconSize;
+      showCounterResult = defaultProps.showCounter;
+      labelsResult = defaultProps.labels;
+      disabledResult = defaultProps.disabled;
+    } else {
+      // New API
+      callbacksResult = props.callbacks;
+      iconSizeResult = props.iconSize ?? defaultProps.iconSize;
+      showCounterResult = props.showCounter ?? defaultProps.showCounter;
+      labelsResult = { ...defaultProps.labels, ...props.labels };
+      disabledResult = props.disabled ?? defaultProps.disabled;
+    }
+
+    return {
+      callbacks: callbacksResult,
+      iconSize: iconSizeResult,
+      showCounter: showCounterResult,
+      labels: labelsResult,
+      disabled: disabledResult,
     };
-    iconSize = defaultProps.iconSize;
-    showCounter = defaultProps.showCounter;
-    labels = defaultProps.labels;
-    disabled = defaultProps.disabled;
-  } else {
-    // New API
-    callbacks = props.callbacks;
-    iconSize = props.iconSize ?? defaultProps.iconSize;
-    showCounter = props.showCounter ?? defaultProps.showCounter;
-    labels = { ...defaultProps.labels, ...props.labels };
-    disabled = props.disabled ?? defaultProps.disabled;
-  }
+  }, [props]);
 
   // Runtime validation
   validateNumericProp(currentActionIndex, 'currentActionIndex', { 
@@ -224,8 +234,11 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
     integer: true 
   });
 
-  const isAtStart = currentActionIndex === -1;
-  const isAtEnd = currentActionIndex >= totalActions - 1;
+  // Memoize computed button states to prevent unnecessary calculations
+  const buttonStates = useMemo(() => ({
+    isAtStart: currentActionIndex === -1,
+    isAtEnd: currentActionIndex >= totalActions - 1,
+  }), [currentActionIndex, totalActions]);
 
   return (
     <div 
@@ -235,7 +248,7 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
     >
       <button 
         onClick={() => callbacks.onReset(currentActionIndex)} 
-        disabled={disabled || isAtStart}
+        disabled={disabled || buttonStates.isAtStart}
         title={labels.reset}
         aria-label={labels.reset}
       >
@@ -244,7 +257,7 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
       
       <button 
         onClick={() => callbacks.onPrevious(currentActionIndex)} 
-        disabled={disabled || isAtStart}
+        disabled={disabled || buttonStates.isAtStart}
         title={labels.previous}
         aria-label={labels.previous}
       >
@@ -262,7 +275,7 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
       
       <button 
         onClick={() => callbacks.onNext(currentActionIndex)} 
-        disabled={disabled || isAtEnd}
+        disabled={disabled || buttonStates.isAtEnd}
         title={labels.next}
         aria-label={labels.next}
       >
@@ -277,5 +290,46 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
     </div>
   );
 };
+
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if control-related props have actually changed
+ */
+function areControlsPropsEqual(prevProps: ControlsAllProps, nextProps: ControlsAllProps): boolean {
+  // Compare basic state
+  if (prevProps.isPlaying !== nextProps.isPlaying ||
+      prevProps.currentActionIndex !== nextProps.currentActionIndex ||
+      prevProps.totalActions !== nextProps.totalActions ||
+      prevProps.className !== nextProps.className ||
+      prevProps['data-testid'] !== nextProps['data-testid']) {
+    return false;
+  }
+
+  // For legacy props, compare callback references (they should be stable)
+  if (isLegacyProps(prevProps) && isLegacyProps(nextProps)) {
+    return prevProps.onPlayPause === nextProps.onPlayPause &&
+           prevProps.onPrevious === nextProps.onPrevious &&
+           prevProps.onNext === nextProps.onNext &&
+           prevProps.onReset === nextProps.onReset;
+  }
+
+  // For new props, compare the callbacks object and optional props
+  if (!isLegacyProps(prevProps) && !isLegacyProps(nextProps)) {
+    return prevProps.callbacks === nextProps.callbacks &&
+           prevProps.iconSize === nextProps.iconSize &&
+           prevProps.showCounter === nextProps.showCounter &&
+           prevProps.disabled === nextProps.disabled &&
+           prevProps.labels === nextProps.labels;
+  }
+
+  // Mixed API versions - they're different
+  return false;
+}
+
+/**
+ * Memoized Controls component for optimal performance
+ * Prevents unnecessary re-renders when control props haven't changed
+ */
+export const Controls = React.memo(ControlsComponent, areControlsPropsEqual);
 
 export default Controls;

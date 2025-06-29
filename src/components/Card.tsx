@@ -92,10 +92,11 @@ function isVariantProps(props: CardProps): props is CardPropsVariant {
 }
 
 /**
- * Card component with enhanced TypeScript prop typing
+ * Card component with enhanced TypeScript prop typing and performance optimization
  * Supports both traditional props and discriminated union variants
+ * Optimized with React.memo to prevent unnecessary re-renders
  */
-export const Card: React.FC<CardProps> = (props) => {
+const CardComponent: React.FC<CardProps> = (props) => {
   const { 
     size = defaultProps.size, 
     className = defaultProps.className,
@@ -179,5 +180,49 @@ export const Card: React.FC<CardProps> = (props) => {
     </div>
   );
 };
+
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if card-specific props have actually changed
+ */
+function areCardPropsEqual(prevProps: CardProps, nextProps: CardProps): boolean {
+  // Compare basic props
+  if (prevProps.size !== nextProps.size || 
+      prevProps.className !== nextProps.className ||
+      prevProps['data-testid'] !== nextProps['data-testid']) {
+    return false;
+  }
+
+  // Handle discriminated union comparison
+  if (isVariantProps(prevProps) && isVariantProps(nextProps)) {
+    const prevVariant = prevProps.variant;
+    const nextVariant = nextProps.variant;
+    
+    if (prevVariant.variant !== nextVariant.variant) {
+      return false;
+    }
+    
+    if (prevVariant.variant === 'visible' && nextVariant.variant === 'visible') {
+      return prevVariant.card === nextVariant.card;
+    }
+    
+    return true; // Both hidden or placeholder
+  }
+
+  // Handle traditional props comparison
+  if (!isVariantProps(prevProps) && !isVariantProps(nextProps)) {
+    return prevProps.card === nextProps.card && 
+           prevProps.isHidden === nextProps.isHidden;
+  }
+
+  // Mixed prop types - they're different
+  return false;
+}
+
+/**
+ * Memoized Card component for optimal performance
+ * Prevents unnecessary re-renders when card props haven't changed
+ */
+export const Card = React.memo(CardComponent, areCardPropsEqual);
 
 export default Card;
