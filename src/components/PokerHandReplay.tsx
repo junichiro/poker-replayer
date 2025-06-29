@@ -101,13 +101,14 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     if (!hand) return;
 
     const newPlayers = hand.players.map(p => ({ ...p, currentChips: p.chips }));
+    const playerMap = new Map(newPlayers.map(p => [p.name, p]));
     
     // Apply actions up to current index
     for (let i = 0; i <= currentActionIndex; i++) {
       const action = hand.actions[i];
       
       if (action.player && action.amount) {
-        const player = newPlayers.find(p => p.name === action.player);
+        const player = playerMap.get(action.player);
         if (player) {
           if (['bet', 'raise', 'call', 'blind', 'ante'].includes(action.type)) {
             player.currentChips = Math.max(0, player.currentChips - action.amount);

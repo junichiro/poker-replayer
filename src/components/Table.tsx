@@ -2,7 +2,7 @@
  * Table layout component for positioning players and showing community cards
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card } from './Card';
 import { PlayerComponent } from './Player';
 import { Pot } from './Pot';
@@ -34,9 +34,10 @@ export const Table: React.FC<TableProps> = ({
   showAllCards = false,
   className = ''
 }) => {
-  const getCurrentPlayer = (player: PlayerType): PlayerType => {
-    return currentPlayers.find(p => p.name === player.name) || player;
-  };
+  const currentPlayersMap = useMemo(() => 
+    new Map(currentPlayers.map(p => [p.name, p])),
+    [currentPlayers]
+  );
 
   return (
     <div className={`table-area ${className}`}>
@@ -59,7 +60,7 @@ export const Table: React.FC<TableProps> = ({
         
         <div className="players">
           {players.map(player => {
-            const currentPlayer = getCurrentPlayer(player);
+            const currentPlayer = currentPlayersMap.get(player.name) || player;
             return (
               <PlayerComponent
                 key={player.seat}

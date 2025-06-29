@@ -39,7 +39,7 @@ export const ActionHistory: React.FC<ActionHistoryProps> = ({
       <div className="action-list">
         {actions.map((action, index) => (
           <div 
-            key={index}
+            key={action.index}
             className={`action ${index <= currentActionIndex ? 'played' : ''} ${index === currentActionIndex ? 'current' : ''} ${onActionClick ? 'clickable' : ''}`}
             onClick={() => handleActionClick(index)}
           >
