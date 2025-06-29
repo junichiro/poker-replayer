@@ -18,6 +18,8 @@ export class PokerStarsParser {
   private actionIndex: number;
   private playerChips: Map<string, number>; // Track current chips per player
   private allInPlayers: Map<string, number>; // Track all-in amounts
+  private activePlayers: Set<string>; // Track players still in hand (not folded)
+  private totalPotContributions: number; // Track total money put into pot
 
   constructor() {
     this.lines = [];
@@ -25,6 +27,8 @@ export class PokerStarsParser {
     this.actionIndex = 0;
     this.playerChips = new Map();
     this.allInPlayers = new Map();
+    this.activePlayers = new Set();
+    this.totalPotContributions = 0;
   }
 
   public parse(handHistory: string): ParserResult {
@@ -49,6 +53,8 @@ export class PokerStarsParser {
     this.actionIndex = 0;
     this.playerChips.clear();
     this.allInPlayers.clear();
+    this.activePlayers.clear();
+    this.totalPotContributions = 0;
   }
 
   private parseHand(): PokerHand {
@@ -180,8 +186,9 @@ export class PokerStarsParser {
         };
         players.push(player);
         
-        // Initialize chip tracking
+        // Initialize chip tracking and active status
         this.playerChips.set(player.name, player.chips);
+        this.activePlayers.add(player.name);
       }
       
       this.nextLine();
@@ -209,15 +216,25 @@ export class PokerStarsParser {
       const deadBlindMatch = line.match(/([^:]+): posts dead blind \$?([\d.]+)/);
       
       if (smallBlindMatch) {
-        blinds.push(this.createAction('blind', smallBlindMatch[1], parseFloat(smallBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(smallBlindMatch[2]);
+        blinds.push(this.createAction('blind', smallBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (bigBlindMatch) {
-        blinds.push(this.createAction('blind', bigBlindMatch[1], parseFloat(bigBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(bigBlindMatch[2]);
+        blinds.push(this.createAction('blind', bigBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (anteMatch) {
-        ante.push(this.createAction('ante', anteMatch[1], parseFloat(anteMatch[2]), 'preflop'));
+        const amount = parseFloat(anteMatch[2]);
+        ante.push(this.createAction('ante', anteMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (combinedBlindMatch) {
-        blinds.push(this.createAction('blind', combinedBlindMatch[1], parseFloat(combinedBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(combinedBlindMatch[2]);
+        blinds.push(this.createAction('blind', combinedBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (deadBlindMatch) {
-        blinds.push(this.createAction('blind', deadBlindMatch[1], parseFloat(deadBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(deadBlindMatch[2]);
+        blinds.push(this.createAction('blind', deadBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       }
       
       this.nextLine();
@@ -303,6 +320,7 @@ export class PokerStarsParser {
         this.allInPlayers.set(player, amount);
         const currentChips = this.playerChips.get(player) || 0;
         this.playerChips.set(player, Math.max(0, currentChips - amount));
+        this.totalPotContributions += amount;
         
         return action;
       }
@@ -364,10 +382,13 @@ export class PokerStarsParser {
           amount = parseFloat(match[1]);
         }
         
-        // Update chip counts for money actions
-        if (amount && (pattern.type === 'call' || pattern.type === 'bet' || pattern.type === 'raise')) {
+        // Handle player state changes and chip tracking
+        if (pattern.type === 'fold') {
+          this.activePlayers.delete(player);
+        } else if (amount && (pattern.type === 'call' || pattern.type === 'bet' || pattern.type === 'raise')) {
           const currentChips = this.playerChips.get(player) || 0;
           this.playerChips.set(player, Math.max(0, currentChips - amount));
+          this.totalPotContributions += amount;
         } else if (amount && pattern.type === 'collected') {
           const currentChips = this.playerChips.get(player) || 0;
           this.playerChips.set(player, currentChips + amount);
@@ -497,22 +518,24 @@ export class PokerStarsParser {
 
   private calculatePotStructure(): PotCalculation {
     const allInAmounts = Array.from(this.allInPlayers.values()).sort((a, b) => a - b);
-    const totalPot = Array.from(this.playerChips.entries()).reduce((sum, [_, chips]) => {
-      return sum + chips;
-    }, 0);
     
     const calculation: PotCalculation = {
-      totalPot,
+      totalPot: this.totalPotContributions,
       sidePots: [],
       distributions: []
     };
     
-    // Calculate side pot structure based on all-in amounts
+    // Calculate side pot structure based on all-in amounts and active players
     if (allInAmounts.length > 0) {
       let prevAmount = 0;
+      const totalActivePlayers = this.activePlayers.size + this.allInPlayers.size;
       
       allInAmounts.forEach((amount, index) => {
-        const potAmount = (amount - prevAmount) * (allInAmounts.length - index + 1);
+        // Include both remaining all-in players and active non-all-in players
+        const contributingPlayers = (allInAmounts.length - index) + 
+          (this.activePlayers.size > 0 ? 1 : 0); // Simplified - active players contribute to all levels
+        
+        const potAmount = (amount - prevAmount) * contributingPlayers;
         
         if (index === 0) {
           calculation.mainPot = potAmount;
@@ -587,9 +610,14 @@ export class PokerStarsParser {
   }
 
   private getEligiblePlayers(sidePotLevel: number): string[] {
-    // All players are eligible for main pot (level 0)
+    // For main pot (level 0), include all active players and all-in players
     if (sidePotLevel === 0) {
-      return Array.from(this.playerChips.keys());
+      const eligible = new Set<string>();
+      // Add active players (not folded)
+      this.activePlayers.forEach(player => eligible.add(player));
+      // Add all-in players
+      this.allInPlayers.forEach((_, player) => eligible.add(player));
+      return Array.from(eligible);
     }
     
     // For side pots, only players who contributed enough are eligible
@@ -597,7 +625,14 @@ export class PokerStarsParser {
       .sort(([_, a], [__, b]) => a - b);
     
     if (sidePotLevel <= allInAmounts.length) {
-      return allInAmounts.slice(sidePotLevel - 1).map(([player, _]) => player);
+      const eligible = new Set<string>();
+      // Add remaining all-in players who contributed enough
+      allInAmounts.slice(sidePotLevel - 1).forEach(([player, _]) => eligible.add(player));
+      // Add active players who can contest higher side pots
+      if (this.activePlayers.size > 0) {
+        this.activePlayers.forEach(player => eligible.add(player));
+      }
+      return Array.from(eligible);
     }
     
     return [];
