@@ -108,14 +108,12 @@ console.log('✅ ParserError interface works correctly');
 // Test ParserResult interface - success case
 const successResult: ParserResult = {
   success: true,
-  hand: pokerHand,
-  error: undefined
+  hand: pokerHand
 };
 
 // Test ParserResult interface - error case
 const errorResult: ParserResult = {
   success: false,
-  hand: undefined,
   error: parserError
 };
 

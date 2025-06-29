@@ -177,21 +177,27 @@ export interface PotCalculation {
   /** Array of side pots with their levels and amounts */
   sidePots: { level: number; amount: number }[];
   /** Detailed distribution breakdown for complex scenarios */
-  distributions: { player: string; amount: number; from: string }[];
+  distributions: { player: string; amount: number; from: 'main' | `side-${number}` }[];
 }
 
 /**
- * Result wrapper for hand history parsing operations
+ * Result wrapper for hand history parsing operations.
+ * This is a discriminated union based on the `success` property.
  * @public
  */
-export interface ParserResult {
-  /** Whether the parsing operation was successful */
-  success: boolean;
-  /** The parsed poker hand data (present when success is true) */
-  hand?: PokerHand;
-  /** Error information (present when success is false) */
-  error?: ParserError;
-}
+export type ParserResult =
+  | {
+      /** Indicates a successful parsing operation. */
+      success: true;
+      /** The parsed poker hand data. */
+      hand: PokerHand;
+    }
+  | {
+      /** Indicates a failed parsing operation. */
+      success: false;
+      /** Error information. */
+      error: ParserError;
+    };
 
 /**
  * Configuration options for the poker hand replay component
