@@ -9,6 +9,7 @@ import {
   ParserResult,
   ParserError,
   PlayingCard,
+  PLAYING_CARD_REGEX,
   CollectedAction,
   PotCalculation
 } from '../types';
@@ -17,8 +18,7 @@ import {
  * Validates if a string is a valid playing card and returns it as PlayingCard type
  */
 function toPlayingCard(cardString: string): PlayingCard {
-  const validCardPattern = /^[2-9TJQKA][hdcs]$/;
-  if (!validCardPattern.test(cardString)) {
+  if (!PLAYING_CARD_REGEX.test(cardString)) {
     throw new Error(`Invalid card format: ${cardString}. Expected format: rank + suit (e.g., "As", "Kh")`);
   }
   return cardString as PlayingCard;

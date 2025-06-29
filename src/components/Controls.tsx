@@ -220,7 +220,7 @@ export const Controls: React.FC<ControlsAllProps> = (props) => {
     max: totalActions - 1 
   });
   validateNumericProp(totalActions, 'totalActions', { 
-    min: 0, 
+    min: 1, 
     integer: true 
   });
 

@@ -22,7 +22,8 @@ import {
   PlayingCard, 
   CardVariant,
   CardRank,
-  CardSuit
+  CardSuit,
+  PLAYING_CARD_REGEX
 } from '../types';
 
 /**
@@ -142,7 +143,7 @@ export const Card: React.FC<CardProps> = (props) => {
   }
 
   // Validate card format
-  if (!/^[2-9TJQKA][hdcs]$/.test(cardValue)) {
+  if (!PLAYING_CARD_REGEX.test(cardValue)) {
     console.warn(`Invalid card format: ${cardValue}. Expected format: rank + suit (e.g., "As", "Kh")`);
     return (
       <div 

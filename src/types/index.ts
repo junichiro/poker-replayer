@@ -286,6 +286,13 @@ export type CardRank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'T' | 'J'
 export type CardSuit = 'h' | 'd' | 'c' | 's';
 
 /**
+ * Regular expression pattern for validating playing card format
+ * Matches format: rank + suit (e.g., "As", "Kh", "2c", "Tc")
+ * @public
+ */
+export const PLAYING_CARD_REGEX = /^[2-9TJQKA][hdcs]$/;
+
+/**
  * Card display variants using discriminated union
  * @public
  */
