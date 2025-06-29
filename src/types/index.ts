@@ -211,11 +211,21 @@ export interface ReplayConfig {
   /** Animation speed multiplier (1.0 = normal speed) */
   animationSpeed?: number;
   /** Visual theme for the component */
-  theme?: 'light' | 'dark' | 'auto';
+  theme?: ComponentTheme | CustomTheme;
   /** Whether to show all players' hole cards */
   showAllCards?: boolean;
   /** Whether to enable sound effects */
   enableSounds?: boolean;
+  /** Overall size variant for the component */
+  size?: ComponentSize;
+  /** Custom color scheme override */
+  customColors?: Partial<ThemeColors>;
+  /** Table shape preference */
+  tableShape?: TableShape;
+  /** Card design variant */
+  cardDesign?: CardDesign;
+  /** Animation configuration */
+  animations?: AnimationConfig;
 }
 
 /**
@@ -253,13 +263,13 @@ export interface BaseComponentProps {
  * Size variants for components that support different sizes
  * @public
  */
-export type ComponentSize = 'small' | 'medium' | 'large';
+export type ComponentSize = 'extra-small' | 'small' | 'medium' | 'large' | 'extra-large';
 
 /**
  * Visual theme options for components
  * @public
  */
-export type ComponentTheme = 'light' | 'dark' | 'auto';
+export type ComponentTheme = 'light' | 'dark' | 'auto' | 'casino' | 'professional';
 
 /**
  * Animation speed variants for components with animations
@@ -338,3 +348,103 @@ export interface NumericConstraints {
   /** Value must be non-negative (>= 0) */
   nonNegative?: boolean;
 }
+
+// =============================================================================
+// ADVANCED CUSTOMIZATION TYPES
+// =============================================================================
+
+/**
+ * Theme color palette definition
+ * @public
+ */
+export interface ThemeColors {
+  /** Primary background color */
+  bgPrimary: string;
+  /** Secondary background color */
+  bgSecondary: string;
+  /** Table background color */
+  bgTable: string;
+  /** Primary text color */
+  textPrimary: string;
+  /** Secondary text color */
+  textSecondary: string;
+  /** Border color */
+  border: string;
+  /** Card background color */
+  cardBg: string;
+  /** Card text color */
+  cardText: string;
+  /** Hero player highlight color */
+  heroHighlight: string;
+  /** All-in player indicator color */
+  allInIndicator: string;
+  /** Action highlight color */
+  actionHighlight: string;
+  /** Pot color */
+  potColor: string;
+}
+
+/**
+ * Custom theme definition
+ * @public
+ */
+export interface CustomTheme {
+  /** Theme name/identifier */
+  name: string;
+  /** Complete color palette */
+  colors: ThemeColors;
+  /** Optional CSS class for additional styling */
+  className?: string;
+}
+
+/**
+ * Table shape options
+ * @public
+ */
+export type TableShape = 'oval' | 'rectangle' | 'circle' | 'hexagon';
+
+/**
+ * Card design variants
+ * @public
+ */
+export type CardDesign = 'standard' | 'four-color' | 'large-indices' | 'minimal' | 'classic';
+
+/**
+ * Animation configuration options
+ * @public
+ */
+export interface AnimationConfig {
+  /** Enable/disable card dealing animations */
+  enableCardAnimations?: boolean;
+  /** Enable/disable chip movement animations */
+  enableChipAnimations?: boolean;
+  /** Enable/disable action highlighting */
+  enableActionHighlight?: boolean;
+  /** Card dealing animation duration (ms) */
+  cardDealDuration?: number;
+  /** Action transition duration (ms) */
+  actionTransitionDuration?: number;
+  /** Easing function for animations */
+  easing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
+}
+
+/**
+ * Size scaling configuration
+ * @public
+ */
+export interface SizeConfig {
+  /** Card size scaling factor */
+  cardScale?: number;
+  /** Table size scaling factor */
+  tableScale?: number;
+  /** Font size scaling factor */
+  fontScale?: number;
+  /** Spacing scaling factor */
+  spacingScale?: number;
+}
+
+/**
+ * Extended component size variants with scaling
+ * @public
+ */
+export type ExtendedComponentSize = ComponentSize | 'extra-small' | 'extra-large' | SizeConfig;
