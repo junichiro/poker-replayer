@@ -1,18 +1,23 @@
 {
   "name": "poker-hand-replay",
-  "version": "0.1.0",
-  "description": "React component for replaying PokerStars hand histories",
-  "main": "dist/index.js",
+  "version": "1.0.0",
+  "description": "A React component library for parsing and replaying PokerStars hand histories with beautiful visual animations",
+  "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.esm.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs.js"
     },
-    "./styles.css": "./dist/styles.css"
+    "./package.json": "./package.json"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "dev": "vite build --watch",
     "build": "vite build",
@@ -20,23 +25,60 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --ci --coverage --watchAll=false",
-    "test-parser": "npx tsx test-parser.ts",
     "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "format": "prettier --write src/**/*.{ts,tsx}",
-    "prepublish": "npm run build && npm run test"
+    "format:check": "prettier --check src/**/*.{ts,tsx}",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist coverage",
+    "prepublishOnly": "npm run clean && npm run build && npm run test:ci && npm run lint",
+    "prepack": "npm run build"
   },
   "keywords": [
     "poker",
     "pokerstars",
     "hand-history",
     "replay",
-    "react"
+    "react",
+    "component",
+    "typescript",
+    "animation",
+    "visualization",
+    "gaming",
+    "cards",
+    "parser",
+    "ui",
+    "interactive"
   ],
-  "author": "junichiro",
+  "author": {
+    "name": "Junichiro Tobe",
+    "email": "junichiro.tobe@gmail.com",
+    "url": "https://github.com/junichiro"
+  },
   "license": "MIT",
+  "homepage": "https://github.com/junichiro/poker-replayer#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/junichiro/poker-replayer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/junichiro/poker-replayer/issues"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=7.0.0"
+  },
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    }
   },
   "dependencies": {
     "lucide-react": "^0.263.1"
