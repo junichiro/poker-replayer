@@ -250,7 +250,64 @@ export class PokerStarsParser {
   }
 
   private parseAction(line: string, street: Street): Action | null {
-    const patterns = [
+    // All-in action patterns (highest priority)
+    const allInPatterns = [
+      { regex: /([^:]+): raises \$?([\d.]+) to \$?([\d.]+) and is all-in/, type: 'raise' as ActionType },
+      { regex: /([^:]+): calls \$?([\d.]+) and is all-in/, type: 'call' as ActionType },
+      { regex: /([^:]+): bets \$?([\d.]+) and is all-in/, type: 'bet' as ActionType }
+    ];
+    
+    // Check for all-in actions first
+    for (const pattern of allInPatterns) {
+      const match = line.match(pattern.regex);
+      if (match) {
+        const player = match[1];
+        let amount: number;
+        
+        if (pattern.type === 'raise') {
+          amount = parseFloat(match[3]);
+        } else {
+          amount = parseFloat(match[2]);
+        }
+        
+        const action = this.createAction(pattern.type, player, amount, street);
+        action.isAllIn = true;
+        return action;
+      }
+    }
+    
+    // Player state and special action patterns
+    const specialPatterns = [
+      { regex: /([^:]+): mucks hand/, type: 'muck' as ActionType },
+      { regex: /([^:]+) has timed out/, type: 'timeout' as ActionType },
+      { regex: /([^:]+) is disconnected/, type: 'disconnect' as ActionType },
+      { regex: /([^:]+) is connected/, type: 'reconnect' as ActionType },
+      { regex: /([^:]+): sits out/, type: 'sitout' as ActionType },
+      { regex: /([^:]+) is sitting out/, type: 'sitout' as ActionType },
+      { regex: /([^:]+) has returned/, type: 'return' as ActionType },
+      { regex: /([^:]+) will be allowed to play after the button/, type: 'return' as ActionType }
+    ];
+    
+    // Check for special actions
+    for (const pattern of specialPatterns) {
+      const match = line.match(pattern.regex);
+      if (match) {
+        const player = match[1];
+        const action = this.createAction(pattern.type, player, undefined, street);
+        
+        // Add reason for timeout/disconnect actions
+        if (pattern.type === 'timeout') {
+          action.reason = 'Player timed out';
+        } else if (pattern.type === 'disconnect') {
+          action.reason = 'Player disconnected';
+        }
+        
+        return action;
+      }
+    }
+    
+    // Standard action patterns
+    const standardPatterns = [
       { regex: /([^:]+): folds/, type: 'fold' as ActionType },
       { regex: /([^:]+): checks/, type: 'check' as ActionType },
       { regex: /([^:]+): calls \$?([\d.]+)/, type: 'call' as ActionType },
@@ -260,7 +317,8 @@ export class PokerStarsParser {
       { regex: /([^:]+) collected \$?([\d.]+) from (?:side |main )?pot/, type: 'collected' as ActionType }
     ];
     
-    for (const pattern of patterns) {
+    // Check for standard actions
+    for (const pattern of standardPatterns) {
       const match = line.match(pattern.regex);
       if (match) {
         const player = pattern.type === 'uncalled' ? match[2] : match[1];
@@ -274,6 +332,23 @@ export class PokerStarsParser {
           amount = parseFloat(match[1]);
         }
         
+        return this.createAction(pattern.type, player, amount, street);
+      }
+    }
+    
+    // Tournament-specific patterns
+    const tournamentPatterns = [
+      { regex: /([^:]+): posts the ante \$?([\d.]+)/, type: 'ante' as ActionType },
+      { regex: /([^:]+): posts small & big blinds \$?([\d.]+)/, type: 'blind' as ActionType },
+      { regex: /([^:]+): posts dead blind \$?([\d.]+)/, type: 'blind' as ActionType }
+    ];
+    
+    // Check for tournament-specific actions
+    for (const pattern of tournamentPatterns) {
+      const match = line.match(pattern.regex);
+      if (match) {
+        const player = match[1];
+        const amount = parseFloat(match[2]);
         return this.createAction(pattern.type, player, amount, street);
       }
     }
