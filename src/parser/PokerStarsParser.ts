@@ -119,9 +119,12 @@ export class PokerStarsParser {
     }
     
     const stakes = stakesMatch ? `$${stakesMatch[1]}/$${stakesMatch[2]}` : 'Unknown';
-    const date = dateMatch 
-      ? new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4].padStart(2, '0')}:${dateMatch[5]}:${dateMatch[6]}`)
-      : new Date();
+    
+    if (!dateMatch) {
+      throw new Error('Invalid header: Date not found or in an invalid format');
+    }
+    
+    const date = new Date(`${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4].padStart(2, '0')}:${dateMatch[5]}:${dateMatch[6]}`);
     
     this.nextLine();
     
@@ -208,8 +211,10 @@ export class PokerStarsParser {
         const match = line.match(/Dealt to ([^\s]+) \[([^\]]+)\]/);
         
         if (match) {
-          const cards = match[2].split(' ') as [string, string];
-          holeCards.set(match[1], cards);
+          const cards = match[2].split(' ');
+          if (cards.length === 2) {
+            holeCards.set(match[1], cards as [string, string]);
+          }
         }
         
         this.nextLine();
@@ -287,17 +292,15 @@ export class PokerStarsParser {
   }
 
   private parseTurn(): string | null {
-    if (this.hasMoreLines() && this.getLine().includes('TURN')) {
-      const line = this.getLine();
-      const match = line.match(/\[([^\]]+)\] \[([^\]]+)\]/);
-      this.nextLine();
-      return match ? match[2] : null;
-    }
-    return null;
+    return this.parseStreetCard('TURN');
   }
 
   private parseRiver(): string | null {
-    if (this.hasMoreLines() && this.getLine().includes('RIVER')) {
+    return this.parseStreetCard('RIVER');
+  }
+
+  private parseStreetCard(street: 'TURN' | 'RIVER'): string | null {
+    if (this.hasMoreLines() && this.getLine().includes(street)) {
       const line = this.getLine();
       const match = line.match(/\[([^\]]+)\] \[([^\]]+)\]/);
       this.nextLine();
@@ -317,14 +320,9 @@ export class PokerStarsParser {
         const showMatch = line.match(/([^:]+): shows \[([^\]]+)\]/);
         
         if (showMatch) {
-          const cards = showMatch[2].split(' ');
-          actions.push({
-            index: this.actionIndex++,
-            street: 'showdown',
-            type: 'show',
-            player: showMatch[1],
-            cards
-          });
+          const action = this.createAction('show', showMatch[1], undefined, 'showdown');
+          action.cards = showMatch[2].split(' ');
+          actions.push(action);
         }
         
         this.nextLine();
@@ -336,6 +334,34 @@ export class PokerStarsParser {
 
   private parseSummary(): Pot[] {
     const pots: Pot[] = [];
+    const collectedActions: { player: string; amount: number; type: string }[] = [];
+    
+    // First, collect all "collected" actions from the hand history
+    for (const action of this.lines) {
+      const mainPotMatch = action.match(/([^:]+) collected \$?([\d.]+) from main pot/);
+      const sidePotMatch = action.match(/([^:]+) collected \$?([\d.]+) from side pot/);
+      const potMatch = action.match(/([^:]+) collected \$?([\d.]+) from pot/);
+      
+      if (mainPotMatch) {
+        collectedActions.push({
+          player: mainPotMatch[1],
+          amount: parseFloat(mainPotMatch[2]),
+          type: 'main'
+        });
+      } else if (sidePotMatch) {
+        collectedActions.push({
+          player: sidePotMatch[1],
+          amount: parseFloat(sidePotMatch[2]),
+          type: 'side'
+        });
+      } else if (potMatch) {
+        collectedActions.push({
+          player: potMatch[1],
+          amount: parseFloat(potMatch[2]),
+          type: 'single'
+        });
+      }
+    }
     
     // Skip to SUMMARY section
     while (this.hasMoreLines() && !this.getLine().includes('SUMMARY')) {
@@ -345,22 +371,102 @@ export class PokerStarsParser {
     if (this.hasMoreLines()) {
       this.nextLine(); // Skip SUMMARY line
       
+      // Parse pot information from summary
       while (this.hasMoreLines()) {
         const line = this.getLine();
-        const potMatch = line.match(/Total pot \$?([\d.]+)/);
         
-        if (potMatch) {
-          pots.push({
-            amount: parseFloat(potMatch[1]),
-            players: []
-          });
+        // Parse total pot and any side pots
+        const totalPotMatch = line.match(/Total pot \$?([\d.]+)/);
+        
+        if (totalPotMatch) {
+          // Check if main and side pots are specified
+          const mainPotMatch = line.match(/Main pot \$?([\d.]+)/);
+          const sidePotMatches = line.matchAll(/Side pot(?:-(\d+))? \$?([\d.]+)/g);
+          
+          if (mainPotMatch) {
+            // Create main pot
+            const mainPot: Pot = {
+              amount: parseFloat(mainPotMatch[1]),
+              players: [],
+              isSide: false
+            };
+            
+            // Find winner for main pot
+            const mainWinner = collectedActions.find(a => a.type === 'main' && Math.abs(a.amount - mainPot.amount) < 0.01);
+            if (mainWinner) {
+              mainPot.players.push(mainWinner.player);
+            }
+            
+            pots.push(mainPot);
+          }
+          
+          // Add side pots
+          for (const match of sidePotMatches) {
+            const sidePot: Pot = {
+              amount: parseFloat(match[2]),
+              players: [],
+              isSide: true
+            };
+            
+            // Find winner for side pot
+            const sideWinner = collectedActions.find(a => a.type === 'side' && Math.abs(a.amount - sidePot.amount) < 0.01);
+            if (sideWinner) {
+              sidePot.players.push(sideWinner.player);
+            }
+            
+            pots.push(sidePot);
+          }
+          
+          // If no main/side pots specified, treat total as the only pot
+          if (!mainPotMatch && pots.length === 0) {
+            const pot: Pot = {
+              amount: parseFloat(totalPotMatch[1]),
+              players: []
+            };
+            
+            // Find winner for single pot
+            const winner = collectedActions.find(a => Math.abs(a.amount - pot.amount) < 0.01);
+            if (winner) {
+              pot.players.push(winner.player);
+            }
+            
+            pots.push(pot);
+          }
+          
+          break; // Found the pot line, no need to continue
+        }
+        
+        this.nextLine();
+      }
+      
+      // Also check summary lines for winners (as fallback)
+      this.currentLineIndex--; // Go back one line
+      while (this.hasMoreLines()) {
+        const line = this.getLine();
+        
+        // Parse winner lines from summary
+        const wonMatch = line.match(/Seat \d+: ([^\s]+).*won \((\d+)\)/);
+        const collectedMatch = line.match(/Seat \d+: ([^\s]+).*collected \((\d+)\)/);
+        const match = wonMatch || collectedMatch;
+        
+        if (match) {
+          const winner = match[1];
+          const amount = parseFloat(match[2]);
+          
+          // Find which pot this collection corresponds to
+          for (const pot of pots) {
+            if (Math.abs(pot.amount - amount) < 0.01 && !pot.players.includes(winner)) {
+              pot.players.push(winner);
+              break;
+            }
+          }
         }
         
         this.nextLine();
       }
     }
     
-    return pots.length > 0 ? pots : [{ amount: 0, players: [] }];
+    return pots;
   }
 
   private updatePlayersWithHoleCards(players: Player[], holeCards: Map<string, [string, string]>): void {

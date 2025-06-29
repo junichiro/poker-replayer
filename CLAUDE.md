@@ -153,7 +153,7 @@ interface Action {
 }
 
 type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show';
+type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected';
 type Position = 'BB' | 'SB' | 'BTN' | 'CO' | 'HJ' | 'MP' | 'EP' | 'UTG';
 ```
 
