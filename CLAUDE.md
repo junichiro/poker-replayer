@@ -150,10 +150,12 @@ interface Action {
   player?: string;
   amount?: number;
   cards?: string[];
+  isAllIn?: boolean;
+  reason?: string; // For timeouts, disconnects, etc.
 }
 
 type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected';
+type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected' | 'muck' | 'timeout' | 'disconnect' | 'reconnect' | 'sitout' | 'return';
 type Position = 'BB' | 'SB' | 'BTN' | 'CO' | 'HJ' | 'MP' | 'EP' | 'UTG';
 ```
 
