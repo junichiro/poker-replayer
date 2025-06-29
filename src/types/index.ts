@@ -238,7 +238,21 @@ export type ActionChangeCallback = (action: Action, index: number) => void;
  * Callback function type for hand replay events
  * @public
  */
-export type ReplayEventCallback = (event: 'start' | 'pause' | 'resume' | 'end' | 'reset') => void;
+export type ReplayEventCallback = (
+  event: 'start' | 'pause' | 'resume' | 'end' | 'reset' | 'retry' | 'error' | 'parseSuccess' | 'parseError',
+  data?: {
+    /** Additional event data */
+    [key: string]: unknown;
+    /** Hand data for parseSuccess event */
+    hand?: PokerHand;
+    /** Error data for error events */
+    error?: Error;
+    /** Retry attempt number */
+    attempt?: number;
+    /** Whether max attempts exceeded */
+    maxAttemptsExceeded?: boolean;
+  }
+) => void;
 
 // =============================================================================
 // COMPONENT PROP TYPES
