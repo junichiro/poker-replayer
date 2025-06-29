@@ -15,6 +15,9 @@ export interface Player {
   cards?: [string, string];
   isHero?: boolean;
   position?: Position;
+  currentChips?: number; // Track chips throughout hand
+  isAllIn?: boolean; // Current all-in status
+  allInAmount?: number; // Amount when went all-in
 }
 
 export interface Action {
@@ -32,6 +35,10 @@ export interface Pot {
   amount: number;
   players: string[];
   isSide?: boolean;
+  isSplit?: boolean; // Mark split pots
+  eligiblePlayers?: string[]; // Track who can win this pot
+  oddChipWinner?: string; // Who gets the odd chip in splits
+  sidePotLevel?: number; // For multiple side pots (1, 2, 3, etc.)
 }
 
 export interface PokerHand {
@@ -50,6 +57,20 @@ export interface ParserError {
   message: string;
   line?: number;
   context?: string;
+}
+
+export interface CollectedAction {
+  player: string;
+  amount: number;
+  type: 'main' | 'side' | 'single';
+  sidePotLevel?: number;
+}
+
+export interface PotCalculation {
+  totalPot: number;
+  mainPot?: number;
+  sidePots: { level: number; amount: number }[];
+  distributions: { player: string; amount: number; from: string }[];
 }
 
 export interface ParserResult {

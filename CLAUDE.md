@@ -141,6 +141,9 @@ interface Player {
   cards?: [string, string];
   isHero?: boolean;
   position?: Position;
+  currentChips?: number; // Track chips throughout hand
+  isAllIn?: boolean; // Current all-in status
+  allInAmount?: number; // Amount when went all-in
 }
 
 interface Action {
@@ -152,6 +155,16 @@ interface Action {
   cards?: string[];
   isAllIn?: boolean;
   reason?: string; // For timeouts, disconnects, etc.
+}
+
+interface Pot {
+  amount: number;
+  players: string[];
+  isSide?: boolean;
+  isSplit?: boolean; // Mark split pots
+  eligiblePlayers?: string[]; // Track who can win this pot
+  oddChipWinner?: string; // Who gets the odd chip in splits
+  sidePotLevel?: number; // For multiple side pots (1, 2, 3, etc.)
 }
 
 type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
