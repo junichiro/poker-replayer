@@ -14,7 +14,7 @@ export interface PotProps {
   className?: string;
 }
 
-export const Pot: React.FC<PotProps> = ({
+const PotComponent: React.FC<PotProps> = ({
   pot,
   showDetails = false,
   className = ''
@@ -57,5 +57,64 @@ export const Pot: React.FC<PotProps> = ({
     </div>
   );
 };
+
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if pot-related props have actually changed
+ */
+function arePotPropsEqual(prevProps: PotProps, nextProps: PotProps): boolean {
+  // Compare basic props
+  if (prevProps.showDetails !== nextProps.showDetails ||
+      prevProps.className !== nextProps.className) {
+    return false;
+  }
+
+  // Compare pot object by reference first (fast check)
+  if (prevProps.pot === nextProps.pot) {
+    return true;
+  }
+
+  // Deep comparison of pot properties
+  const prevPot = prevProps.pot;
+  const nextPot = nextProps.pot;
+
+  if (prevPot.amount !== nextPot.amount ||
+      prevPot.isSide !== nextPot.isSide ||
+      prevPot.isSplit !== nextPot.isSplit ||
+      prevPot.sidePotLevel !== nextPot.sidePotLevel ||
+      prevPot.oddChipWinner !== nextPot.oddChipWinner) {
+    return false;
+  }
+
+  // Compare player arrays
+  if (prevPot.players.length !== nextPot.players.length) {
+    return false;
+  }
+  for (let i = 0; i < prevPot.players.length; i++) {
+    if (prevPot.players[i] !== nextPot.players[i]) {
+      return false;
+    }
+  }
+
+  // Compare eligible players arrays
+  const prevEligible = prevPot.eligiblePlayers || [];
+  const nextEligible = nextPot.eligiblePlayers || [];
+  if (prevEligible.length !== nextEligible.length) {
+    return false;
+  }
+  for (let i = 0; i < prevEligible.length; i++) {
+    if (prevEligible[i] !== nextEligible[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Memoized Pot component for optimal performance
+ * Prevents unnecessary re-renders when pot props haven't changed
+ */
+export const Pot = React.memo(PotComponent, arePotPropsEqual);
 
 export default Pot;

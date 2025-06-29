@@ -7,7 +7,7 @@ export { PokerHandReplay, type PokerHandReplayProps } from './components/PokerHa
 
 // Export individual components for advanced usage
 export { Card, type CardProps } from './components/Card';
-export { PlayerComponent, type PlayerProps } from './components/Player';
+export { Player, type PlayerProps } from './components/Player';
 export { Controls, type ControlsProps } from './components/Controls';
 export { Table, type TableProps } from './components/Table';
 export { ActionHistory, type ActionHistoryProps } from './components/ActionHistory';

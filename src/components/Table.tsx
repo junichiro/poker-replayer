@@ -4,7 +4,7 @@
 
 import React, { useMemo } from 'react';
 import { Card } from './Card';
-import { PlayerComponent } from './Player';
+import { Player } from './Player';
 import { Pot } from './Pot';
 import { Player as PlayerType, Pot as PotType, TableInfo, PlayingCard } from '../types';
 
@@ -25,7 +25,7 @@ export interface TableProps {
   className?: string;
 }
 
-export const Table: React.FC<TableProps> = ({
+const TableComponent: React.FC<TableProps> = ({
   table,
   players,
   currentPlayers = [],
@@ -62,7 +62,7 @@ export const Table: React.FC<TableProps> = ({
           {players.map(player => {
             const currentPlayer = currentPlayersMap.get(player.name) || player;
             return (
-              <PlayerComponent
+              <Player
                 key={player.seat}
                 player={player}
                 currentChips={currentPlayer.currentChips}
@@ -78,5 +78,48 @@ export const Table: React.FC<TableProps> = ({
     </div>
   );
 };
+
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if table-related props have actually changed
+ */
+function areTablePropsEqual(prevProps: TableProps, nextProps: TableProps): boolean {
+  // Compare basic props
+  if (prevProps.table !== nextProps.table ||
+      prevProps.showAllCards !== nextProps.showAllCards ||
+      prevProps.className !== nextProps.className) {
+    return false;
+  }
+
+  // Compare arrays by reference first (fast check)
+  if (prevProps.players === nextProps.players &&
+      prevProps.currentPlayers === nextProps.currentPlayers &&
+      prevProps.boardCards === nextProps.boardCards &&
+      prevProps.pots === nextProps.pots) {
+    return true;
+  }
+
+  // Compare array lengths
+  if (prevProps.players.length !== nextProps.players.length ||
+      (prevProps.currentPlayers?.length ?? 0) !== (nextProps.currentPlayers?.length ?? 0) ||
+      prevProps.boardCards.length !== nextProps.boardCards.length ||
+      prevProps.pots.length !== nextProps.pots.length) {
+    return false;
+  }
+
+  // Shallowly compare array contents regardless of length to ensure correctness
+  if (prevProps.players.some((p, i) => p !== nextProps.players[i])) return false;
+  if ((prevProps.currentPlayers ?? []).some((p, i) => p !== (nextProps.currentPlayers ?? [])[i])) return false;
+  if (prevProps.boardCards.some((c, i) => c !== nextProps.boardCards[i])) return false;
+  if (prevProps.pots.some((p, i) => p !== nextProps.pots[i])) return false;
+
+  return true;
+}
+
+/**
+ * Memoized Table component for optimal performance
+ * Prevents unnecessary re-renders when table props haven't changed
+ */
+export const Table = React.memo(TableComponent, areTablePropsEqual);
 
 export default Table;

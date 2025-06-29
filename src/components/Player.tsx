@@ -2,7 +2,7 @@
  * Player display component for showing player information and cards
  */
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card } from './Card';
 import { Player as PlayerType } from '../types';
 
@@ -23,7 +23,7 @@ export interface PlayerProps {
   className?: string;
 }
 
-export const PlayerComponent: React.FC<PlayerProps> = ({
+const PlayerComponent: React.FC<PlayerProps> = ({
   player,
   currentChips,
   isAllIn = false,
@@ -32,18 +32,27 @@ export const PlayerComponent: React.FC<PlayerProps> = ({
   maxSeats = 6,
   className = ''
 }) => {
-  const displayChips = currentChips ?? player.currentChips ?? player.chips;
+  // Memoize expensive calculations
+  const displayChips = useMemo(() => 
+    currentChips ?? player.currentChips ?? player.chips, 
+    [currentChips, player.currentChips, player.chips]
+  );
+  
   const isHero = player.isHero;
   const shouldShowCards = isHero || showCards;
   
-  const style = {} as React.CSSProperties & {
-    '--seat'?: number;
-    '--max-seats'?: number;
-  };
-  if (seatPosition !== undefined && maxSeats) {
-    style['--seat'] = seatPosition;
-    style['--max-seats'] = maxSeats;
-  }
+  // Memoize style object to prevent unnecessary re-renders
+  const style = useMemo(() => {
+    const styleObj = {} as React.CSSProperties & {
+      '--seat'?: number;
+      '--max-seats'?: number;
+    };
+    if (seatPosition !== undefined && maxSeats) {
+      styleObj['--seat'] = seatPosition;
+      styleObj['--max-seats'] = maxSeats;
+    }
+    return styleObj;
+  }, [seatPosition, maxSeats]);
 
   return (
     <div 
@@ -77,4 +86,56 @@ export const PlayerComponent: React.FC<PlayerProps> = ({
   );
 };
 
-export default PlayerComponent;
+/**
+ * Custom comparison function for React.memo
+ * Only re-render if player-related props have actually changed
+ */
+function arePlayerPropsEqual(prevProps: PlayerProps, nextProps: PlayerProps): boolean {
+  // Compare player identity (most important)
+  if (prevProps.player.name !== nextProps.player.name ||
+      prevProps.player.seat !== nextProps.player.seat) {
+    return false;
+  }
+
+  // Compare display state
+  if (prevProps.currentChips !== nextProps.currentChips ||
+      prevProps.isAllIn !== nextProps.isAllIn ||
+      prevProps.showCards !== nextProps.showCards) {
+    return false;
+  }
+
+  // Compare player intrinsic properties that might change
+  if (prevProps.player.isHero !== nextProps.player.isHero ||
+      prevProps.player.position !== nextProps.player.position) {
+    return false;
+  }
+
+  // Compare cards (deep comparison needed)
+  const prevCards = prevProps.player.cards;
+  const nextCards = nextProps.player.cards;
+  if (prevCards !== nextCards) {
+    if (!prevCards || !nextCards) {
+      return false; // One has cards, other doesn't
+    }
+    if (prevCards[0] !== nextCards[0] || prevCards[1] !== nextCards[1]) {
+      return false;
+    }
+  }
+
+  // Compare positioning props
+  if (prevProps.seatPosition !== nextProps.seatPosition ||
+      prevProps.maxSeats !== nextProps.maxSeats ||
+      prevProps.className !== nextProps.className) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
+ * Memoized Player component for optimal performance
+ * Prevents unnecessary re-renders when player props haven't changed
+ */
+export const Player = React.memo(PlayerComponent, arePlayerPropsEqual);
+
+export default Player;

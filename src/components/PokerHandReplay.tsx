@@ -10,7 +10,6 @@ import { Controls } from './Controls';
 import { ActionHistory } from './ActionHistory';
 import { 
   PokerHand, 
-  Player, 
   ReplayConfig, 
   ActionChangeCallback, 
   ReplayEventCallback
@@ -67,7 +66,6 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [currentActionIndex, setCurrentActionIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentPlayers, setCurrentPlayers] = useState<Player[]>([]);
 
   // Parse hand history on mount or when handHistory changes
   useEffect(() => {
@@ -77,7 +75,6 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     if (result.success) {
       setHand(result.hand);
       setError(null);
-      setCurrentPlayers(result.hand.players.map(p => ({ ...p, currentChips: p.chips })));
       
       if (autoPlay) {
         setIsPlaying(true);
@@ -113,9 +110,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     }
   }, [currentActionIndex, hand, onActionChange]);
 
-  // Update player states based on current action
-  useEffect(() => {
-    if (!hand) return;
+  // Memoize expensive player state calculations
+  const currentPlayers = useMemo(() => {
+    if (!hand) return [];
 
     const newPlayers = hand.players.map(p => ({ ...p, currentChips: p.chips }));
     const playerMap = new Map(newPlayers.map(p => [p.name, p]));
@@ -138,8 +135,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       }
     }
     
-    setCurrentPlayers(newPlayers);
+    return newPlayers;
   }, [currentActionIndex, hand]);
+
 
   // Apply customization options to DOM elements
   useEffect(() => {
