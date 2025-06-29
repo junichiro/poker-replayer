@@ -7,18 +7,28 @@ import {
   Street,
   ActionType,
   ParserResult,
-  ParserError
+  ParserError,
+  CollectedAction,
+  PotCalculation
 } from '../types';
 
 export class PokerStarsParser {
   private lines: string[];
   private currentLineIndex: number;
   private actionIndex: number;
+  private playerChips: Map<string, number>; // Track current chips per player
+  private allInPlayers: Map<string, number>; // Track all-in amounts
+  private activePlayers: Set<string>; // Track players still in hand (not folded)
+  private totalPotContributions: number; // Track total money put into pot
 
   constructor() {
     this.lines = [];
     this.currentLineIndex = 0;
     this.actionIndex = 0;
+    this.playerChips = new Map();
+    this.allInPlayers = new Map();
+    this.activePlayers = new Set();
+    this.totalPotContributions = 0;
   }
 
   public parse(handHistory: string): ParserResult {
@@ -41,6 +51,10 @@ export class PokerStarsParser {
     this.lines = [];
     this.currentLineIndex = 0;
     this.actionIndex = 0;
+    this.playerChips.clear();
+    this.allInPlayers.clear();
+    this.activePlayers.clear();
+    this.totalPotContributions = 0;
   }
 
   private parseHand(): PokerHand {
@@ -163,11 +177,18 @@ export class PokerStarsParser {
       const seatMatch = line.match(/Seat (\d+): ([^\s]+) \(\$?([\d.]+) in chips\)/);
       
       if (seatMatch) {
-        players.push({
+        const player = {
           seat: parseInt(seatMatch[1]),
           name: seatMatch[2],
-          chips: parseFloat(seatMatch[3])
-        });
+          chips: parseFloat(seatMatch[3]),
+          currentChips: parseFloat(seatMatch[3]),
+          isAllIn: false
+        };
+        players.push(player);
+        
+        // Initialize chip tracking and active status
+        this.playerChips.set(player.name, player.chips);
+        this.activePlayers.add(player.name);
       }
       
       this.nextLine();
@@ -195,15 +216,25 @@ export class PokerStarsParser {
       const deadBlindMatch = line.match(/([^:]+): posts dead blind \$?([\d.]+)/);
       
       if (smallBlindMatch) {
-        blinds.push(this.createAction('blind', smallBlindMatch[1], parseFloat(smallBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(smallBlindMatch[2]);
+        blinds.push(this.createAction('blind', smallBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (bigBlindMatch) {
-        blinds.push(this.createAction('blind', bigBlindMatch[1], parseFloat(bigBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(bigBlindMatch[2]);
+        blinds.push(this.createAction('blind', bigBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (anteMatch) {
-        ante.push(this.createAction('ante', anteMatch[1], parseFloat(anteMatch[2]), 'preflop'));
+        const amount = parseFloat(anteMatch[2]);
+        ante.push(this.createAction('ante', anteMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (combinedBlindMatch) {
-        blinds.push(this.createAction('blind', combinedBlindMatch[1], parseFloat(combinedBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(combinedBlindMatch[2]);
+        blinds.push(this.createAction('blind', combinedBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       } else if (deadBlindMatch) {
-        blinds.push(this.createAction('blind', deadBlindMatch[1], parseFloat(deadBlindMatch[2]), 'preflop'));
+        const amount = parseFloat(deadBlindMatch[2]);
+        blinds.push(this.createAction('blind', deadBlindMatch[1], amount, 'preflop'));
+        this.totalPotContributions += amount;
       }
       
       this.nextLine();
@@ -284,6 +315,13 @@ export class PokerStarsParser {
         
         const action = this.createAction(pattern.type, player, amount, street);
         action.isAllIn = true;
+        
+        // Track all-in amount and update chip count
+        this.allInPlayers.set(player, amount);
+        const currentChips = this.playerChips.get(player) || 0;
+        this.playerChips.set(player, Math.max(0, currentChips - amount));
+        this.totalPotContributions += amount;
+        
         return action;
       }
     }
@@ -342,6 +380,21 @@ export class PokerStarsParser {
           amount = parseFloat(match[2]);
         } else if (pattern.type === 'uncalled') {
           amount = parseFloat(match[1]);
+        }
+        
+        // Handle player state changes and chip tracking
+        if (pattern.type === 'fold') {
+          this.activePlayers.delete(player);
+        } else if (amount && (pattern.type === 'call' || pattern.type === 'bet' || pattern.type === 'raise')) {
+          const currentChips = this.playerChips.get(player) || 0;
+          this.playerChips.set(player, Math.max(0, currentChips - amount));
+          this.totalPotContributions += amount;
+        } else if (amount && pattern.type === 'collected') {
+          const currentChips = this.playerChips.get(player) || 0;
+          this.playerChips.set(player, currentChips + amount);
+        } else if (amount && pattern.type === 'uncalled') {
+          const currentChips = this.playerChips.get(player) || 0;
+          this.playerChips.set(player, currentChips + amount);
         }
         
         return this.createAction(pattern.type, player, amount, street);
@@ -403,140 +456,264 @@ export class PokerStarsParser {
   }
 
   private parseSummary(): Pot[] {
-    const pots: Pot[] = [];
-    const collectedActions: { player: string; amount: number; type: string }[] = [];
+    // Get all collected actions from the hand history
+    const collectedActions = this.extractCollectedActions();
     
-    // First, collect all "collected" actions from the hand history
-    for (const action of this.lines) {
-      const mainPotMatch = action.match(/([^:]+) collected \$?([\d.]+) from main pot/);
-      const sidePotMatch = action.match(/([^:]+) collected \$?([\d.]+) from side pot/);
-      const potMatch = action.match(/([^:]+) collected \$?([\d.]+) from pot/);
-      
-      if (mainPotMatch) {
-        collectedActions.push({
-          player: mainPotMatch[1],
-          amount: parseFloat(mainPotMatch[2]),
-          type: 'main'
-        });
-      } else if (sidePotMatch) {
-        collectedActions.push({
-          player: sidePotMatch[1],
-          amount: parseFloat(sidePotMatch[2]),
-          type: 'side'
-        });
-      } else if (potMatch) {
-        collectedActions.push({
-          player: potMatch[1],
-          amount: parseFloat(potMatch[2]),
-          type: 'single'
-        });
-      }
-    }
+    // Calculate pot structure based on all-in scenarios
+    const potCalculation = this.calculatePotStructure();
     
     // Skip to SUMMARY section
     while (this.hasMoreLines() && !this.getLine().includes('SUMMARY')) {
       this.nextLine();
     }
     
-    if (this.hasMoreLines()) {
-      this.nextLine(); // Skip SUMMARY line
+    if (!this.hasMoreLines()) {
+      return [];
+    }
+    
+    this.nextLine(); // Skip SUMMARY line
+    
+    // Parse pot information from summary
+    const pots = this.parsePotLines(collectedActions, potCalculation);
+    
+    // Validate and enhance pot information
+    this.validateAndEnhancePots(pots, collectedActions);
+    
+    return pots;
+  }
+
+  private extractCollectedActions(): CollectedAction[] {
+    const collectedActions: CollectedAction[] = [];
+    
+    for (const line of this.lines) {
+      // Parse various collection patterns
+      const patterns = [
+        { regex: /([^:]+) collected \$?([\d.]+) from main pot/, type: 'main' as const },
+        { regex: /([^:]+) collected \$?([\d.]+) from side pot(?:-(\d+))?/, type: 'side' as const },
+        { regex: /([^:]+) collected \$?([\d.]+) from pot/, type: 'single' as const }
+      ];
       
-      // Parse pot information from summary
-      while (this.hasMoreLines()) {
-        const line = this.getLine();
-        
-        // Parse total pot and any side pots
-        const totalPotMatch = line.match(/Total pot \$?([\d.]+)/);
-        
-        if (totalPotMatch) {
-          // Check if main and side pots are specified
-          const mainPotMatch = line.match(/Main pot \$?([\d.]+)/);
-          const sidePotMatches = line.matchAll(/Side pot(?:-(\d+))? \$?([\d.]+)/g);
-          
-          if (mainPotMatch) {
-            // Create main pot
-            const mainPot: Pot = {
-              amount: parseFloat(mainPotMatch[1]),
-              players: [],
-              isSide: false
-            };
-            
-            // Find winner for main pot
-            const mainWinner = collectedActions.find(a => a.type === 'main' && Math.abs(a.amount - mainPot.amount) < 0.01);
-            if (mainWinner) {
-              mainPot.players.push(mainWinner.player);
-            }
-            
-            pots.push(mainPot);
-          }
-          
-          // Add side pots
-          for (const match of sidePotMatches) {
-            const sidePot: Pot = {
-              amount: parseFloat(match[2]),
-              players: [],
-              isSide: true
-            };
-            
-            // Find winner for side pot
-            const sideWinner = collectedActions.find(a => a.type === 'side' && Math.abs(a.amount - sidePot.amount) < 0.01);
-            if (sideWinner) {
-              sidePot.players.push(sideWinner.player);
-            }
-            
-            pots.push(sidePot);
-          }
-          
-          // If no main/side pots specified, treat total as the only pot
-          if (!mainPotMatch && pots.length === 0) {
-            const pot: Pot = {
-              amount: parseFloat(totalPotMatch[1]),
-              players: []
-            };
-            
-            // Find winner for single pot
-            const winner = collectedActions.find(a => Math.abs(a.amount - pot.amount) < 0.01);
-            if (winner) {
-              pot.players.push(winner.player);
-            }
-            
-            pots.push(pot);
-          }
-          
-          break; // Found the pot line, no need to continue
-        }
-        
-        this.nextLine();
-      }
-      
-      // Also check summary lines for winners (as fallback)
-      this.currentLineIndex--; // Go back one line
-      while (this.hasMoreLines()) {
-        const line = this.getLine();
-        
-        // Parse winner lines from summary
-        const wonMatch = line.match(/Seat \d+: ([^\s]+).*won \((\d+)\)/);
-        const collectedMatch = line.match(/Seat \d+: ([^\s]+).*collected \((\d+)\)/);
-        const match = wonMatch || collectedMatch;
-        
+      for (const pattern of patterns) {
+        const match = line.match(pattern.regex);
         if (match) {
-          const winner = match[1];
-          const amount = parseFloat(match[2]);
+          const action: CollectedAction = {
+            player: match[1],
+            amount: parseFloat(match[2]),
+            type: pattern.type
+          };
           
-          // Find which pot this collection corresponds to
-          for (const pot of pots) {
-            if (Math.abs(pot.amount - amount) < 0.01 && !pot.players.includes(winner)) {
-              pot.players.push(winner);
-              break;
-            }
+          // Extract side pot level if present
+          if (pattern.type === 'side' && match[3]) {
+            action.sidePotLevel = parseInt(match[3]);
           }
+          
+          collectedActions.push(action);
+          break;
         }
-        
-        this.nextLine();
       }
     }
     
+    return collectedActions;
+  }
+
+  private calculatePotStructure(): PotCalculation {
+    const allInAmounts = Array.from(this.allInPlayers.values()).sort((a, b) => a - b);
+    
+    const calculation: PotCalculation = {
+      totalPot: this.totalPotContributions,
+      sidePots: [],
+      distributions: []
+    };
+    
+    // Calculate side pot structure based on all-in amounts and active players
+    if (allInAmounts.length > 0) {
+      let prevAmount = 0;
+      const totalActivePlayers = this.activePlayers.size + this.allInPlayers.size;
+      
+      allInAmounts.forEach((amount, index) => {
+        // Include both remaining all-in players and active non-all-in players
+        const contributingPlayers = (allInAmounts.length - index) + 
+          (this.activePlayers.size > 0 ? 1 : 0); // Simplified - active players contribute to all levels
+        
+        const potAmount = (amount - prevAmount) * contributingPlayers;
+        
+        if (index === 0) {
+          calculation.mainPot = potAmount;
+        } else {
+          calculation.sidePots.push({
+            level: index,
+            amount: potAmount
+          });
+        }
+        
+        prevAmount = amount;
+      });
+    }
+    
+    return calculation;
+  }
+
+  private parsePotLines(collectedActions: CollectedAction[], potCalculation: PotCalculation): Pot[] {
+    const pots: Pot[] = [];
+    
+    while (this.hasMoreLines()) {
+      const line = this.getLine();
+      const totalPotMatch = line.match(/Total pot \$?([\d.]+)/);
+      
+      if (totalPotMatch) {
+        const totalAmount = parseFloat(totalPotMatch[1]);
+        
+        // Parse main and side pots from the line
+        const mainPotMatch = line.match(/Main pot \$?([\d.]+)/);
+        const sidePotMatches = Array.from(line.matchAll(/Side pot(?:-(\d+))? \$?([\d.]+)/g));
+        
+        if (mainPotMatch) {
+          // Create main pot
+          const mainPot: Pot = {
+            amount: parseFloat(mainPotMatch[1]),
+            players: [],
+            isSide: false,
+            sidePotLevel: 0,
+            eligiblePlayers: this.getEligiblePlayers(0)
+          };
+          pots.push(mainPot);
+          
+          // Create side pots
+          sidePotMatches.forEach((match, index) => {
+            const level = match[1] ? parseInt(match[1]) : index + 1;
+            const sidePot: Pot = {
+              amount: parseFloat(match[2]),
+              players: [],
+              isSide: true,
+              sidePotLevel: level,
+              eligiblePlayers: this.getEligiblePlayers(level)
+            };
+            pots.push(sidePot);
+          });
+        } else {
+          // Single pot scenario
+          const pot: Pot = {
+            amount: totalAmount,
+            players: [],
+            eligiblePlayers: Array.from(this.playerChips.keys())
+          };
+          pots.push(pot);
+        }
+        
+        break;
+      }
+      
+      this.nextLine();
+    }
+    
     return pots;
+  }
+
+  private getEligiblePlayers(sidePotLevel: number): string[] {
+    // For main pot (level 0), include all active players and all-in players
+    if (sidePotLevel === 0) {
+      const eligible = new Set<string>();
+      // Add active players (not folded)
+      this.activePlayers.forEach(player => eligible.add(player));
+      // Add all-in players
+      this.allInPlayers.forEach((_, player) => eligible.add(player));
+      return Array.from(eligible);
+    }
+    
+    // For side pots, only players who contributed enough are eligible
+    const allInAmounts = Array.from(this.allInPlayers.entries())
+      .sort(([_, a], [__, b]) => a - b);
+    
+    if (sidePotLevel <= allInAmounts.length) {
+      const eligible = new Set<string>();
+      // Add remaining all-in players who contributed enough
+      allInAmounts.slice(sidePotLevel - 1).forEach(([player, _]) => eligible.add(player));
+      // Add active players who can contest higher side pots
+      if (this.activePlayers.size > 0) {
+        this.activePlayers.forEach(player => eligible.add(player));
+      }
+      return Array.from(eligible);
+    }
+    
+    return [];
+  }
+
+  private validateAndEnhancePots(pots: Pot[], collectedActions: CollectedAction[]): void {
+    // Match collected actions to pots
+    for (const pot of pots) {
+      const relevantActions = collectedActions.filter(action => {
+        if (pot.isSide && action.type === 'side') {
+          return !action.sidePotLevel || action.sidePotLevel === pot.sidePotLevel;
+        } else if (!pot.isSide && (action.type === 'main' || action.type === 'single')) {
+          return true;
+        }
+        return false;
+      });
+      
+      // Check for split pots
+      const totalCollected = relevantActions.reduce((sum, action) => sum + action.amount, 0);
+      
+      if (relevantActions.length > 1) {
+        pot.isSplit = true;
+        
+        // Check for odd chip scenarios
+        const evenSplit = pot.amount / relevantActions.length;
+        const hasOddChip = pot.amount % relevantActions.length !== 0;
+        
+        if (hasOddChip) {
+          // Find who gets the odd chip (usually determined by position)
+          const sortedActions = relevantActions.sort((a, b) => a.amount - b.amount);
+          const maxAmount = Math.max(...sortedActions.map(a => a.amount));
+          const oddChipWinner = sortedActions.find(a => a.amount === maxAmount);
+          
+          if (oddChipWinner) {
+            pot.oddChipWinner = oddChipWinner.player;
+          }
+        }
+      }
+      
+      // Add all winners to the pot
+      pot.players = relevantActions.map(action => action.player);
+      
+      // Validate pot math
+      if (Math.abs(totalCollected - pot.amount) > 0.01) {
+        console.warn(`Pot amount mismatch: expected ${pot.amount}, collected ${totalCollected}`);
+      }
+    }
+    
+    // Also check summary lines for additional winners
+    this.parseSummaryWinners(pots);
+  }
+
+  private parseSummaryWinners(pots: Pot[]): void {
+    const currentLine = this.currentLineIndex;
+    
+    // Reset to after SUMMARY line and look for winner information
+    while (this.hasMoreLines()) {
+      const line = this.getLine();
+      
+      const wonMatch = line.match(/Seat \d+: ([^\s]+).*won \((\d+)\)/);
+      const collectedMatch = line.match(/Seat \d+: ([^\s]+).*collected \((\d+)\)/);
+      const match = wonMatch || collectedMatch;
+      
+      if (match) {
+        const winner = match[1];
+        const amount = parseFloat(match[2]);
+        
+        // Find appropriate pot for this winner
+        for (const pot of pots) {
+          if (Math.abs(pot.amount - amount) < 0.01 && !pot.players.includes(winner)) {
+            pot.players.push(winner);
+            break;
+          }
+        }
+      }
+      
+      this.nextLine();
+    }
+    
+    // Restore line position
+    this.currentLineIndex = currentLine;
   }
 
   private updatePlayersWithHoleCards(players: Player[], holeCards: Map<string, [string, string]>): void {
