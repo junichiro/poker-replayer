@@ -27,7 +27,11 @@ const preview: Preview = {
         },
         {
           name: 'casino',
-          value: '#0f5132',
+          value: '#0f1419',
+        },
+        {
+          name: 'professional',
+          value: '#f8f9fa',
         },
       ],
     },

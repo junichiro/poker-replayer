@@ -43,4 +43,5 @@ tsconfig.test.tsbuildinfo
 # Generated documentation
 /docs/api/
 /docs/markdown/
-/docs/api.jsonstorybook-static/
+/docs/api.json
+/storybook-static/
