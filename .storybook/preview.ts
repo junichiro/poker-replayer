@@ -35,6 +35,7 @@ const preview: Preview = {
         },
       ],
     },
+    actions: { argTypesRegex: '^on[A-Z].*' },
     a11y: {
       config: {
         rules: [

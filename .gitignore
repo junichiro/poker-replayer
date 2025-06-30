@@ -45,3 +45,4 @@ tsconfig.test.tsbuildinfo
 /docs/markdown/
 /docs/api.json
 /storybook-static/
+*storybook.log
