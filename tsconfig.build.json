@@ -7,6 +7,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    "composite": false,
     
     // Library-specific settings
     "declaration": true,
@@ -14,11 +15,11 @@
     "emitDeclarationOnly": false,
     "sourceMap": true,
     "inlineSources": false,
+    "preserveValueImports": false,
     
     // Optimizations for library builds
     "removeComments": true,
     "stripInternal": true,
-    "importsNotUsedAsValues": "remove",
     
     // Ensure compatibility
     "moduleResolution": "node",

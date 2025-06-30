@@ -24,6 +24,7 @@
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": false,
     "noPropertyAccessFromIndexSignature": false,
+    "noFallthroughCasesInSwitch": true,
     
     // Emit Options
     "declaration": true,
