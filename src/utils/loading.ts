@@ -1,11 +1,11 @@
 /**
  * Loading state management utilities
- * 
+ *
  * Provides hooks and components for managing loading states, progress tracking,
  * and async operation handling with timeout and retry capabilities.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect } from "react";
 
 export interface LoadingState {
   /** Whether currently loading */
@@ -67,68 +67,74 @@ export function useLoading(options: LoadingOptions = {}) {
     message: options.initialMessage,
     error: undefined,
     startTime: undefined,
-    estimatedTime: undefined
+    estimatedTime: undefined,
   });
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const startTimeRef = useRef<number>();
 
-  const startLoading = useCallback((message?: string) => {
-    const startTime = Date.now();
-    startTimeRef.current = startTime;
+  const startLoading = useCallback(
+    (message?: string) => {
+      const startTime = Date.now();
+      startTimeRef.current = startTime;
 
-    setState(prev => ({
-      ...prev,
-      isLoading: true,
-      progress: 0,
-      message: message || prev.message,
-      error: undefined,
-      startTime
-    }));
-
-    // Set timeout if specified
-    if (options.timeout) {
-      timeoutRef.current = setTimeout(() => {
-        setState(prev => ({
-          ...prev,
-          isLoading: false,
-          error: new Error(`Operation timed out after ${options.timeout}ms`)
-        }));
-      }, options.timeout);
-    }
-  }, [options.timeout]);
-
-  const updateProgress = useCallback((progress: number, message?: string, phase?: string) => {
-    setState(prev => {
-      const elapsed = Date.now() - (prev.startTime || 0);
-      let estimatedTime: number | undefined;
-
-      // Estimate remaining time based on progress
-      if (options.estimateTime && progress > 0 && progress < 100) {
-        const totalEstimated = (elapsed / progress) * 100;
-        estimatedTime = totalEstimated - elapsed;
-      }
-
-      return {
+      setState((prev) => ({
         ...prev,
-        progress: Math.max(0, Math.min(100, progress)),
+        isLoading: true,
+        progress: 0,
         message: message || prev.message,
-        phase: phase || prev.phase,
-        estimatedTime
-      };
-    });
-  }, [options.estimateTime]);
+        error: undefined,
+        startTime,
+      }));
+
+      // Set timeout if specified
+      if (options.timeout) {
+        timeoutRef.current = setTimeout(() => {
+          setState((prev) => ({
+            ...prev,
+            isLoading: false,
+            error: new Error(`Operation timed out after ${options.timeout}ms`),
+          }));
+        }, options.timeout);
+      }
+    },
+    [options.timeout],
+  );
+
+  const updateProgress = useCallback(
+    (progress: number, message?: string, phase?: string) => {
+      setState((prev) => {
+        const elapsed = Date.now() - (prev.startTime || 0);
+        let estimatedTime: number | undefined;
+
+        // Estimate remaining time based on progress
+        if (options.estimateTime && progress > 0 && progress < 100) {
+          const totalEstimated = (elapsed / progress) * 100;
+          estimatedTime = totalEstimated - elapsed;
+        }
+
+        return {
+          ...prev,
+          progress: Math.max(0, Math.min(100, progress)),
+          message: message || prev.message,
+          phase: phase || prev.phase,
+          estimatedTime,
+        };
+      });
+    },
+    [options.estimateTime],
+  );
 
   const finishLoading = useCallback((error?: Error) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
 
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       isLoading: false,
       progress: error ? prev.progress : 100,
-      error
+      error,
     }));
   }, []);
 
@@ -143,7 +149,7 @@ export function useLoading(options: LoadingOptions = {}) {
       message: options.initialMessage,
       error: undefined,
       startTime: undefined,
-      estimatedTime: undefined
+      estimatedTime: undefined,
     });
   }, [options.initialMessage]);
 
@@ -161,7 +167,7 @@ export function useLoading(options: LoadingOptions = {}) {
     startLoading,
     updateProgress,
     finishLoading,
-    resetLoading
+    resetLoading,
   };
 }
 
@@ -172,72 +178,75 @@ export function useAsyncOperation<T>(options: LoadingOptions = {}) {
   const loading = useLoading(options);
   const retryCountRef = useRef(0);
 
-  const execute = useCallback(async (
-    operation: () => Promise<T>,
-    loadingMessage?: string
-  ): Promise<AsyncOperationResult<T>> => {
-    const startTime = Date.now();
-    let retryAttempts = 0;
+  const execute = useCallback(
+    async (
+      operation: () => Promise<T>,
+      loadingMessage?: string,
+    ): Promise<AsyncOperationResult<T>> => {
+      const startTime = Date.now();
+      let retryAttempts = 0;
 
-    const executeWithRetry = async (): Promise<AsyncOperationResult<T>> => {
-      try {
-        loading.startLoading(loadingMessage);
-        const data = await operation();
-        
-        const duration = Date.now() - startTime;
-        loading.finishLoading();
+      const executeWithRetry = async (): Promise<AsyncOperationResult<T>> => {
+        try {
+          loading.startLoading(loadingMessage);
+          const data = await operation();
 
-        return {
-          data,
-          success: true,
-          duration,
-          retryAttempts
-        };
-      } catch (error) {
-        const currentError = error as Error;
-        
-        // Check if we should retry
-        if (options.retry && retryAttempts < options.retry.maxAttempts) {
-          retryAttempts++;
-          
-          // Calculate delay with optional exponential backoff
-          let delay = options.retry.delay;
-          if (options.retry.exponentialBackoff) {
-            delay = delay * Math.pow(2, retryAttempts - 1);
+          const duration = Date.now() - startTime;
+          loading.finishLoading();
+
+          return {
+            data,
+            success: true,
+            duration,
+            retryAttempts,
+          };
+        } catch (error) {
+          const currentError = error as Error;
+
+          // Check if we should retry
+          if (options.retry && retryAttempts < options.retry.maxAttempts) {
+            retryAttempts++;
+
+            // Calculate delay with optional exponential backoff
+            let delay = options.retry.delay;
+            if (options.retry.exponentialBackoff) {
+              delay = delay * Math.pow(2, retryAttempts - 1);
+            }
+
+            loading.updateProgress(
+              (retryAttempts / options.retry.maxAttempts) * 50, // 50% max progress during retries
+              `Retrying... (${retryAttempts}/${options.retry.maxAttempts})`,
+              "retry",
+            );
+
+            // Wait before retrying
+            await new Promise((resolve) => setTimeout(resolve, delay));
+
+            return executeWithRetry();
           }
 
-          loading.updateProgress(
-            (retryAttempts / options.retry.maxAttempts) * 50, // 50% max progress during retries
-            `Retrying... (${retryAttempts}/${options.retry.maxAttempts})`,
-            'retry'
-          );
+          // No more retries, return error result
+          const duration = Date.now() - startTime;
+          loading.finishLoading(currentError);
 
-          // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, delay));
-          
-          return executeWithRetry();
+          return {
+            success: false,
+            error: currentError,
+            duration,
+            retryAttempts,
+          };
         }
+      };
 
-        // No more retries, return error result
-        const duration = Date.now() - startTime;
-        loading.finishLoading(currentError);
-
-        return {
-          success: false,
-          error: currentError,
-          duration,
-          retryAttempts
-        };
-      }
-    };
-
-    retryCountRef.current = 0;
-    return executeWithRetry();
-  }, [loading, options]);
+      retryCountRef.current = 0;
+      return executeWithRetry();
+    },
+    [loading, options],
+  );
 
   return {
     ...loading,
-    execute
+    execute,
   };
 }
 
@@ -247,76 +256,79 @@ export function useAsyncOperation<T>(options: LoadingOptions = {}) {
 export function useBatchLoading<T>(options: LoadingOptions = {}) {
   const loading = useLoading({ ...options, trackProgress: true });
 
-  const executeBatch = useCallback(async (
-    operations: Array<() => Promise<T>>,
-    loadingMessage?: string
-  ): Promise<AsyncOperationResult<T[]>> => {
-    const startTime = Date.now();
-    const results: T[] = [];
-    const errors: Error[] = [];
+  const executeBatch = useCallback(
+    async (
+      operations: Array<() => Promise<T>>,
+      loadingMessage?: string,
+    ): Promise<AsyncOperationResult<T[]>> => {
+      const startTime = Date.now();
+      const results: T[] = [];
+      const errors: Error[] = [];
 
-    loading.startLoading(loadingMessage || 'Processing batch...');
+      loading.startLoading(loadingMessage || "Processing batch...");
 
-    try {
-      for (let i = 0; i < operations.length; i++) {
-        const operation = operations[i];
-        const progress = ((i + 1) / operations.length) * 100;
-        
-        loading.updateProgress(
-          progress,
-          `Processing item ${i + 1} of ${operations.length}`,
-          `batch-${i + 1}`
-        );
+      try {
+        for (let i = 0; i < operations.length; i++) {
+          const operation = operations[i];
+          const progress = ((i + 1) / operations.length) * 100;
 
-        try {
-          const result = await operation();
-          results.push(result);
-        } catch (error) {
-          errors.push(error as Error);
+          loading.updateProgress(
+            progress,
+            `Processing item ${i + 1} of ${operations.length}`,
+            `batch-${i + 1}`,
+          );
+
+          try {
+            const result = await operation();
+            results.push(result);
+          } catch (error) {
+            errors.push(error as Error);
+          }
         }
-      }
 
-      const duration = Date.now() - startTime;
-      const hasErrors = errors.length > 0;
-      
-      if (hasErrors) {
-        const combinedError = new Error(
-          `Batch operation completed with ${errors.length} errors: ${errors.map(e => e.message).join('; ')}`
-        );
-        loading.finishLoading(combinedError);
-        
+        const duration = Date.now() - startTime;
+        const hasErrors = errors.length > 0;
+
+        if (hasErrors) {
+          const combinedError = new Error(
+            `Batch operation completed with ${errors.length} errors: ${errors.map((e) => e.message).join("; ")}`,
+          );
+          loading.finishLoading(combinedError);
+
+          return {
+            data: results,
+            success: false,
+            error: combinedError,
+            duration,
+            retryAttempts: 0,
+          };
+        }
+
+        loading.finishLoading();
         return {
           data: results,
-          success: false,
-          error: combinedError,
+          success: true,
           duration,
-          retryAttempts: 0
+          retryAttempts: 0,
+        };
+      } catch (error) {
+        const duration = Date.now() - startTime;
+        loading.finishLoading(error as Error);
+
+        return {
+          success: false,
+          error: error as Error,
+          duration,
+          retryAttempts: 0,
         };
       }
-
-      loading.finishLoading();
-      return {
-        data: results,
-        success: true,
-        duration,
-        retryAttempts: 0
-      };
-    } catch (error) {
-      const duration = Date.now() - startTime;
-      loading.finishLoading(error as Error);
-      
-      return {
-        success: false,
-        error: error as Error,
-        duration,
-        retryAttempts: 0
-      };
-    }
-  }, [loading]);
+    },
+    [loading],
+  );
 
   return {
     ...loading,
-    executeBatch
+    executeBatch,
   };
 }
 
@@ -326,17 +338,18 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
 export function createMockAsync<T>(
   data: T,
   delay: number = 1000,
-  failureRate: number = 0
+  failureRate: number = 0,
 ): () => Promise<T> {
-  return () => new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (Math.random() < failureRate) {
-        reject(new Error('Mock operation failed'));
-      } else {
-        resolve(data);
-      }
-    }, delay);
-  });
+  return () =>
+    new Promise((resolve, reject) => {
+      setTimeout(() => {
+        if (Math.random() < failureRate) {
+          reject(new Error("Mock operation failed"));
+        } else {
+          resolve(data);
+        }
+      }, delay);
+    });
 }
 
 /**
@@ -345,25 +358,28 @@ export function createMockAsync<T>(
  */
 export function useAsyncFunction<TArgs extends unknown[], TReturn>(
   asyncFn: (...args: TArgs) => Promise<TReturn>,
-  options: LoadingOptions = {}
+  options: LoadingOptions = {},
 ) {
   const loading = useLoading(options);
-  
-  const execute = useCallback(async (...args: TArgs) => {
-    loading.startLoading();
-    try {
-      const result = await asyncFn(...args);
-      loading.finishLoading();
-      return result;
-    } catch (error) {
-      loading.finishLoading(error as Error);
-      throw error;
-    }
-  }, [asyncFn, loading]);
+
+  const execute = useCallback(
+    async (...args: TArgs) => {
+      loading.startLoading();
+      try {
+        const result = await asyncFn(...args);
+        loading.finishLoading();
+        return result;
+      } catch (error) {
+        loading.finishLoading(error as Error);
+        throw error;
+      }
+    },
+    [asyncFn, loading],
+  );
 
   return {
     ...loading,
-    execute
+    execute,
   };
 }
 
@@ -372,7 +388,7 @@ export function useAsyncFunction<TArgs extends unknown[], TReturn>(
  */
 export function withLoading<TArgs extends unknown[], TReturn>(
   asyncFn: (...args: TArgs) => Promise<TReturn>,
-  _options: LoadingOptions = {}
+  _options: LoadingOptions = {},
 ) {
   // This is a simplified fallback that doesn't use hooks
   return (...args: TArgs) => asyncFn(...args);
@@ -381,29 +397,38 @@ export function withLoading<TArgs extends unknown[], TReturn>(
 /**
  * Debounced loading state for rapid state changes
  */
-export function useDebouncedLoading(delay: number = 300, options: LoadingOptions = {}) {
+export function useDebouncedLoading(
+  delay: number = 300,
+  options: LoadingOptions = {},
+) {
   const loading = useLoading(options);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
-  const debouncedStartLoading = useCallback((message?: string) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+  const debouncedStartLoading = useCallback(
+    (message?: string) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      loading.startLoading(message);
-    }, delay);
-  }, [loading, delay]);
+      debounceTimeoutRef.current = setTimeout(() => {
+        loading.startLoading(message);
+      }, delay);
+    },
+    [loading, delay],
+  );
 
-  const debouncedFinishLoading = useCallback((error?: Error) => {
-    if (debounceTimeoutRef.current) {
-      clearTimeout(debounceTimeoutRef.current);
-    }
+  const debouncedFinishLoading = useCallback(
+    (error?: Error) => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
 
-    debounceTimeoutRef.current = setTimeout(() => {
-      loading.finishLoading(error);
-    }, delay);
-  }, [loading, delay]);
+      debounceTimeoutRef.current = setTimeout(() => {
+        loading.finishLoading(error);
+      }, delay);
+    },
+    [loading, delay],
+  );
 
   useEffect(() => {
     return () => {
@@ -416,6 +441,6 @@ export function useDebouncedLoading(delay: number = 300, options: LoadingOptions
   return {
     ...loading,
     startLoading: debouncedStartLoading,
-    finishLoading: debouncedFinishLoading
+    finishLoading: debouncedFinishLoading,
   };
 }

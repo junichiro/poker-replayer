@@ -1,6 +1,6 @@
 /**
  * Playback controls component for replay functionality
- * 
+ *
  * @example
  * ```tsx
  * <Controls
@@ -15,31 +15,31 @@
  * ```
  */
 
-import React, { useMemo } from 'react';
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
-import { BaseComponentProps, NumericConstraints } from '../types';
+import React, { useMemo } from "react";
+import { Play, Pause, SkipBack, SkipForward, RotateCcw } from "lucide-react";
+import { BaseComponentProps, NumericConstraints } from "../types";
 
 /**
  * Callback function signatures for control actions
  * @public
  */
 export interface ControlCallbacks {
-  /** 
+  /**
    * Callback for play/pause button
    * @param isPlaying - Current playing state before the action
    */
   onPlayPause: (isPlaying: boolean) => void;
-  /** 
+  /**
    * Callback for previous action button
    * @param currentIndex - Current action index before going to previous
    */
   onPrevious: (currentIndex: number) => void;
-  /** 
+  /**
    * Callback for next action button
    * @param currentIndex - Current action index before going to next
    */
   onNext: (currentIndex: number) => void;
-  /** 
+  /**
    * Callback for reset button
    * @param currentIndex - Current action index before reset
    */
@@ -51,40 +51,40 @@ export interface ControlCallbacks {
  * @public
  */
 export interface ControlsProps extends BaseComponentProps {
-  /** 
+  /**
    * Whether playback is currently active
    */
   isPlaying: boolean;
-  
-  /** 
+
+  /**
    * Current action index (-1 means before first action)
    * Must be >= -1 and < totalActions
    * @constraint integer, >= -1
    */
   currentActionIndex: number & NumericConstraints;
-  
-  /** 
+
+  /**
    * Total number of actions in the hand
    * Must be a positive integer
    * @constraint integer, > 0
    */
   totalActions: number & NumericConstraints;
-  
+
   /** Callback functions for control actions */
   callbacks: ControlCallbacks;
-  
+
   /**
    * Size of the control icons
    * @default 20
    */
   iconSize?: number;
-  
+
   /**
    * Whether to show action counter
    * @default true
    */
   showCounter?: boolean;
-  
+
   /**
    * Custom labels for buttons (for internationalization)
    */
@@ -95,7 +95,7 @@ export interface ControlsProps extends BaseComponentProps {
     next?: string;
     reset?: string;
   };
-  
+
   /**
    * Whether controls are disabled
    * @default false
@@ -136,13 +136,13 @@ const defaultProps = {
   iconSize: 20,
   showCounter: true,
   disabled: false,
-  className: '',
+  className: "",
   labels: {
-    play: 'Play',
-    pause: 'Pause',
-    previous: 'Previous action',
-    next: 'Next action',
-    reset: 'Reset to beginning',
+    play: "Play",
+    pause: "Pause",
+    previous: "Previous action",
+    next: "Next action",
+    reset: "Reset to beginning",
   },
 } satisfies Partial<ControlsProps>;
 
@@ -150,17 +150,21 @@ const defaultProps = {
  * Type guard to check if props use the legacy API
  */
 function isLegacyProps(props: ControlsAllProps): props is ControlsPropsLegacy {
-  return 'onPlayPause' in props && typeof props.onPlayPause === 'function';
+  return "onPlayPause" in props && typeof props.onPlayPause === "function";
 }
 
 /**
  * Runtime validation for numeric constraints
  */
-function validateNumericProp(value: number, propName: string, constraints: {
-  min?: number;
-  max?: number;
-  integer?: boolean;
-}): void {
+function validateNumericProp(
+  value: number,
+  propName: string,
+  constraints: {
+    min?: number;
+    max?: number;
+    integer?: boolean;
+  },
+): void {
   if (constraints.integer && !Number.isInteger(value)) {
     console.warn(`${propName} must be an integer, got: ${value}`);
   }
@@ -182,7 +186,7 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
     totalActions,
     className = defaultProps.className,
     style,
-    'data-testid': testId
+    "data-testid": testId,
   } = props;
 
   // Memoize callbacks and props based on API version to prevent unnecessary re-renders
@@ -190,7 +194,7 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
     let callbacksResult: ControlCallbacks;
     let iconSizeResult: number;
     let showCounterResult: boolean;
-    let labelsResult: NonNullable<ControlsProps['labels']>;
+    let labelsResult: NonNullable<ControlsProps["labels"]>;
     let disabledResult: boolean;
 
     if (isLegacyProps(props)) {
@@ -224,47 +228,46 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
   }, [props]);
 
   // Runtime validation
-  validateNumericProp(currentActionIndex, 'currentActionIndex', { 
-    min: -1, 
+  validateNumericProp(currentActionIndex, "currentActionIndex", {
+    min: -1,
     integer: true,
-    max: totalActions - 1 
+    max: totalActions - 1,
   });
-  validateNumericProp(totalActions, 'totalActions', { 
-    min: 1, 
-    integer: true 
+  validateNumericProp(totalActions, "totalActions", {
+    min: 1,
+    integer: true,
   });
 
   // Memoize computed button states to prevent unnecessary calculations
-  const buttonStates = useMemo(() => ({
-    isAtStart: currentActionIndex === -1,
-    isAtEnd: currentActionIndex >= totalActions - 1,
-  }), [currentActionIndex, totalActions]);
+  const buttonStates = useMemo(
+    () => ({
+      isAtStart: currentActionIndex === -1,
+      isAtEnd: currentActionIndex >= totalActions - 1,
+    }),
+    [currentActionIndex, totalActions],
+  );
 
   return (
-    <div 
-      className={`controls ${className}`}
-      style={style}
-      data-testid={testId}
-    >
-      <button 
-        onClick={() => callbacks.onReset(currentActionIndex)} 
+    <div className={`controls ${className}`} style={style} data-testid={testId}>
+      <button
+        onClick={() => callbacks.onReset(currentActionIndex)}
         disabled={disabled || buttonStates.isAtStart}
         title={labels.reset}
         aria-label={labels.reset}
       >
         <RotateCcw size={iconSize} />
       </button>
-      
-      <button 
-        onClick={() => callbacks.onPrevious(currentActionIndex)} 
+
+      <button
+        onClick={() => callbacks.onPrevious(currentActionIndex)}
         disabled={disabled || buttonStates.isAtStart}
         title={labels.previous}
         aria-label={labels.previous}
       >
         <SkipBack size={iconSize} />
       </button>
-      
-      <button 
+
+      <button
         onClick={() => callbacks.onPlayPause(isPlaying)}
         disabled={disabled}
         title={isPlaying ? labels.pause : labels.play}
@@ -272,18 +275,21 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
       >
         {isPlaying ? <Pause size={iconSize} /> : <Play size={iconSize} />}
       </button>
-      
-      <button 
-        onClick={() => callbacks.onNext(currentActionIndex)} 
+
+      <button
+        onClick={() => callbacks.onNext(currentActionIndex)}
         disabled={disabled || buttonStates.isAtEnd}
         title={labels.next}
         aria-label={labels.next}
       >
         <SkipForward size={iconSize} />
       </button>
-      
+
       {showCounter && (
-        <div className="action-counter" aria-label={`Action ${currentActionIndex + 1} of ${totalActions}`}>
+        <div
+          className="action-counter"
+          aria-label={`Action ${currentActionIndex + 1} of ${totalActions}`}
+        >
           {currentActionIndex + 1} / {totalActions}
         </div>
       )}
@@ -295,31 +301,40 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
  * Custom comparison function for React.memo
  * Only re-render if control-related props have actually changed
  */
-function areControlsPropsEqual(prevProps: ControlsAllProps, nextProps: ControlsAllProps): boolean {
+function areControlsPropsEqual(
+  prevProps: ControlsAllProps,
+  nextProps: ControlsAllProps,
+): boolean {
   // Compare basic state
-  if (prevProps.isPlaying !== nextProps.isPlaying ||
-      prevProps.currentActionIndex !== nextProps.currentActionIndex ||
-      prevProps.totalActions !== nextProps.totalActions ||
-      prevProps.className !== nextProps.className ||
-      prevProps['data-testid'] !== nextProps['data-testid']) {
+  if (
+    prevProps.isPlaying !== nextProps.isPlaying ||
+    prevProps.currentActionIndex !== nextProps.currentActionIndex ||
+    prevProps.totalActions !== nextProps.totalActions ||
+    prevProps.className !== nextProps.className ||
+    prevProps["data-testid"] !== nextProps["data-testid"]
+  ) {
     return false;
   }
 
   // For legacy props, compare callback references (they should be stable)
   if (isLegacyProps(prevProps) && isLegacyProps(nextProps)) {
-    return prevProps.onPlayPause === nextProps.onPlayPause &&
-           prevProps.onPrevious === nextProps.onPrevious &&
-           prevProps.onNext === nextProps.onNext &&
-           prevProps.onReset === nextProps.onReset;
+    return (
+      prevProps.onPlayPause === nextProps.onPlayPause &&
+      prevProps.onPrevious === nextProps.onPrevious &&
+      prevProps.onNext === nextProps.onNext &&
+      prevProps.onReset === nextProps.onReset
+    );
   }
 
   // For new props, compare the callbacks object and optional props
   if (!isLegacyProps(prevProps) && !isLegacyProps(nextProps)) {
-    return prevProps.callbacks === nextProps.callbacks &&
-           prevProps.iconSize === nextProps.iconSize &&
-           prevProps.showCounter === nextProps.showCounter &&
-           prevProps.disabled === nextProps.disabled &&
-           prevProps.labels === nextProps.labels;
+    return (
+      prevProps.callbacks === nextProps.callbacks &&
+      prevProps.iconSize === nextProps.iconSize &&
+      prevProps.showCounter === nextProps.showCounter &&
+      prevProps.disabled === nextProps.disabled &&
+      prevProps.labels === nextProps.labels
+    );
   }
 
   // Mixed API versions - they're different
