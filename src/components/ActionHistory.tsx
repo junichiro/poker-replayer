@@ -2,8 +2,14 @@
  * Action history component for displaying the sequence of actions in the hand
  */
 
-import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
-import { Action } from '../types';
+import React, {
+  useMemo,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import { Action } from "../types";
 
 export interface ActionHistoryProps {
   /** List of actions to display */
@@ -33,56 +39,53 @@ interface ActionItemProps {
   isClickable: boolean;
 }
 
-const ActionItem = React.memo<ActionItemProps>(({
-  action,
-  index,
-  currentActionIndex,
-  onActionClick,
-  isClickable
-}) => {
-  const handleClick = useCallback(() => {
-    if (onActionClick && isClickable) {
-      onActionClick(index);
-    }
-  }, [onActionClick, isClickable, index]);
+const ActionItem = React.memo<ActionItemProps>(
+  ({ action, index, currentActionIndex, onActionClick, isClickable }) => {
+    const handleClick = useCallback(() => {
+      if (onActionClick && isClickable) {
+        onActionClick(index);
+      }
+    }, [onActionClick, isClickable, index]);
 
-  const className = useMemo(() => {
-    const classes = ['action'];
-    if (index <= currentActionIndex) classes.push('played');
-    if (index === currentActionIndex) classes.push('current');
-    if (isClickable) classes.push('clickable');
-    return classes.join(' ');
-  }, [index, currentActionIndex, isClickable]);
+    const className = useMemo(() => {
+      const classes = ["action"];
+      if (index <= currentActionIndex) classes.push("played");
+      if (index === currentActionIndex) classes.push("current");
+      if (isClickable) classes.push("clickable");
+      return classes.join(" ");
+    }, [index, currentActionIndex, isClickable]);
 
-  return (
-    <div 
-      className={className}
-      onClick={handleClick}
-      style={{ minHeight: '24px' }} // Consistent height for virtualization
-    >
-      <span className="street">{action.street}</span>
-      <span className="player">{action.player || 'System'}</span>
-      <span className="action-type">{action.type}</span>
-      {action.amount && <span className="amount">${action.amount}</span>}
-      {action.isAllIn && <span className="all-in">ALL IN</span>}
-      {action.reason && <span className="reason">{action.reason}</span>}
-      {action.cards && action.cards.length > 0 && (
-        <span className="cards">[{action.cards.join(', ')}]</span>
-      )}
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison for optimal re-rendering
-  return (
-    prevProps.action === nextProps.action &&
-    prevProps.index === nextProps.index &&
-    prevProps.currentActionIndex === nextProps.currentActionIndex &&
-    prevProps.onActionClick === nextProps.onActionClick &&
-    prevProps.isClickable === nextProps.isClickable
-  );
-});
+    return (
+      <div
+        className={className}
+        onClick={handleClick}
+        style={{ minHeight: "24px" }} // Consistent height for virtualization
+      >
+        <span className="street">{action.street}</span>
+        <span className="player">{action.player || "System"}</span>
+        <span className="action-type">{action.type}</span>
+        {action.amount && <span className="amount">${action.amount}</span>}
+        {action.isAllIn && <span className="all-in">ALL IN</span>}
+        {action.reason && <span className="reason">{action.reason}</span>}
+        {action.cards && action.cards.length > 0 && (
+          <span className="cards">[{action.cards.join(", ")}]</span>
+        )}
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison for optimal re-rendering
+    return (
+      prevProps.action === nextProps.action &&
+      prevProps.index === nextProps.index &&
+      prevProps.currentActionIndex === nextProps.currentActionIndex &&
+      prevProps.onActionClick === nextProps.onActionClick &&
+      prevProps.isClickable === nextProps.isClickable
+    );
+  },
+);
 
-ActionItem.displayName = 'ActionItem';
+ActionItem.displayName = "ActionItem";
 
 // Virtual scrolling implementation for performance with large action lists
 const VirtualizedActionList: React.FC<{
@@ -91,18 +94,24 @@ const VirtualizedActionList: React.FC<{
   onActionClick?: (index: number) => void;
   itemHeight: number;
   maxHeight: number;
-}> = ({ actions, currentActionIndex, onActionClick, itemHeight, maxHeight }) => {
+}> = ({
+  actions,
+  currentActionIndex,
+  onActionClick,
+  itemHeight,
+  maxHeight,
+}) => {
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const visibleRange = useMemo(() => {
     const containerHeight = maxHeight;
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / itemHeight) + 1,
-      actions.length
+      actions.length,
     );
-    
+
     return { startIndex, endIndex };
   }, [scrollTop, itemHeight, maxHeight, actions.length]);
 
@@ -116,13 +125,15 @@ const VirtualizedActionList: React.FC<{
       const targetScrollTop = currentActionIndex * itemHeight;
       const currentScrollTop = containerRef.current.scrollTop;
       const containerHeight = containerRef.current.clientHeight;
-      
+
       // Only scroll if the current action is not visible
-      if (targetScrollTop < currentScrollTop || 
-          targetScrollTop > currentScrollTop + containerHeight - itemHeight) {
+      if (
+        targetScrollTop < currentScrollTop ||
+        targetScrollTop > currentScrollTop + containerHeight - itemHeight
+      ) {
         containerRef.current.scrollTo({
           top: Math.max(0, targetScrollTop - containerHeight / 2),
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     }
@@ -135,19 +146,19 @@ const VirtualizedActionList: React.FC<{
   const isClickable = !!onActionClick;
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="action-list virtualized"
-      style={{ 
-        height: maxHeight, 
-        overflowY: 'auto',
-        position: 'relative'
+      style={{
+        height: maxHeight,
+        overflowY: "auto",
+        position: "relative",
       }}
       onScroll={handleScroll}
     >
       {/* Spacer for items before visible range */}
       <div style={{ height: visibleRange.startIndex * itemHeight }} />
-      
+
       {/* Visible action items */}
       {visibleActions.map((action, relativeIndex) => {
         const absoluteIndex = visibleRange.startIndex + relativeIndex;
@@ -162,9 +173,13 @@ const VirtualizedActionList: React.FC<{
           />
         );
       })}
-      
+
       {/* Spacer for items after visible range */}
-      <div style={{ height: (actions.length - visibleRange.endIndex) * itemHeight }} />
+      <div
+        style={{
+          height: (actions.length - visibleRange.endIndex) * itemHeight,
+        }}
+      />
     </div>
   );
 };
@@ -173,11 +188,11 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
   actions,
   currentActionIndex,
   visible = true,
-  className = '',
+  className = "",
   onActionClick,
   enableVirtualization,
   itemHeight = 24,
-  maxHeight = 200
+  maxHeight = 200,
 }) => {
   if (!visible) return null;
 
@@ -191,16 +206,19 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
   }, [enableVirtualization, actions.length]);
 
   // Memoize the action click handler to prevent unnecessary re-renders
-  const stableOnActionClick = useCallback((index: number) => {
-    onActionClick?.(index);
-  }, [onActionClick]);
+  const stableOnActionClick = useCallback(
+    (index: number) => {
+      onActionClick?.(index);
+    },
+    [onActionClick],
+  );
 
   const isClickable = !!onActionClick;
 
   return (
     <div className={`action-history ${className}`}>
       <h3>Actions ({actions.length})</h3>
-      
+
       {shouldVirtualize ? (
         <VirtualizedActionList
           actions={actions}
@@ -210,7 +228,7 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
           maxHeight={maxHeight}
         />
       ) : (
-        <div className="action-list" style={{ maxHeight, overflowY: 'auto' }}>
+        <div className="action-list" style={{ maxHeight, overflowY: "auto" }}>
           {actions.map((action, index) => (
             <ActionItem
               key={action.index}
@@ -232,17 +250,19 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
  * Only re-render if action history props have actually changed
  */
 function areActionHistoryPropsEqual(
-  prevProps: ActionHistoryProps, 
-  nextProps: ActionHistoryProps
+  prevProps: ActionHistoryProps,
+  nextProps: ActionHistoryProps,
 ): boolean {
   // Compare basic props
-  if (prevProps.currentActionIndex !== nextProps.currentActionIndex ||
-      prevProps.visible !== nextProps.visible ||
-      prevProps.className !== nextProps.className ||
-      prevProps.onActionClick !== nextProps.onActionClick ||
-      prevProps.enableVirtualization !== nextProps.enableVirtualization ||
-      prevProps.itemHeight !== nextProps.itemHeight ||
-      prevProps.maxHeight !== nextProps.maxHeight) {
+  if (
+    prevProps.currentActionIndex !== nextProps.currentActionIndex ||
+    prevProps.visible !== nextProps.visible ||
+    prevProps.className !== nextProps.className ||
+    prevProps.onActionClick !== nextProps.onActionClick ||
+    prevProps.enableVirtualization !== nextProps.enableVirtualization ||
+    prevProps.itemHeight !== nextProps.itemHeight ||
+    prevProps.maxHeight !== nextProps.maxHeight
+  ) {
     return false;
   }
 
@@ -270,6 +290,9 @@ function areActionHistoryPropsEqual(
  * Memoized ActionHistory component for optimal performance
  * Includes virtualization for large action lists and optimized re-rendering
  */
-export const ActionHistory = React.memo(ActionHistoryComponent, areActionHistoryPropsEqual);
+export const ActionHistory = React.memo(
+  ActionHistoryComponent,
+  areActionHistoryPropsEqual,
+);
 
 export default ActionHistory;

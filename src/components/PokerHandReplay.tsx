@@ -3,30 +3,36 @@
  * This component has been split into smaller, reusable components as part of Phase 2
  */
 
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { PokerStarsParser } from '../parser/PokerStarsParser';
-import { Table } from './Table';
-import { Controls } from './Controls';
-import { ActionHistory } from './ActionHistory';
-import { ParserErrorBoundary } from './ParserErrorBoundary';
-import { ErrorBoundary, withErrorBoundary } from './ErrorBoundary';
-import { LoadingSpinner, ProgressSpinner, Skeleton } from './LoadingSpinner';
-import { useLoading } from '../utils/loading';
-import { useRetry, retryPredicates } from '../utils/retry';
-import { 
-  PokerHand, 
-  ReplayConfig, 
-  ActionChangeCallback, 
-  ReplayEventCallback
-} from '../types';
-import { 
-  applyTheme, 
-  applySize, 
-  applyTableShape, 
-  applyCardDesign, 
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
+import { PokerStarsParser } from "../parser/PokerStarsParser";
+import { Table } from "./Table";
+import { Controls } from "./Controls";
+import { ActionHistory } from "./ActionHistory";
+import { ParserErrorBoundary } from "./ParserErrorBoundary";
+import { ErrorBoundary, withErrorBoundary } from "./ErrorBoundary";
+import { LoadingSpinner, ProgressSpinner, Skeleton } from "./LoadingSpinner";
+import { useLoading } from "../utils/loading";
+import { useRetry, retryPredicates } from "../utils/retry";
+import {
+  PokerHand,
+  ReplayConfig,
+  ActionChangeCallback,
+  ReplayEventCallback,
+} from "../types";
+import {
+  applyTheme,
+  applySize,
+  applyTableShape,
+  applyCardDesign,
   applyAnimationConfig,
-  getSystemColorScheme
-} from '../utils/customization';
+  getSystemColorScheme,
+} from "../utils/customization";
 
 export interface PokerHandReplayProps {
   /** Raw hand history string to parse and replay */
@@ -54,24 +60,24 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   config = {},
   onActionChange,
   onReplayEvent,
-  className = '',
+  className = "",
   enableLoadingStates = true,
   enableErrorRecovery = true,
   loadingComponent,
-  errorComponent
+  errorComponent,
 }) => {
   // Configuration with defaults and enhanced customization support
   const {
     autoPlay = false,
     animationSpeed = 1.0,
-    theme = 'dark',
+    theme = "dark",
     showAllCards = false,
     enableSounds: _enableSounds = false,
-    size = 'medium',
+    size = "medium",
     customColors,
-    tableShape = 'oval',
-    cardDesign = 'standard',
-    animations
+    tableShape = "oval",
+    cardDesign = "standard",
+    animations,
   } = config;
 
   // Refs for DOM manipulation
@@ -87,10 +93,10 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Loading and retry state management
   const loading = useLoading({
-    initialMessage: 'Parsing hand history...',
+    initialMessage: "Parsing hand history...",
     timeout: 30000, // 30 second timeout
     trackProgress: true,
-    estimateTime: true
+    estimateTime: true,
   });
 
   const retryState = useRetry({
@@ -101,87 +107,90 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     onRetry: (attempt, error) => {
       // eslint-disable-next-line no-console
       console.log(`Retry attempt ${attempt} for parsing error:`, error.message);
-      onReplayEvent?.('retry', { attempt, error });
+      onReplayEvent?.("retry", { attempt, error });
     },
     onMaxAttemptsExceeded: (error) => {
-      console.error('Max retry attempts exceeded:', error);
-      onReplayEvent?.('error', { error, maxAttemptsExceeded: true });
-    }
+      console.error("Max retry attempts exceeded:", error);
+      onReplayEvent?.("error", { error, maxAttemptsExceeded: true });
+    },
   });
 
   // Remove redundant asyncOperation - we'll use retryState directly
 
   // Enhanced parsing with loading states and error recovery
-  const parseHandHistory = useCallback(async (handHistoryText: string) => {
-    if (!enableLoadingStates) {
-      // Fallback to synchronous parsing for backward compatibility
-      const parser = new PokerStarsParser();
-      const result = parser.parse(handHistoryText);
-      
-      if (result.success) {
-        setHand(result.hand);
+  const parseHandHistory = useCallback(
+    async (handHistoryText: string) => {
+      if (!enableLoadingStates) {
+        // Fallback to synchronous parsing for backward compatibility
+        const parser = new PokerStarsParser();
+        const result = parser.parse(handHistoryText);
+
+        if (result.success) {
+          setHand(result.hand);
+          setError(null);
+          setIsInitialLoad(false);
+
+          if (autoPlay) {
+            setIsPlaying(true);
+            onReplayEvent?.("start");
+          }
+        } else {
+          setError(result.error.message);
+          setHand(null);
+          setIsInitialLoad(false);
+        }
+        return;
+      }
+
+      // Enhanced parsing with unified retry and loading state
+      const result = await retryState.executeWithRetry(async () => {
+        loading.startLoading("Parsing hand history...");
+        loading.updateProgress(10, "Initializing parser...");
+
+        const parser = new PokerStarsParser();
+
+        loading.updateProgress(30, "Parsing hand history...");
+        const parseResult = parser.parse(handHistoryText);
+
+        if (!parseResult.success) {
+          loading.finishLoading(new Error(parseResult.error.message));
+          throw new Error(parseResult.error.message);
+        }
+
+        loading.updateProgress(60, "Validating hand data...");
+
+        // Simulate validation steps for better UX
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        loading.updateProgress(80, "Processing actions...");
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        loading.updateProgress(100, "Hand ready!");
+        loading.finishLoading();
+
+        return parseResult.hand;
+      });
+
+      if (result.success && result.data) {
+        setHand(result.data!);
         setError(null);
         setIsInitialLoad(false);
-        
+
         if (autoPlay) {
           setIsPlaying(true);
-          onReplayEvent?.('start');
+          onReplayEvent?.("start");
         }
+        onReplayEvent?.("parseSuccess", { hand: result.data! });
       } else {
-        setError(result.error.message);
+        const errorMessage = result.error?.message || "Unknown parsing error";
+        setError(errorMessage);
         setHand(null);
         setIsInitialLoad(false);
+        onReplayEvent?.("parseError", { error: result.error });
       }
-      return;
-    }
-
-    // Enhanced parsing with unified retry and loading state
-    const result = await retryState.executeWithRetry(async () => {
-      loading.startLoading('Parsing hand history...');
-      loading.updateProgress(10, 'Initializing parser...');
-      
-      const parser = new PokerStarsParser();
-      
-      loading.updateProgress(30, 'Parsing hand history...');
-      const parseResult = parser.parse(handHistoryText);
-      
-      if (!parseResult.success) {
-        loading.finishLoading(new Error(parseResult.error.message));
-        throw new Error(parseResult.error.message);
-      }
-      
-      loading.updateProgress(60, 'Validating hand data...');
-      
-      // Simulate validation steps for better UX
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      loading.updateProgress(80, 'Processing actions...');
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      loading.updateProgress(100, 'Hand ready!');
-      loading.finishLoading();
-      
-      return parseResult.hand;
-    });
-
-    if (result.success && result.data) {
-      setHand(result.data!);
-      setError(null);
-      setIsInitialLoad(false);
-      
-      if (autoPlay) {
-        setIsPlaying(true);
-        onReplayEvent?.('start');
-      }
-      onReplayEvent?.('parseSuccess', { hand: result.data! });
-    } else {
-      const errorMessage = result.error?.message || 'Unknown parsing error';
-      setError(errorMessage);
-      setHand(null);
-      setIsInitialLoad(false);
-      onReplayEvent?.('parseError', { error: result.error });
-    }
-  }, [retryState, loading, autoPlay, onReplayEvent, enableLoadingStates]);
+    },
+    [retryState, loading, autoPlay, onReplayEvent, enableLoadingStates],
+  );
 
   // Parse hand history on mount or when handHistory changes
   useEffect(() => {
@@ -194,13 +203,13 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   // Auto-advance actions when playing
   useEffect(() => {
     if (!isPlaying || !hand) return;
-    
+
     const timer = setTimeout(() => {
       if (currentActionIndex < hand.actions.length - 1) {
-        setCurrentActionIndex(prev => prev + 1);
+        setCurrentActionIndex((prev) => prev + 1);
       } else {
         setIsPlaying(false);
-        onReplayEvent?.('end');
+        onReplayEvent?.("end");
       }
     }, 1000 / animationSpeed);
 
@@ -209,7 +218,11 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Notify when action changes
   useEffect(() => {
-    if (hand && currentActionIndex >= 0 && currentActionIndex < hand.actions.length) {
+    if (
+      hand &&
+      currentActionIndex >= 0 &&
+      currentActionIndex < hand.actions.length
+    ) {
       const currentAction = hand.actions[currentActionIndex];
       onActionChange?.(currentAction, currentActionIndex);
     }
@@ -219,18 +232,24 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   const currentPlayers = useMemo(() => {
     if (!hand) return [];
 
-    const newPlayers = hand.players.map(p => ({ ...p, currentChips: p.chips }));
-    const playerMap = new Map(newPlayers.map(p => [p.name, p]));
-    
+    const newPlayers = hand.players.map((p) => ({
+      ...p,
+      currentChips: p.chips,
+    }));
+    const playerMap = new Map(newPlayers.map((p) => [p.name, p]));
+
     // Apply actions up to current index
     for (let i = 0; i <= currentActionIndex; i++) {
       const action = hand.actions[i];
-      
+
       if (action.player && action.amount) {
         const player = playerMap.get(action.player);
         if (player) {
-          if (['bet', 'raise', 'call', 'blind', 'ante'].includes(action.type)) {
-            player.currentChips = Math.max(0, player.currentChips - action.amount);
+          if (["bet", "raise", "call", "blind", "ante"].includes(action.type)) {
+            player.currentChips = Math.max(
+              0,
+              player.currentChips - action.amount,
+            );
             if (action.isAllIn) {
               player.isAllIn = true;
               player.allInAmount = action.amount;
@@ -239,10 +258,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
         }
       }
     }
-    
+
     return newPlayers;
   }, [currentActionIndex, hand]);
-
 
   // Apply customization options to DOM elements
   useEffect(() => {
@@ -250,13 +268,13 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
     // Apply theme
     applyTheme(replayRef.current, theme, customColors);
-    
+
     // Apply size
     applySize(replayRef.current, size);
-    
+
     // Apply card design
     applyCardDesign(replayRef.current, cardDesign);
-    
+
     // Apply animation configuration
     applyAnimationConfig(replayRef.current, animations || {}, animationSpeed);
   }, [theme, customColors, size, cardDesign, animations, animationSpeed]);
@@ -269,21 +287,21 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Auto theme detection for 'auto' theme
   useEffect(() => {
-    if (theme === 'auto' && replayRef.current) {
+    if (theme === "auto" && replayRef.current) {
       const _systemTheme = getSystemColorScheme();
-      
+
       // Listen for system theme changes
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
       const handleChange = () => {
-        if (replayRef.current && theme === 'auto') {
-          applyTheme(replayRef.current, 'auto', customColors);
+        if (replayRef.current && theme === "auto") {
+          applyTheme(replayRef.current, "auto", customColors);
         }
       };
-      
+
       mediaQuery.addListener(handleChange);
       return () => mediaQuery.removeListener(handleChange);
     }
-    
+
     // Return undefined for other code paths
     return undefined;
   }, [theme, customColors]);
@@ -292,46 +310,48 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   const playPause = useCallback(() => {
     if (isPlaying) {
       setIsPlaying(false);
-      onReplayEvent?.('pause');
+      onReplayEvent?.("pause");
     } else {
       setIsPlaying(true);
-      onReplayEvent?.(currentActionIndex === -1 ? 'start' : 'resume');
+      onReplayEvent?.(currentActionIndex === -1 ? "start" : "resume");
     }
   }, [isPlaying, currentActionIndex, onReplayEvent]);
 
   const previousAction = useCallback(() => {
-    setCurrentActionIndex(prev => Math.max(-1, prev - 1));
+    setCurrentActionIndex((prev) => Math.max(-1, prev - 1));
     setIsPlaying(false);
   }, []);
 
   const nextAction = useCallback(() => {
     if (!hand) return;
-    setCurrentActionIndex(prev => Math.min(hand.actions.length - 1, prev + 1));
+    setCurrentActionIndex((prev) =>
+      Math.min(hand.actions.length - 1, prev + 1),
+    );
     setIsPlaying(false);
   }, [hand]);
 
   const reset = useCallback(() => {
     setCurrentActionIndex(-1);
     setIsPlaying(false);
-    onReplayEvent?.('reset');
+    onReplayEvent?.("reset");
   }, [onReplayEvent]);
 
   // Get current board cards based on action index
   const currentBoard = useMemo(() => {
     if (!hand || currentActionIndex < 0) return [];
-    
+
     const currentAction = hand.actions[currentActionIndex];
     const currentStreet = currentAction.street;
-    
+
     switch (currentStreet) {
-      case 'preflop':
+      case "preflop":
         return [];
-      case 'flop':
+      case "flop":
         return hand.board.slice(0, 3);
-      case 'turn':
+      case "turn":
         return hand.board.slice(0, 4);
-      case 'river':
-      case 'showdown':
+      case "river":
+      case "showdown":
         return hand.board;
       default:
         return [];
@@ -353,48 +373,51 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Enhanced loading states
   if (enableLoadingStates && (loading.isLoading || isInitialLoad) && !hand) {
-    const LoadingComponent = loadingComponent || (() => {
-      if (loading.progress !== undefined) {
+    const LoadingComponent =
+      loadingComponent ||
+      (() => {
+        if (loading.progress !== undefined) {
+          return (
+            <div className="enhanced-loading">
+              <ProgressSpinner
+                progress={loading.progress}
+                message={loading.message}
+                size="large"
+              />
+              {loading.estimatedTime && loading.estimatedTime > 1000 && (
+                <div className="estimated-time">
+                  Estimated time remaining:{" "}
+                  {Math.ceil(loading.estimatedTime / 1000)}s
+                </div>
+              )}
+            </div>
+          );
+        }
+
         return (
           <div className="enhanced-loading">
-            <ProgressSpinner 
-              progress={loading.progress}
-              message={loading.message}
+            <LoadingSpinner
               size="large"
+              message={loading.message || "Loading hand..."}
+              variant="card"
+              color="primary"
             />
-            {loading.estimatedTime && loading.estimatedTime > 1000 && (
-              <div className="estimated-time">
-                Estimated time remaining: {Math.ceil(loading.estimatedTime / 1000)}s
+            <div className="loading-skeleton">
+              <Skeleton variant="table" width="100%" height={200} />
+              <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
+                <Skeleton variant="rectangular" width={80} height={30} />
+                <Skeleton variant="rectangular" width={80} height={30} />
+                <Skeleton variant="rectangular" width={80} height={30} />
               </div>
-            )}
-          </div>
-        );
-      }
-      
-      return (
-        <div className="enhanced-loading">
-          <LoadingSpinner 
-            size="large"
-            message={loading.message || 'Loading hand...'}
-            variant="card"
-            color="primary"
-          />
-          <div className="loading-skeleton">
-            <Skeleton variant="table" width="100%" height={200} />
-            <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-              <Skeleton variant="rectangular" width={80} height={30} />
-              <Skeleton variant="rectangular" width={80} height={30} />
-              <Skeleton variant="rectangular" width={80} height={30} />
             </div>
           </div>
-        </div>
-      );
-    });
+        );
+      });
 
     return (
-      <div 
+      <div
         ref={replayRef}
-        className={`poker-replay loading ${className}`} 
+        className={`poker-replay loading ${className}`}
         data-theme={theme}
       >
         <LoadingComponent />
@@ -404,46 +427,54 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Enhanced error display with retry options
   if (error) {
-    const ErrorComponent = errorComponent || (() => (
-      <div className="enhanced-error">
-        <div className="error-header">
-          <h3>Failed to parse hand history</h3>
-          <p className="error-message">{error}</p>
-        </div>
-        
-        {enableErrorRecovery && (
-          <div className="error-actions">
-            <button 
-              onClick={handleRetry}
-              disabled={retryState.isRetrying || retryState.maxAttemptsExceeded}
-              className="retry-button"
-            >
-              {retryState.isRetrying ? 'Retrying...' : 'Try Again'}
-            </button>
-            
-            {retryState.attempt > 0 && (
-              <div className="retry-info">
-                Attempt {retryState.attempt} of 3
-                {retryState.nextDelay > 0 && (
-                  <span> (next retry in {Math.ceil(retryState.nextDelay / 1000)}s)</span>
-                )}
-              </div>
-            )}
-            
-            {retryState.maxAttemptsExceeded && (
-              <div className="max-attempts-exceeded">
-                Maximum retry attempts exceeded. Please check your hand history format.
-              </div>
-            )}
+    const ErrorComponent =
+      errorComponent ||
+      (() => (
+        <div className="enhanced-error">
+          <div className="error-header">
+            <h3>Failed to parse hand history</h3>
+            <p className="error-message">{error}</p>
           </div>
-        )}
-      </div>
-    ));
+
+          {enableErrorRecovery && (
+            <div className="error-actions">
+              <button
+                onClick={handleRetry}
+                disabled={
+                  retryState.isRetrying || retryState.maxAttemptsExceeded
+                }
+                className="retry-button"
+              >
+                {retryState.isRetrying ? "Retrying..." : "Try Again"}
+              </button>
+
+              {retryState.attempt > 0 && (
+                <div className="retry-info">
+                  Attempt {retryState.attempt} of 3
+                  {retryState.nextDelay > 0 && (
+                    <span>
+                      {" "}
+                      (next retry in {Math.ceil(retryState.nextDelay / 1000)}s)
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {retryState.maxAttemptsExceeded && (
+                <div className="max-attempts-exceeded">
+                  Maximum retry attempts exceeded. Please check your hand
+                  history format.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ));
 
     return (
-      <div 
+      <div
         ref={replayRef}
-        className={`poker-replay error ${className}`} 
+        className={`poker-replay error ${className}`}
         data-theme={theme}
       >
         <ErrorComponent error={new Error(error)} retry={handleRetry} />
@@ -455,9 +486,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   // At this point, hand should never be null since we handle loading/error states above
   if (!hand) {
     return (
-      <div 
+      <div
         ref={replayRef}
-        className={`poker-replay error ${className}`} 
+        className={`poker-replay error ${className}`}
         data-theme={theme}
       >
         <div className="enhanced-error">
@@ -468,12 +499,12 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   }
 
   return (
-    <div 
+    <div
       ref={replayRef}
-      className={`poker-replay ${className}`} 
+      className={`poker-replay ${className}`}
       data-theme={theme}
     >
-      <ParserErrorBoundary 
+      <ParserErrorBoundary
         handHistory={handHistory}
         onRetry={handleRetry}
         className="parser-boundary"
@@ -487,7 +518,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
           </div>
         </div>
 
-        <ErrorBoundary 
+        <ErrorBoundary
           name="TableErrorBoundary"
           enableRetry={enableErrorRecovery}
         >
@@ -503,7 +534,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
           </div>
         </ErrorBoundary>
 
-        <ErrorBoundary 
+        <ErrorBoundary
           name="ControlsErrorBoundary"
           enableRetry={enableErrorRecovery}
         >
@@ -518,7 +549,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
           />
         </ErrorBoundary>
 
-        <ErrorBoundary 
+        <ErrorBoundary
           name="ActionHistoryErrorBoundary"
           enableRetry={enableErrorRecovery}
         >
@@ -619,9 +650,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
 // Enhanced component with error boundary wrapper
 const PokerHandReplayWithErrorBoundary = withErrorBoundary(PokerHandReplay, {
-  name: 'PokerHandReplayRoot',
+  name: "PokerHandReplayRoot",
   enableRetry: true,
-  maxRetries: 2
+  maxRetries: 2,
 });
 
 export default PokerHandReplayWithErrorBoundary;

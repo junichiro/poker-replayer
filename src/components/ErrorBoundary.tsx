@@ -1,12 +1,12 @@
 /**
  * Error Boundary component for handling React component errors
- * 
+ *
  * Provides comprehensive error handling with fallback UI, error logging,
  * and recovery mechanisms for better user experience.
  */
 
-import React, { Component, ReactNode } from 'react';
-import type { ErrorInfo as ReactErrorInfo } from 'react';
+import React, { Component, ReactNode } from "react";
+import type { ErrorInfo as ReactErrorInfo } from "react";
 
 export interface ErrorInfoData {
   /** Error message */
@@ -22,7 +22,7 @@ export interface ErrorInfoData {
   /** Timestamp when error occurred */
   timestamp: number;
   /** Error severity level */
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: "low" | "medium" | "high" | "critical";
 }
 
 export interface ErrorBoundaryState {
@@ -73,28 +73,34 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
   error,
   retry,
   canRetry,
-  boundaryName
+  boundaryName,
 }) => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
+  const isDevelopment = process.env.NODE_ENV === "development";
 
   return (
     <div className="error-boundary-fallback">
       <div className="error-content">
         <h2>Something went wrong</h2>
         <p className="error-message">
-          {error.severity === 'critical' 
-            ? 'A critical error occurred that prevented the component from rendering.'
-            : 'An error occurred while rendering this component.'
-          }
+          {error.severity === "critical"
+            ? "A critical error occurred that prevented the component from rendering."
+            : "An error occurred while rendering this component."}
         </p>
-        
+
         {error.message && (
           <details className="error-details">
             <summary>Error Details</summary>
             <div className="error-info">
-              <p><strong>Message:</strong> {error.message}</p>
-              <p><strong>Boundary:</strong> {boundaryName}</p>
-              <p><strong>Time:</strong> {new Date(error.timestamp).toLocaleString()}</p>
+              <p>
+                <strong>Message:</strong> {error.message}
+              </p>
+              <p>
+                <strong>Boundary:</strong> {boundaryName}
+              </p>
+              <p>
+                <strong>Time:</strong>{" "}
+                {new Date(error.timestamp).toLocaleString()}
+              </p>
               {isDevelopment && error.stack && (
                 <div className="error-stack">
                   <strong>Stack Trace:</strong>
@@ -107,15 +113,11 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 
         <div className="error-actions">
           {canRetry && (
-            <button 
-              className="retry-button"
-              onClick={retry}
-              type="button"
-            >
+            <button className="retry-button" onClick={retry} type="button">
               Try Again
             </button>
           )}
-          <button 
+          <button
             className="reload-button"
             onClick={() => window.location.reload()}
             type="button"
@@ -220,7 +222,10 @@ const DefaultErrorFallback: React.FC<ErrorFallbackProps> = ({
 /**
  * Error Boundary class component for catching React errors
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   private maxRetries: number;
   private enableLogging: boolean;
   private enableRetry: boolean;
@@ -228,27 +233,27 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    
+
     this.maxRetries = props.maxRetries ?? 3;
     this.enableLogging = props.enableLogging ?? true;
     this.enableRetry = props.enableRetry ?? true;
-    this.boundaryName = props.name ?? 'ErrorBoundary';
+    this.boundaryName = props.name ?? "ErrorBoundary";
 
     this.state = {
       hasError: false,
       error: null,
       retryCount: 0,
-      errorId: ''
+      errorId: "",
     };
   }
 
   static getDerivedStateFromError(): Partial<ErrorBoundaryState> {
     // Generate unique error ID
     const errorId = `err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     return {
       hasError: true,
-      errorId
+      errorId,
     };
   }
 
@@ -262,22 +267,23 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       severity: this.determineSeverity(error),
       context: {
         retryCount: this.state.retryCount,
-        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'N/A'
-      }
+        userAgent:
+          typeof navigator !== "undefined" ? navigator.userAgent : "N/A",
+      },
     };
 
     this.setState({ error: errorData });
 
     // Log error in development
-    if (this.enableLogging && process.env.NODE_ENV === 'development') {
+    if (this.enableLogging && process.env.NODE_ENV === "development") {
       // eslint-disable-next-line no-console
       console.group(`🚨 Error Boundary: ${this.boundaryName}`);
       // eslint-disable-next-line no-console
-      console.error('Error:', error);
+      console.error("Error:", error);
       // eslint-disable-next-line no-console
-      console.error('Error Info:', errorInfo);
+      console.error("Error Info:", errorInfo);
       // eslint-disable-next-line no-console
-      console.error('Error Data:', errorData);
+      console.error("Error Data:", errorData);
       // eslint-disable-next-line no-console
       console.groupEnd();
     }
@@ -288,7 +294,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // Report to error tracking service in production
-    if (process.env.NODE_ENV === 'production') {
+    if (process.env.NODE_ENV === "production") {
       this.reportError(error, errorData);
     }
   }
@@ -296,31 +302,34 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   /**
    * Determine error severity based on error type and context
    */
-  private determineSeverity(error: Error): ErrorInfoData['severity'] {
+  private determineSeverity(error: Error): ErrorInfoData["severity"] {
     const message = error.message.toLowerCase();
-    const stack = error.stack?.toLowerCase() || '';
+    const stack = error.stack?.toLowerCase() || "";
 
     // Critical errors that break core functionality
-    if (message.includes('invariant') || 
-        message.includes('maximum update depth') ||
-        stack.includes('react-dom')) {
-      return 'critical';
+    if (
+      message.includes("invariant") ||
+      message.includes("maximum update depth") ||
+      stack.includes("react-dom")
+    ) {
+      return "critical";
     }
 
     // High severity for parsing or data errors
-    if (message.includes('parse') || 
-        message.includes('invalid') ||
-        message.includes('undefined')) {
-      return 'high';
+    if (
+      message.includes("parse") ||
+      message.includes("invalid") ||
+      message.includes("undefined")
+    ) {
+      return "high";
     }
 
     // Medium for UI rendering issues
-    if (message.includes('render') || 
-        message.includes('component')) {
-      return 'medium';
+    if (message.includes("render") || message.includes("component")) {
+      return "medium";
     }
 
-    return 'low';
+    return "low";
   }
 
   /**
@@ -328,10 +337,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
    */
   private reportError(_error: Error, _errorData: ErrorInfoData): void {
     // In a real app, this would integrate with services like Sentry, Bugsnag, etc.
-    if (typeof window !== 'undefined' && 'fetch' in window) {
+    if (typeof window !== "undefined" && "fetch" in window) {
       // Placeholder for error reporting
       // eslint-disable-next-line no-console
-      console.warn('Error reporting not configured:', _errorData);
+      console.warn("Error reporting not configured:", _errorData);
     }
   }
 
@@ -341,7 +350,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   private handleRetry = (): void => {
     if (this.state.retryCount >= this.maxRetries) {
       // eslint-disable-next-line no-console
-      console.warn(`Max retries (${this.maxRetries}) exceeded for ${this.boundaryName}`);
+      console.warn(
+        `Max retries (${this.maxRetries}) exceeded for ${this.boundaryName}`,
+      );
       return;
     }
 
@@ -351,24 +362,27 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     }
 
     // Reset error state with incremented retry count
-    this.setState(prevState => ({
+    this.setState((prevState) => ({
       hasError: false,
       error: null,
       retryCount: prevState.retryCount + 1,
-      errorId: ''
+      errorId: "",
     }));
 
     // Log retry attempt
-    if (this.enableLogging && process.env.NODE_ENV === 'development') {
+    if (this.enableLogging && process.env.NODE_ENV === "development") {
       // eslint-disable-next-line no-console
-      console.log(`🔄 Retrying ${this.boundaryName} (attempt ${this.state.retryCount + 1})`);
+      console.log(
+        `🔄 Retrying ${this.boundaryName} (attempt ${this.state.retryCount + 1})`,
+      );
     }
   };
 
   render() {
     if (this.state.hasError && this.state.error) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      const canRetry = this.enableRetry && this.state.retryCount < this.maxRetries;
+      const canRetry =
+        this.enableRetry && this.state.retryCount < this.maxRetries;
 
       return (
         <FallbackComponent
@@ -389,7 +403,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps?: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps?: Omit<ErrorBoundaryProps, "children">,
 ) {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
@@ -398,7 +412,7 @@ export function withErrorBoundary<P extends object>(
   );
 
   WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name})`;
-  
+
   return WrappedComponent;
 }
 

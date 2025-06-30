@@ -1,0 +1,50 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs/api",
+  "name": "Poker Hand Replay API",
+  "readme": "README.md",
+  "theme": "default",
+  "exclude": [
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/tests/**/*",
+    "**/node_modules/**/*"
+  ],
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeInternal": false,
+  "includeVersion": true,
+  "sort": ["source-order"],
+  "categorizeByGroup": true,
+  "defaultCategory": "Other",
+  "categoryOrder": [
+    "Main Components",
+    "Parser",
+    "Types",
+    "Utilities",
+    "Other"
+  ],
+  "plugin": ["typedoc-plugin-markdown"],
+  "hideGenerator": true,
+  "gitRevision": "main",
+  "gitRemote": "origin",
+  "sourceLinkTemplate": "https://github.com/junichiro/poker-replayer/blob/{gitRevision}/{path}#L{line}",
+  "navigation": {
+    "includeCategories": true,
+    "includeGroups": true
+  },
+  "searchInComments": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": false
+  },
+  "treatWarningsAsErrors": false,
+  "logLevel": "Info",
+  "cleanOutputDir": true,
+  "titleLink": "https://github.com/junichiro/poker-replayer",
+  "navigationLinks": {
+    "GitHub": "https://github.com/junichiro/poker-replayer",
+    "NPM": "https://www.npmjs.com/package/poker-hand-replay"
+  }
+}

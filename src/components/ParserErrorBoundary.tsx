@@ -1,12 +1,12 @@
 /**
  * Specialized Error Boundary for parser-related errors
- * 
+ *
  * Provides specific error handling for PokerStars hand history parsing
  * with detailed error context and recovery options.
  */
 
-import React from 'react';
-import { ErrorBoundary, ErrorFallbackProps } from './ErrorBoundary';
+import React from "react";
+import { ErrorBoundary, ErrorFallbackProps } from "./ErrorBoundary";
 export interface ParserErrorDetails {
   line?: number;
   context?: string;
@@ -30,12 +30,12 @@ export interface ParserErrorFallbackProps extends ErrorFallbackProps {
  */
 function isParserErrorDetails(value: unknown): value is ParserErrorDetails {
   return (
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value !== null &&
-    (typeof (value as ParserErrorDetails).line === 'number' || 
-     typeof (value as ParserErrorDetails).line === 'undefined') &&
-    (typeof (value as ParserErrorDetails).context === 'string' || 
-     typeof (value as ParserErrorDetails).context === 'undefined')
+    (typeof (value as ParserErrorDetails).line === "number" ||
+      typeof (value as ParserErrorDetails).line === "undefined") &&
+    (typeof (value as ParserErrorDetails).context === "string" ||
+      typeof (value as ParserErrorDetails).context === "undefined")
   );
 }
 
@@ -45,12 +45,14 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
   canRetry,
   boundaryName: _boundaryName,
   handHistory,
-  parserError
+  parserError,
 }) => {
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  
+  const isDevelopment = process.env.NODE_ENV === "development";
+
   // Use type guard to safely access parser error properties
-  const safeParserError = isParserErrorDetails(parserError) ? parserError : undefined;
+  const safeParserError = isParserErrorDetails(parserError)
+    ? parserError
+    : undefined;
 
   const handleCopyHandHistory = () => {
     if (handHistory && navigator.clipboard) {
@@ -64,14 +66,14 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
       handHistory,
       parserError,
       timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
 
-    const blob = new Blob([JSON.stringify(errorData, null, 2)], { 
-      type: 'application/json' 
+    const blob = new Blob([JSON.stringify(errorData, null, 2)], {
+      type: "application/json",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `parser-error-${Date.now()}.json`;
     document.body.appendChild(a);
@@ -84,35 +86,43 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
     const message = error.message.toLowerCase();
     const suggestions: string[] = [];
 
-    if (message.includes('invalid header')) {
-      suggestions.push('Ensure the hand history starts with a valid PokerStars header');
-      suggestions.push('Check that the tournament or cash game information is present');
+    if (message.includes("invalid header")) {
+      suggestions.push(
+        "Ensure the hand history starts with a valid PokerStars header",
+      );
+      suggestions.push(
+        "Check that the tournament or cash game information is present",
+      );
     }
 
-    if (message.includes('player') || message.includes('seat')) {
-      suggestions.push('Verify all player information is correctly formatted');
-      suggestions.push('Check that seat numbers are valid and consecutive');
+    if (message.includes("player") || message.includes("seat")) {
+      suggestions.push("Verify all player information is correctly formatted");
+      suggestions.push("Check that seat numbers are valid and consecutive");
     }
 
-    if (message.includes('action') || message.includes('betting')) {
-      suggestions.push('Ensure all betting actions are properly formatted');
-      suggestions.push('Check that bet amounts are valid numbers');
+    if (message.includes("action") || message.includes("betting")) {
+      suggestions.push("Ensure all betting actions are properly formatted");
+      suggestions.push("Check that bet amounts are valid numbers");
     }
 
-    if (message.includes('card') || message.includes('hole')) {
+    if (message.includes("card") || message.includes("hole")) {
       suggestions.push('Verify card formats (e.g., "As", "Kh", "2c")');
-      suggestions.push('Check that all cards are valid playing cards');
+      suggestions.push("Check that all cards are valid playing cards");
     }
 
-    if (message.includes('pot') || message.includes('showdown')) {
-      suggestions.push('Ensure pot calculations and showdown information is complete');
-      suggestions.push('Check that winner information is properly formatted');
+    if (message.includes("pot") || message.includes("showdown")) {
+      suggestions.push(
+        "Ensure pot calculations and showdown information is complete",
+      );
+      suggestions.push("Check that winner information is properly formatted");
     }
 
     if (suggestions.length === 0) {
-      suggestions.push('Try copying the hand history from PokerStars client again');
-      suggestions.push('Check for any unusual characters or formatting');
-      suggestions.push('Ensure the hand history is complete and not truncated');
+      suggestions.push(
+        "Try copying the hand history from PokerStars client again",
+      );
+      suggestions.push("Check for any unusual characters or formatting");
+      suggestions.push("Ensure the hand history is complete and not truncated");
     }
 
     return suggestions;
@@ -123,8 +133,9 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
       <div className="error-header">
         <h2>Hand History Parsing Failed</h2>
         <p className="error-description">
-          We encountered an error while parsing your PokerStars hand history. 
-          This usually happens when the hand history format is unexpected or contains invalid data.
+          We encountered an error while parsing your PokerStars hand history.
+          This usually happens when the hand history format is unexpected or
+          contains invalid data.
         </p>
       </div>
 
@@ -132,15 +143,24 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
         <div className="error-summary">
           <h3>Error Details</h3>
           <div className="error-info">
-            <p><strong>Error:</strong> {error.message}</p>
-            <p><strong>Time:</strong> {new Date(error.timestamp).toLocaleString()}</p>
+            <p>
+              <strong>Error:</strong> {error.message}
+            </p>
+            <p>
+              <strong>Time:</strong>{" "}
+              {new Date(error.timestamp).toLocaleString()}
+            </p>
             {safeParserError && (
               <>
                 {safeParserError.line && (
-                  <p><strong>Line:</strong> {safeParserError.line}</p>
+                  <p>
+                    <strong>Line:</strong> {safeParserError.line}
+                  </p>
                 )}
                 {safeParserError.context && (
-                  <p><strong>Context:</strong> {safeParserError.context}</p>
+                  <p>
+                    <strong>Context:</strong> {safeParserError.context}
+                  </p>
                 )}
               </>
             )}
@@ -161,7 +181,10 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
         <div className="hand-history-section">
           <h3>Hand History</h3>
           <div className="hand-history-preview">
-            <pre>{handHistory.substring(0, 500)}{handHistory.length > 500 ? '...' : ''}</pre>
+            <pre>
+              {handHistory.substring(0, 500)}
+              {handHistory.length > 500 ? "..." : ""}
+            </pre>
           </div>
           <div className="hand-history-actions">
             <button onClick={handleCopyHandHistory} className="copy-button">
@@ -196,8 +219,8 @@ const ParserErrorFallback: React.FC<ParserErrorFallbackProps> = ({
             Try Parsing Again
           </button>
         )}
-        <button 
-          onClick={() => window.location.reload()} 
+        <button
+          onClick={() => window.location.reload()}
           className="reload-button"
         >
           Start Over
@@ -420,7 +443,7 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
   children,
   handHistory,
   onRetry,
-  className
+  className,
 }) => {
   const customFallback = React.useCallback(
     (props: any) => (
@@ -430,7 +453,7 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
         parserError={props.error?.parserError}
       />
     ),
-    [handHistory]
+    [handHistory],
   );
 
   return (
@@ -442,9 +465,7 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
       enableLogging={true}
       enableRetry={true}
     >
-      <div className={className}>
-        {children}
-      </div>
+      <div className={className}>{children}</div>
     </ErrorBoundary>
   );
 };

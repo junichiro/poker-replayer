@@ -32,3 +32,15 @@ yarn-error.log*
 # Test files (temporary)
 test-parser.ts
 test-parser-edge-cases.ts
+
+# TypeScript build info
+*.tsbuildinfo
+tsconfig.test.tsbuildinfo
+
+# Coverage
+/coverage
+
+# Generated documentation
+/docs/api/
+/docs/markdown/
+/docs/api.json

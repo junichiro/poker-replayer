@@ -443,6 +443,13 @@ npm run typecheck:all    # All configurations (parallel)
 npm run typecheck:build  # Build configuration
 npm run typecheck:test   # Test configuration
 
+# Documentation
+npm run docs             # Generate API documentation
+npm run docs:serve       # Generate with watch mode
+npm run docs:markdown    # Generate markdown docs
+npm run docs:json        # Generate JSON export
+npm run docs:clean       # Clean documentation
+
 # Validation
 npm run validate         # Complete local validation
 npm run ci               # Full CI pipeline
@@ -530,6 +537,56 @@ if (!result.success) {
 - **Mobile**: iOS Safari 14+, Chrome Android 88+
 - **Bundle Size**: ~23KB gzipped (ESM), ~17KB gzipped (CJS)
 - **Dependencies**: React 16.8+, React DOM 16.8+
+
+## 📖 API Documentation
+
+Comprehensive API documentation is auto-generated from TypeScript interfaces and JSDoc comments.
+
+### Online Documentation
+
+- **Interactive API Docs**: Browse interfaces, types, and examples
+- **Searchable Reference**: Find components and utilities quickly
+- **Source Links**: Jump directly to implementation code
+- **Type Definitions**: Complete TypeScript coverage
+
+### Generating Documentation Locally
+
+```bash
+# Generate HTML documentation
+npm run docs
+
+# Generate markdown documentation
+npm run docs:markdown
+
+# Generate JSON export for custom processing
+npm run docs:json
+
+# Serve documentation with hot reload
+npm run docs:serve
+```
+
+### Documentation Structure
+
+```
+docs/
+├── api/                    # HTML documentation
+│   ├── classes/           # Class documentation (PokerStarsParser, etc.)
+│   ├── interfaces/        # Interface documentation (PokerHandReplayProps, etc.)
+│   ├── functions/         # Function documentation (hooks, utilities)
+│   ├── type-aliases/      # Type aliases (CardRank, ActionType, etc.)
+│   └── variables/         # Component exports
+├── markdown/              # Markdown format for integration
+└── api.json              # JSON export for custom tools
+```
+
+### Key Documentation Features
+
+- **🔗 Cross-References**: Links between related types and components
+- **📝 Inline Examples**: Code examples in JSDoc comments
+- **🏷️ Type Safety**: Full TypeScript integration
+- **📊 Categorization**: Organized by component groups
+- **🔍 Search Support**: Find APIs quickly
+- **📱 Responsive**: Works on all devices
 
 ## 🤝 Contributing
 

@@ -1,11 +1,11 @@
 /**
  * Performance monitoring utilities for poker hand replay component
- * 
+ *
  * This module provides utilities for monitoring component performance,
  * tracking re-renders, and identifying performance bottlenecks.
  */
 
-import React from 'react';
+import React from "react";
 
 export interface PerformanceMetrics {
   /** Component name being measured */
@@ -41,36 +41,36 @@ const performanceStore = new Map<string, PerformanceMetrics>();
  * Usage: const trackRender = useRenderTracker('ComponentName');
  */
 export function useRenderTracker(componentName: string) {
-  if (typeof window === 'undefined' || !window.performance) {
+  if (typeof window === "undefined" || !window.performance) {
     // Return no-op functions in environments without performance API
     return {
       startRender: () => {},
       endRender: () => {},
-      getRenderInfo: () => null
+      getRenderInfo: () => null,
     };
   }
 
   const startRender = (reason?: string[]) => {
     const startTime = performance.now();
-    
+
     return {
       componentName,
       startTime,
-      reason
+      reason,
     } as RenderInfo;
   };
 
   const endRender = (renderInfo: RenderInfo) => {
     const endTime = performance.now();
     const duration = endTime - renderInfo.startTime;
-    
+
     renderInfo.duration = duration;
-    
+
     // Update performance metrics
     updatePerformanceMetrics(renderInfo);
-    
+
     // Log performance in development
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       logRenderPerformance(renderInfo);
     }
   };
@@ -80,7 +80,7 @@ export function useRenderTracker(componentName: string) {
   return {
     startRender,
     endRender,
-    getRenderInfo
+    getRenderInfo,
   };
 }
 
@@ -90,9 +90,9 @@ export function useRenderTracker(componentName: string) {
 export function useCalculationTracker<T>(
   calculationName: string,
   calculation: () => T,
-  dependencies: any[]
+  dependencies: any[],
 ): T {
-  if (typeof window === 'undefined' || !window.performance) {
+  if (typeof window === "undefined" || !window.performance) {
     // Fallback for environments without performance API
     return React.useMemo(calculation, dependencies);
   }
@@ -103,7 +103,7 @@ export function useCalculationTracker<T>(
     const endTime = performance.now();
     const duration = endTime - startTime;
 
-    if (process.env.NODE_ENV === 'development' && duration > 5) {
+    if (process.env.NODE_ENV === "development" && duration > 5) {
       // eslint-disable-next-line no-console
       console.log(`[Performance] ${calculationName}: ${duration.toFixed(2)}ms`);
     }
@@ -117,29 +117,33 @@ export function useCalculationTracker<T>(
  */
 export function withPerformanceTracking<P extends object>(
   Component: React.ComponentType<P>,
-  componentName?: string
+  componentName?: string,
 ): React.ComponentType<P> {
-  const displayName = componentName || Component.displayName || Component.name || 'Component';
-  
+  const displayName =
+    componentName || Component.displayName || Component.name || "Component";
+
   const WrappedComponent = React.memo((props: P) => {
     const { startRender, endRender } = useRenderTracker(displayName);
     const renderInfoRef = React.useRef<RenderInfo>();
 
     // This must run on every render to capture the correct start time.
-    renderInfoRef.current = startRender() || { componentName: displayName, startTime: 0 };
-    
+    renderInfoRef.current = startRender() || {
+      componentName: displayName,
+      startTime: 0,
+    };
+
     // Track render end
     React.useEffect(() => {
       if (renderInfoRef.current) {
         endRender(renderInfoRef.current);
       }
     });
-    
+
     return React.createElement(Component, props);
   });
-  
+
   WrappedComponent.displayName = `withPerformanceTracking(${displayName})`;
-  
+
   return WrappedComponent as unknown as React.ComponentType<P>;
 }
 
@@ -148,13 +152,14 @@ export function withPerformanceTracking<P extends object>(
  */
 function updatePerformanceMetrics(renderInfo: RenderInfo): void {
   const { componentName, duration = 0 } = renderInfo;
-  
+
   const existing = performanceStore.get(componentName);
-  
+
   if (existing) {
     existing.renderCount += 1;
     existing.totalRenderTime += duration;
-    existing.averageRenderTime = existing.totalRenderTime / existing.renderCount;
+    existing.averageRenderTime =
+      existing.totalRenderTime / existing.renderCount;
     existing.lastRenderTime = Date.now();
     existing.lastRenderReason = renderInfo.reason;
   } else {
@@ -174,13 +179,13 @@ function updatePerformanceMetrics(renderInfo: RenderInfo): void {
  */
 function logRenderPerformance(renderInfo: RenderInfo): void {
   const { componentName, duration = 0, reason } = renderInfo;
-  
+
   // Only log slow renders or frequent renders
   if (duration > 10) {
     // eslint-disable-next-line no-console
     console.warn(
       `[Performance] Slow render: ${componentName} took ${duration.toFixed(2)}ms`,
-      reason ? `Reason: ${reason.join(', ')}` : ''
+      reason ? `Reason: ${reason.join(", ")}` : "",
     );
   }
 }
@@ -195,7 +200,9 @@ export function getAllPerformanceMetrics(): PerformanceMetrics[] {
 /**
  * Get performance metrics for a specific component
  */
-export function getComponentMetrics(componentName: string): PerformanceMetrics | null {
+export function getComponentMetrics(
+  componentName: string,
+): PerformanceMetrics | null {
   return performanceStore.get(componentName) || null;
 }
 
@@ -211,27 +218,29 @@ export function resetPerformanceMetrics(): void {
  */
 export function generatePerformanceReport(): string {
   const metrics = getAllPerformanceMetrics();
-  
+
   if (metrics.length === 0) {
-    return 'No performance data available.';
+    return "No performance data available.";
   }
-  
-  const sortedMetrics = metrics.sort((a, b) => b.averageRenderTime - a.averageRenderTime);
-  
-  let report = '📊 Component Performance Report\n';
-  report += '================================\n\n';
-  
-  sortedMetrics.forEach(metric => {
+
+  const sortedMetrics = metrics.sort(
+    (a, b) => b.averageRenderTime - a.averageRenderTime,
+  );
+
+  let report = "📊 Component Performance Report\n";
+  report += "================================\n\n";
+
+  sortedMetrics.forEach((metric) => {
     report += `${metric.componentName}:\n`;
     report += `  Renders: ${metric.renderCount}\n`;
     report += `  Avg Time: ${metric.averageRenderTime.toFixed(2)}ms\n`;
     report += `  Total Time: ${metric.totalRenderTime.toFixed(2)}ms\n`;
     if (metric.lastRenderReason) {
-      report += `  Last Reason: ${metric.lastRenderReason.join(', ')}\n`;
+      report += `  Last Reason: ${metric.lastRenderReason.join(", ")}\n`;
     }
-    report += '\n';
+    report += "\n";
   });
-  
+
   return report;
 }
 
@@ -241,17 +250,21 @@ export function generatePerformanceReport(): string {
 export function performanceMemo<P extends object>(
   Component: React.ComponentType<P>,
   areEqual?: (prevProps: P, nextProps: P) => boolean,
-  componentName?: string
+  componentName?: string,
 ): React.ComponentType<P> {
-  const displayName = componentName || Component.displayName || Component.name || 'Component';
-  
+  const displayName =
+    componentName || Component.displayName || Component.name || "Component";
+
   const MemoComponent = React.memo(Component, areEqual);
-  
+
   // Add performance tracking in development
-  if (process.env.NODE_ENV === 'development') {
-    return withPerformanceTracking(MemoComponent, displayName) as React.ComponentType<P>;
+  if (process.env.NODE_ENV === "development") {
+    return withPerformanceTracking(
+      MemoComponent,
+      displayName,
+    ) as React.ComponentType<P>;
   }
-  
+
   return MemoComponent as unknown as React.ComponentType<P>;
 }
 
@@ -259,34 +272,37 @@ export function performanceMemo<P extends object>(
  * Development-only performance logger
  * Logs component re-render information to console
  */
-export function useDevPerformanceLogger(componentName: string, props?: any): void {
-  if (process.env.NODE_ENV !== 'development') {
+export function useDevPerformanceLogger(
+  componentName: string,
+  props?: any,
+): void {
+  if (process.env.NODE_ENV !== "development") {
     return;
   }
-  
+
   const renderCount = React.useRef(0);
   const lastProps = React.useRef(props);
-  
+
   React.useEffect(() => {
     renderCount.current += 1;
-    
+
     if (renderCount.current > 1) {
       // eslint-disable-next-line no-console
       console.log(`[Re-render] ${componentName} (#${renderCount.current})`);
-      
+
       // Try to identify what changed
       if (props && lastProps.current) {
         const changedProps = Object.keys(props).filter(
-          key => props[key] !== lastProps.current[key]
+          (key) => props[key] !== lastProps.current[key],
         );
-        
+
         if (changedProps.length > 0) {
           // eslint-disable-next-line no-console
-          console.log(`  Changed props: ${changedProps.join(', ')}`);
+          console.log(`  Changed props: ${changedProps.join(", ")}`);
         }
       }
     }
-    
+
     lastProps.current = props;
   });
 }
