@@ -4,12 +4,13 @@ Ready-to-use CodeSandbox templates for quickly experimenting with Poker Hand Rep
 
 ## 🚀 Available Templates
 
-| Template | Description | Link |
-|----------|-------------|------|
-| **Basic** | Simple setup with essential features | [Open in CodeSandbox](https://codesandbox.io/s/poker-hand-replay-basic-template) |
-| **Advanced** | Complete feature showcase | [Open in CodeSandbox](https://codesandbox.io/s/poker-hand-replay-advanced-template) |
-| **Theming** | Custom themes and styling | [Open in CodeSandbox](https://codesandbox.io/s/poker-hand-replay-theming-template) |
-| **Tournament** | Tournament-specific features | [Open in CodeSandbox](https://codesandbox.io/s/poker-hand-replay-tournament-template) |
+| Template | Description | Status |
+|----------|-------------|--------|
+| **Basic** | Simple setup with essential features | Coming Soon |
+| **Vite** | Modern build tooling with fast HMR | Coming Soon |
+| **Advanced** | Complete feature showcase | Planned |
+| **Theming** | Custom themes and styling | Planned |
+| **Tournament** | Tournament-specific features | Planned |
 
 ## 📋 Template Configurations
 

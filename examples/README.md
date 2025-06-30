@@ -6,13 +6,11 @@ This directory contains comprehensive examples demonstrating various use cases o
 
 | Example | Description | Framework | Complexity |
 |---------|-------------|-----------|------------|
-| [**basic**](./basic/) | Minimal setup with essential features | Vanilla React | ⭐ |
-| [**advanced**](./advanced/) | All features showcase | React | ⭐⭐⭐ |
-| [**nextjs**](./nextjs/) | Next.js integration | Next.js | ⭐⭐ |
-| [**create-react-app**](./create-react-app/) | CRA integration | Create React App | ⭐⭐ |
-| [**vite**](./vite/) | Vite setup | Vite + React | ⭐⭐ |
-| [**theming**](./theming/) | Custom themes and styling | React | ⭐⭐ |
-| [**tournament**](./tournament/) | Tournament replay features | React | ⭐⭐⭐ |
+| [**basic**](./basic/) | Minimal setup with essential features | Create React App | ⭐ |
+| [**vite**](./vite/) | Vite setup with fast HMR | Vite + React | ⭐⭐ |
+| [**advanced**](./advanced/) | All features showcase (planned) | React | ⭐⭐⭐ |
+| [**theming**](./theming/) | Custom themes and styling (planned) | React | ⭐⭐ |
+| [**tournament**](./tournament/) | Tournament replay features (planned) | React | ⭐⭐⭐ |
 
 ## 🚀 Quick Start
 
@@ -100,11 +98,12 @@ npm run examples:clean
 
 ## 🔗 CodeSandbox Templates
 
-Ready-to-use online templates:
+Ready-to-use online templates (coming soon):
 
-- [**Basic Example**](https://codesandbox.io/s/poker-hand-replay-basic) - Get started instantly
-- [**Advanced Example**](https://codesandbox.io/s/poker-hand-replay-advanced) - Full features
-- [**Theming Example**](https://codesandbox.io/s/poker-hand-replay-theming) - Custom styling
+- **Basic Example** - Get started instantly
+- **Vite Example** - Modern build tooling  
+- **Advanced Example** - Full features (planned)
+- **Theming Example** - Custom styling (planned)
 
 ## 📖 Documentation
 
