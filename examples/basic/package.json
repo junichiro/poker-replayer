@@ -1,0 +1,46 @@
+{
+  "name": "poker-hand-replay-basic-example",
+  "version": "1.0.0",
+  "description": "Basic example demonstrating Poker Hand Replay component usage",
+  "private": true,
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "poker-hand-replay": "file:../../",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^16.18.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^4.9.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "keywords": [
+    "poker",
+    "hand-replay",
+    "react",
+    "example",
+    "basic"
+  ],
+  "author": "Junichiro Tobe",
+  "license": "MIT"
+}

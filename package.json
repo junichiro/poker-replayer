@@ -52,6 +52,10 @@
     "docs:json": "typedoc --json docs/api.json",
     "docs:markdown": "typedoc --plugin typedoc-plugin-markdown --out docs/markdown",
     "docs:clean": "rimraf docs",
+    "examples:install": "cd examples/basic && npm install && cd ../vite && npm install",
+    "examples:build": "cd examples/basic && npm run build && cd ../vite && npm run build",
+    "examples:test": "cd examples/basic && npm test && cd ../vite && npm test",
+    "examples:clean": "cd examples/basic && npm run clean 2>/dev/null || true && cd ../vite && npm run clean 2>/dev/null || true",
     "prepublishOnly": "npm run clean && npm run ci",
     "prepack": "npm run build",
     "prepare": "npm run typecheck:all"
