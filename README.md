@@ -156,19 +156,19 @@ interface AnimationConfig {
 
 ```tsx
 // Dark theme (default)
-<PokerHandReplay config={{ theme: "dark" }} handHistory={history} />
+<PokerHandReplay config={{ theme: "dark" }} handHistory={handHistory} />
 
 // Light theme
-<PokerHandReplay config={{ theme: "light" }} handHistory={history} />
+<PokerHandReplay config={{ theme: "light" }} handHistory={handHistory} />
 
 // Auto theme (follows system preference)
-<PokerHandReplay config={{ theme: "auto" }} handHistory={history} />
+<PokerHandReplay config={{ theme: "auto" }} handHistory={handHistory} />
 
 // Casino theme (green felt)
-<PokerHandReplay config={{ theme: "casino" }} handHistory={history} />
+<PokerHandReplay config={{ theme: "casino" }} handHistory={handHistory} />
 
 // Professional theme (clean, minimal)
-<PokerHandReplay config={{ theme: "professional" }} handHistory={history} />
+<PokerHandReplay config={{ theme: "professional" }} handHistory={handHistory} />
 ```
 
 ### Custom Colors
@@ -211,7 +211,7 @@ interface AnimationConfig {
 import { PokerStarsParser } from 'poker-hand-replay';
 
 const parser = new PokerStarsParser();
-const result = parser.parse(handHistoryString);
+const result = parser.parse(handHistory);
 
 if (result.success) {
   const { hand } = result;
@@ -512,7 +512,7 @@ if (!result.success) {
       enableChipAnimations: false
     }
   }}
-  handHistory={largeHandHistory}
+  handHistory={handHistory} // For demonstration; use a very large hand history string for actual performance testing
 />
 ```
 
