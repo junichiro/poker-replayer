@@ -5,7 +5,8 @@
     "@typescript-eslint"
   ],
   "extends": [
-    "eslint:recommended"
+    "eslint:recommended",
+    "plugin:storybook/recommended"
   ],
   "parserOptions": {
     "ecmaVersion": 2020,
@@ -21,8 +22,22 @@
   },
   "rules": {
     "no-unused-vars": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
     "prefer-const": "error"
   }
 }
