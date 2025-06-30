@@ -41,14 +41,11 @@ Final line`;
     });
 
     test('should handle empty input correctly', () => {
-      // NOTE: Empty string triggers header parsing error instead of empty check
-      // Line 63 empty check may be unreachable due to how trim().split() works
-      // This is likely a parser bug - empty input should return "Empty hand history"
       const result = parser.parse('');
       
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.message).toContain('Invalid header');
+        expect(result.error.message).toBe('Empty hand history');
       }
     });
   });

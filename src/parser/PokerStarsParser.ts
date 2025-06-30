@@ -54,6 +54,12 @@ export class PokerStarsParser {
   public parse(handHistory: string): ParserResult {
     try {
       this.reset();
+      
+      // Handle empty input correctly
+      if (!handHistory.trim()) {
+        return this.createError("Empty hand history");
+      }
+      
       this.lines = handHistory
         .trim()
         .split("\n")
