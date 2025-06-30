@@ -67,9 +67,9 @@ function App() {
           onActionChange={(action: Action, index: number) => {
             console.log(`Action ${index + 1}:`, action);
           }}
-          onReplayEvent={((event, data) => {
+          onReplayEvent={(event, data) => {
             console.log('Replay event:', event, data);
-          }) as ReplayEventCallback}
+          }}
         />
       </main>
 

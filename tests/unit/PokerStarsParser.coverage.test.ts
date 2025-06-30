@@ -41,8 +41,9 @@ Final line`;
     });
 
     test('should handle empty input correctly', () => {
-      // Empty string will trigger header parsing error, not empty check
-      // The empty check at line 63 may be unreachable in current implementation
+      // NOTE: Empty string triggers header parsing error instead of empty check
+      // Line 63 empty check may be unreachable due to how trim().split() works
+      // This is likely a parser bug - empty input should return "Empty hand history"
       const result = parser.parse('');
       
       expect(result.success).toBe(false);
