@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { PokerHandReplay, type ComponentTheme } from 'poker-hand-replay';
+import { useState } from 'react';
+import { PokerHandReplay, type ComponentTheme, type Action, type ReplayEventCallback } from 'poker-hand-replay';
 import './App.css';
 
 const sampleHandHistory = `PokerStars Hand #243490149326: Tournament #3476545632, $10+$1 USD Hold'em No Limit - Level I (10/20) - 2024/01/15 20:30:00 ET
@@ -64,12 +64,12 @@ function App() {
             tableShape: 'oval',
             cardDesign: 'four-color',
           }}
-          onActionChange={(action, index) => {
+          onActionChange={(action: Action, index: number) => {
             console.log(`Action ${index + 1}:`, action);
           }}
-          onReplayEvent={(event, data) => {
+          onReplayEvent={((event, data) => {
             console.log('Replay event:', event, data);
-          }}
+          }) as ReplayEventCallback}
         />
       </main>
 
