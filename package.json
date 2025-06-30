@@ -8,17 +8,10 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.esm.js"
-      },
-      "require": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.cjs.js"
-      },
+      "import": "./dist/index.esm.js",
+      "require": "./dist/index.cjs.js",
       "default": "./dist/index.esm.js"
     },
-    "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
   "sideEffects": false,

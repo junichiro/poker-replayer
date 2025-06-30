@@ -53,15 +53,6 @@ export default defineConfig(({ mode }) => {
           // ESM build
           format: 'es',
           entryFileNames: 'index.esm.js',
-          globals: {
-            react: 'React',
-            'react-dom': 'ReactDOM',
-            'react/jsx-runtime': 'React',
-          },
-          // Optimize chunk splitting for better tree shaking
-          manualChunks: undefined,
-          // Preserve module structure for better tree shaking
-          preserveModules: false,
           // Optimize for smaller bundles
           compact: true,
           // Ensure proper ESM exports
@@ -71,11 +62,6 @@ export default defineConfig(({ mode }) => {
           // CommonJS build
           format: 'cjs',
           entryFileNames: 'index.cjs.js',
-          globals: {
-            react: 'React',
-            'react-dom': 'ReactDOM',
-            'react/jsx-runtime': 'React',
-          },
           // Optimize for smaller bundles
           compact: true,
           // Ensure proper CJS exports
