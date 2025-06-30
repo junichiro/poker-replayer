@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => {
       insertTypesEntry: true,
       copyDtsFiles: false,
       rollupTypes: true,
+      // Generate a single declaration file for better compatibility
+      outDir: 'dist',
+      entryRoot: 'src',
+      // Better type generation for dual packages
+      respectExternal: true,
     }),
   ],
   resolve: {
@@ -40,24 +45,45 @@ export default defineConfig(({ mode }) => {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'PokerHandReplay',
-      formats: ['es', 'cjs'],
-      fileName: (format) => `index.${format === 'es' ? 'esm' : format}.js`,
     },
     rollupOptions: {
       external: ['react', 'react-dom', 'react/jsx-runtime'],
-      output: {
-        globals: {
-          react: 'React',
-          'react-dom': 'ReactDOM',
-          'react/jsx-runtime': 'React',
+      output: [
+        {
+          // ESM build
+          format: 'es',
+          entryFileNames: 'index.esm.js',
+          globals: {
+            react: 'React',
+            'react-dom': 'ReactDOM',
+            'react/jsx-runtime': 'React',
+          },
+          // Optimize chunk splitting for better tree shaking
+          manualChunks: undefined,
+          // Preserve module structure for better tree shaking
+          preserveModules: false,
+          // Optimize for smaller bundles
+          compact: true,
+          // Ensure proper ESM exports
+          exports: 'named',
         },
-        // Optimize chunk splitting for better tree shaking
-        manualChunks: undefined,
-        // Preserve module structure for better tree shaking
-        preserveModules: false,
-        // Optimize for smaller bundles
-        compact: true,
-      },
+        {
+          // CommonJS build
+          format: 'cjs',
+          entryFileNames: 'index.cjs.js',
+          globals: {
+            react: 'React',
+            'react-dom': 'ReactDOM',
+            'react/jsx-runtime': 'React',
+          },
+          // Optimize for smaller bundles
+          compact: true,
+          // Ensure proper CJS exports
+          exports: 'named',
+          // Add interop helpers for better compatibility
+          interop: 'auto',
+        },
+      ],
       // Enhanced tree shaking configuration
       treeshake: {
         moduleSideEffects: false,
