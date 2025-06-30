@@ -24,7 +24,6 @@
     "Utilities",
     "Other"
   ],
-  "plugin": ["typedoc-plugin-markdown"],
   "hideGenerator": true,
   "gitRevision": "main",
   "gitRemote": "origin",
