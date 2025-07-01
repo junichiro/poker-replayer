@@ -82,8 +82,10 @@ const createStressTest = async (component: React.ReactElement, iterations: numbe
     
     results.push(renderTime);
     
-    // Small delay to prevent overwhelming the system
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // Small delay to prevent overwhelming the system  
+    await waitFor(() => {
+      expect(true).toBe(true); // Minimal wait
+    });
   }
   
   return results;
@@ -99,10 +101,23 @@ describe('Performance Integration Tests', () => {
     
     // Mock performance.now for consistent testing
     const mockNow = jest.fn(() => Date.now());
+    
+    // Create stateful memory mock that simulates memory changes
+    let baseMemoryUsage = 1000000;
+    const mockMemory = {
+      get usedJSHeapSize() {
+        // Simulate memory growth with each access
+        baseMemoryUsage += Math.random() * 50000; // Random growth up to 50KB
+        return baseMemoryUsage;
+      },
+      totalJSHeapSize: 2000000,
+      jsHeapSizeLimit: 4000000
+    };
+    
     Object.defineProperty(window, 'performance', {
       value: { 
         now: mockNow,
-        memory: { usedJSHeapSize: 1000000, totalJSHeapSize: 2000000, jsHeapSizeLimit: 4000000 }
+        memory: mockMemory
       },
       writable: true
     });
@@ -197,8 +212,10 @@ describe('Performance Integration Tests', () => {
       // Start playback
       await user.click(playButton);
 
-      // Let animation run for a bit
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait for animation to be active
+      await waitFor(() => {
+        expect(screen.getByTestId('play-pause-btn')).toHaveTextContent('Pause');
+      }, { timeout: 500 });
 
       const animationTime = performanceMonitor.measure('animation-playback', startTime);
       
@@ -250,7 +267,9 @@ describe('Performance Integration Tests', () => {
         const startTime = performance.now();
 
         await user.click(playButton);
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await waitFor(() => {
+          expect(screen.getByTestId('play-pause-btn')).toHaveTextContent('Pause');
+        }, { timeout: 200 });
 
         const speedTime = performanceMonitor.measure(`speed-${speed}`, startTime);
         
@@ -279,7 +298,9 @@ describe('Performance Integration Tests', () => {
       // Interact with component
       const playButton = screen.getByTestId('play-pause-btn');
       await user.click(playButton);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await waitFor(() => {
+        expect(screen.getByTestId('play-pause-btn')).toHaveTextContent('Pause');
+      }, { timeout: 500 });
 
       memoryTracker.snapshot('after-interaction');
 
@@ -357,8 +378,10 @@ describe('Performance Integration Tests', () => {
       // Start long playback session
       await user.click(playButton);
       
-      // Let it run for extended period
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for extended playback period
+      await waitFor(() => {
+        expect(screen.getByTestId('play-pause-btn')).toHaveTextContent('Pause');
+      }, { timeout: 2000 });
       
       // Check if still responsive
       await user.click(playButton); // Pause

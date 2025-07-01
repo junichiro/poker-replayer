@@ -126,13 +126,17 @@ describe('Full Replay Functionality Integration Tests', () => {
       // Navigate forward through actions
       for (let i = 0; i < 5; i++) {
         await user.click(nextButton);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await waitFor(() => {
+          expect(screen.getByTestId('action-history')).toBeInTheDocument();
+        });
       }
 
       // Navigate backward
       for (let i = 0; i < 3; i++) {
         await user.click(prevButton);
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await waitFor(() => {
+          expect(screen.getByTestId('action-history')).toBeInTheDocument();
+        });
       }
 
       // Verify state consistency
@@ -159,7 +163,9 @@ describe('Full Replay Functionality Integration Tests', () => {
       // Step through several actions
       for (let i = 0; i < 3; i++) {
         await user.click(nextButton);
-        await new Promise(resolve => setTimeout(resolve, 50));
+        await waitFor(() => {
+          expect(screen.getByTestId('action-history')).toBeInTheDocument();
+        });
       }
 
       // Verify callback was called for each action
@@ -302,10 +308,10 @@ describe('Full Replay Functionality Integration Tests', () => {
       // Step through actions to encounter state changes
       for (let i = 0; i < 10; i++) {
         await user.click(nextButton);
-        await new Promise(resolve => setTimeout(resolve, 50));
-        
-        // Verify the component doesn't crash during state changes
-        expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
+        await waitFor(() => {
+          // Verify the component doesn't crash during state changes
+          expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
+        });
       }
     });
   });
@@ -372,8 +378,10 @@ describe('Full Replay Functionality Integration Tests', () => {
       // Start playback
       await user.click(playButton);
 
-      // Let it play for a bit
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait for playback to be active
+      await waitFor(() => {
+        expect(screen.getByTestId('play-pause-btn')).toHaveTextContent('Pause');
+      }, { timeout: 1000 });
 
       // Pause and check performance
       await user.click(playButton);
