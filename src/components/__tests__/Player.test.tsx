@@ -29,7 +29,7 @@ describe('Player Component', () => {
     currentChips: 850,
     isAllIn: false,
     position: 'BB',
-    cards: ['As', 'Kh'] as [PlayingCard, PlayingCard],
+    cards: ['As', 'Kh'],
     isHero: false,
   };
 
@@ -242,7 +242,7 @@ describe('Player Component', () => {
     test('displays mixed cards correctly when shown', () => {
       const playerWithMixedCards: PlayerType = {
         ...mockPlayer,
-        cards: ['2c', 'Ah'] as [PlayingCard, PlayingCard],
+        cards: ['2c', 'Ah'],
         isHero: true,
       };
       
@@ -304,7 +304,7 @@ describe('Player Component', () => {
 
       const updatedPlayer: PlayerType = {
         ...mockPlayer,
-        cards: ['Qd', 'Jc'] as [PlayingCard, PlayingCard],
+        cards: ['Qd', 'Jc'],
       };
 
       rerender(<Player player={updatedPlayer} showCards />);

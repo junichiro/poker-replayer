@@ -147,7 +147,7 @@ describe('Card Component', () => {
     test('renders error state for invalid card format', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       
-      render(<Card card={"XX" as any} data-testid="invalid-card" />);
+      render(<Card card={"XX" as PlayingCard} data-testid="invalid-card" />);
       
       const card = screen.getByTestId('invalid-card');
       expect(card).toHaveClass('card-invalid');
@@ -162,7 +162,7 @@ describe('Card Component', () => {
     });
 
     test('handles empty string card gracefully', () => {
-      render(<Card card={"" as any} data-testid="empty-card" />);
+      render(<Card card={"" as PlayingCard} data-testid="empty-card" />);
       
       const card = screen.getByTestId('empty-card');
       expect(card).toHaveClass('card-hidden');
