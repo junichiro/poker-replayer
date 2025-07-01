@@ -6,6 +6,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Card } from '../Card';
 import type { CardProps } from '../Card';
+import type { PlayingCard } from '../../types';
 
 describe('Card Component', () => {
   describe('Rendering with Traditional Props', () => {
@@ -146,7 +147,7 @@ describe('Card Component', () => {
     test('renders error state for invalid card format', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
       
-      render(<Card card="XX" as any data-testid="invalid-card" />);
+      render(<Card card={"XX" as any} data-testid="invalid-card" />);
       
       const card = screen.getByTestId('invalid-card');
       expect(card).toHaveClass('card-invalid');
@@ -161,7 +162,7 @@ describe('Card Component', () => {
     });
 
     test('handles empty string card gracefully', () => {
-      render(<Card card="" as any data-testid="empty-card" />);
+      render(<Card card={"" as any} data-testid="empty-card" />);
       
       const card = screen.getByTestId('empty-card');
       expect(card).toHaveClass('card-hidden');
@@ -175,12 +176,12 @@ describe('Card Component', () => {
     const redSuits = ['h', 'd'];
 
     test.each(ranks)('renders rank %s correctly', (rank) => {
-      render(<Card card={`${rank}s`} data-testid={`card-${rank}`} />);
+      render(<Card card={`${rank}s` as PlayingCard} data-testid={`card-${rank}`} />);
       expect(screen.getByText(rank)).toBeInTheDocument();
     });
 
     test.each(suits)('renders suit %s correctly', (suit) => {
-      render(<Card card={`A${suit}`} data-testid={`card-${suit}`} />);
+      render(<Card card={`A${suit}` as PlayingCard} data-testid={`card-${suit}`} />);
       expect(screen.getByText(suitSymbols[suit as keyof typeof suitSymbols])).toBeInTheDocument();
       
       const card = screen.getByTestId(`card-${suit}`);
@@ -216,12 +217,12 @@ describe('Card Component', () => {
       
       const TestCard = React.memo((props: CardProps & { irrelevant?: string }) => {
         renderCount++;
-        const { irrelevant, ...cardProps } = props;
+        const { irrelevant: _irrelevant, ...cardProps } = props;
         return <Card {...cardProps} data-testid="memo-card" />;
       });
 
       const { rerender } = render(<TestCard card="As" irrelevant="value1" />);
-      const initialRenderCount = renderCount;
+      const _initialRenderCount = renderCount;
 
       // Changing irrelevant prop should not cause Card to re-render
       rerender(<TestCard card="As" irrelevant="value2" />);

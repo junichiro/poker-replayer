@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Controls } from '../Controls';
 import type { ControlsProps, ControlsPropsLegacy, ControlCallbacks } from '../Controls';
@@ -370,12 +370,12 @@ describe('Controls Component', () => {
       
       const TestControls = React.memo((props: ControlsProps & { irrelevant?: string }) => {
         renderCount++;
-        const { irrelevant, ...controlProps } = props;
+        const { irrelevant: _irrelevant, ...controlProps } = props;
         return <Controls {...controlProps} />;
       });
 
       const { rerender } = render(<TestControls {...defaultNewProps} irrelevant="value1" />);
-      const initialRenderCount = renderCount;
+      const _initialRenderCount = renderCount;
 
       rerender(<TestControls {...defaultNewProps} irrelevant="value2" />);
       

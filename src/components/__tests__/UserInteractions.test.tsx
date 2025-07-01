@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock comprehensive poker replay component for user interaction testing
@@ -11,8 +11,8 @@ const InteractivePokerReplay = ({
   onUserAction,
   enableKeyboardControls = true,
   enableTouchControls = true,
-  enableMouseControls = true,
-  ...props 
+  enableMouseControls: _enableMouseControls = true,
+  ..._props 
 }: any) => {
   const [currentActionIndex, setCurrentActionIndex] = React.useState(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -74,12 +74,13 @@ const InteractivePokerReplay = ({
           onUserAction?.('keyboard', 'goto-end');
           break;
         case '1':
-        case '2':
+        case '2': {
           event.preventDefault();
           const playerIndex = parseInt(event.key) - 1;
           setSelectedPlayer(playerIndex);
           onUserAction?.('keyboard', 'select-player', { playerIndex });
           break;
+        }
         case 'Escape':
           event.preventDefault();
           setSelectedPlayer(null);

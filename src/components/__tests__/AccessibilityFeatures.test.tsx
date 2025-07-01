@@ -13,7 +13,7 @@ const AccessiblePokerReplay = ({
   enableHighContrast = false,
   enableReducedMotion = false,
   announceActions = true,
-  ...props 
+  ..._props 
 }: any) => {
   const [currentAction, setCurrentAction] = React.useState(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);

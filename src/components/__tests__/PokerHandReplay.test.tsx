@@ -6,7 +6,8 @@ import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PokerHandReplay } from '../PokerHandReplay';
-import type { PokerHandReplayProps, ReplayConfig } from '../PokerHandReplay';
+import type { PokerHandReplayProps } from '../PokerHandReplay';
+import type { ReplayConfig } from '../../types';
 
 // Mock all child components
 jest.mock('../Table', () => ({
@@ -28,7 +29,7 @@ jest.mock('../Table', () => ({
 }));
 
 jest.mock('../Controls', () => ({
-  Controls: ({ isPlaying, currentActionIndex, totalActions, callbacks, onPlayPause, onPrevious, onNext, onReset, ...props }: any) => {
+  Controls: ({ isPlaying, currentActionIndex, totalActions, callbacks, onPlayPause, onPrevious, onNext, onReset, ..._props }: any) => {
     // Handle both new and legacy API
     const handlePlayPause = () => {
       if (callbacks?.onPlayPause) {
@@ -83,7 +84,7 @@ jest.mock('../Controls', () => ({
 }));
 
 jest.mock('../ActionHistory', () => ({
-  ActionHistory: ({ actions, currentActionIndex, onActionClick, ...props }: any) => (
+  ActionHistory: ({ actions, currentActionIndex, onActionClick, ..._props }: any) => (
     <div 
       data-testid="action-history" 
       data-current-index={currentActionIndex}
