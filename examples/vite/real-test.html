@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>リアルポーカーアニメーションテスト</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        select, input, button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 14px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            min-width: 100px;
+        }
+        button:hover { background: #45a049; }
+        button:disabled { 
+            background: #666; 
+            cursor: not-allowed;
+        }
+        .test-area {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .hand-history {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .status-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .status-card {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .status-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #ffd700;
+        }
+        .poker-table-visual {
+            width: 100%;
+            max-width: 1000px;
+            height: 500px;
+            background: #0a5d2b;
+            border-radius: 250px;
+            margin: 20px auto;
+            position: relative;
+            border: 12px solid #8B4513;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        .community-cards {
+            display: flex;
+            gap: 8px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .card {
+            width: 70px;
+            height: 98px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+        .card.hidden {
+            background: #1a472a;
+            color: transparent;
+            border-color: #0a5d2b;
+        }
+        .card.hearts, .card.diamonds { color: #d63031; }
+        .card.clubs, .card.spades { color: #2d3436; }
+        .player-position {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            font-weight: bold;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .player-position.active {
+            border-color: #ffd700;
+            background: rgba(255,215,0,0.2);
+        }
+        .player-position.hero {
+            border-color: #00b894;
+            background: rgba(0,184,148,0.2);
+        }
+        .player-1 { top: 30px; left: 50%; transform: translateX(-50%); }
+        .player-2 { top: 50%; right: 30px; transform: translateY(-50%); }
+        .player-3 { bottom: 30px; left: 50%; transform: translateX(-50%); }
+        .player-chips {
+            font-size: 10px;
+            color: #ffd700;
+            margin-top: 4px;
+        }
+        .pot-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,215,0,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ffd700;
+            font-weight: bold;
+        }
+        .action-history {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .action-item {
+            padding: 4px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .action-item.current {
+            background: rgba(255,215,0,0.2);
+            color: #ffd700;
+            font-weight: bold;
+        }
+        .error-display {
+            background: #e74c3c;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 リアルポーカーハンドアニメーションテスト</h1>
+        <p>実際のハンド履歴でアニメーション動作確認</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>アニメーション速度:</label>
+                <select id="animationSpeed">
+                    <option value="0.5">0.5x (ゆっくり)</option>
+                    <option value="1.0" selected>1.0x (標準)</option>
+                    <option value="1.5">1.5x (速い)</option>
+                    <option value="2.0">2.0x (高速)</option>
+                    <option value="3.0">3.0x (超高速)</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>テーマ:</label>
+                <select id="theme">
+                    <option value="dark" selected>Dark</option>
+                    <option value="light">Light</option>
+                    <option value="casino">Casino</option>
+                    <option value="professional">Professional</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" id="autoPlay"> 自動再生
+                </label>
+            </div>
+        </div>
+
+        <div class="test-area">
+            <h3>テスト用ハンド履歴</h3>
+            <div class="hand-history" id="handHistory">PokerStars Hand #243490149326: Tournament #3476545632, $10+$1 USD Hold'em No Limit - Level I (10/20) - 2024/01/15 20:30:00 ET
+Table '3476545632 1' 9-max Seat #1 is the button
+Seat 1: HeroPlayer ($1500 in chips)
+Seat 2: Villain1 ($1500 in chips)
+Seat 3: Player3 ($1500 in chips)
+HeroPlayer: posts small blind 10
+Villain1: posts big blind 20
+*** HOLE CARDS ***
+Dealt to HeroPlayer [As Kh]
+Player3: folds
+HeroPlayer: raises 40 to 60
+Villain1: calls 40
+*** FLOP *** [Ah 7c 2d]
+HeroPlayer: bets 80
+Villain1: calls 80
+*** TURN *** [Ah 7c 2d] [Kd]
+HeroPlayer: bets 200
+Villain1: folds
+Uncalled bet (200) returned to HeroPlayer
+HeroPlayer collected 280 from pot
+HeroPlayer: doesn't show hand
+*** SUMMARY ***
+Total pot 280 | Rake 0
+Board [Ah 7c 2d Kd]
+Seat 1: HeroPlayer (button) (small blind) collected (280)
+Seat 2: Villain1 (big blind) folded on the Turn
+Seat 3: Player3 folded before Flop (didn't bet)</div>
+        </div>
+
+        <div class="controls">
+            <button id="parseBtn">📋 Parse Hand</button>
+            <button id="playBtn" disabled>▶ Play</button>
+            <button id="pauseBtn" disabled>⏸ Pause</button>
+            <button id="nextBtn" disabled>▶ Next</button>
+            <button id="prevBtn" disabled>◀ Prev</button>
+            <button id="resetBtn" disabled>⟲ Reset</button>
+        </div>
+
+        <div id="errorDisplay" class="error-display" style="display: none;"></div>
+
+        <div class="status-display">
+            <div class="status-card">
+                <div class="status-title">現在のストリート</div>
+                <div id="currentStreet">未解析</div>
+            </div>
+            <div class="status-card">
+                <div class="status-title">アクション</div>
+                <div id="currentAction">0 / 0</div>
+            </div>
+            <div class="status-card">
+                <div class="status-title">ポット</div>
+                <div id="currentPot">$0</div>
+            </div>
+            <div class="status-card">
+                <div class="status-title">アクティブプレイヤー</div>
+                <div id="activePlayer">-</div>
+            </div>
+        </div>
+
+        <div class="poker-table-visual">
+            <div class="pot-display" id="potDisplay">Pot: $0</div>
+            
+            <div class="player-position player-1" id="player1">
+                <div>HeroPlayer</div>
+                <div class="player-chips" id="player1-chips">$1500</div>
+                <div id="player1-action"></div>
+            </div>
+            
+            <div class="player-position player-2" id="player2">
+                <div>Villain1</div>
+                <div class="player-chips" id="player2-chips">$1500</div>
+                <div id="player2-action"></div>
+            </div>
+            
+            <div class="player-position player-3" id="player3">
+                <div>Player3</div>
+                <div class="player-chips" id="player3-chips">$1500</div>
+                <div id="player3-action"></div>
+            </div>
+
+            <div class="community-cards" id="communityCards">
+                <div class="card hidden" id="card1">?</div>
+                <div class="card hidden" id="card2">?</div>
+                <div class="card hidden" id="card3">?</div>
+                <div class="card hidden" id="card4">?</div>
+                <div class="card hidden" id="card5">?</div>
+            </div>
+        </div>
+
+        <div class="test-area">
+            <h3>アクション履歴</h3>
+            <div class="action-history" id="actionHistory">
+                <div class="action-item">ハンドを解析してください</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ポーカーハンドパーサー（簡易版）
+        class SimplePokerParser {
+            parse(handHistory) {
+                const lines = handHistory.split('\n').filter(line => line.trim());
+                const actions = [];
+                let currentStreet = 'preflop';
+                let pot = 0;
+                
+                // Extract players dynamically from hand history
+                const players = this.extractPlayers(lines);
+
+                lines.forEach((line, index) => {
+                    line = line.trim();
+                    
+                    // ストリート変更
+                    if (line.includes('*** HOLE CARDS ***')) {
+                        currentStreet = 'preflop';
+                        actions.push({ type: 'street', street: 'preflop', line });
+                    } else if (line.includes('*** FLOP ***')) {
+                        currentStreet = 'flop';
+                        const match = line.match(/\[([^\]]+)\]/);
+                        const cards = match ? match[1].split(' ') : [];
+                        actions.push({ type: 'street', street: 'flop', cards, line });
+                    } else if (line.includes('*** TURN ***')) {
+                        currentStreet = 'turn';
+                        const match = line.match(/\[([^\]]+)\]/);
+                        const cards = match ? match[1].split(' ') : [];
+                        actions.push({ type: 'street', street: 'turn', cards, line });
+                    } else if (line.includes('*** RIVER ***')) {
+                        currentStreet = 'river';
+                        const match = line.match(/\[([^\]]+)\]/);
+                        const cards = match ? match[1].split(' ') : [];
+                        actions.push({ type: 'street', street: 'river', cards, line });
+                    }
+                    
+                    // アクション解析
+                    Object.keys(players).forEach(playerName => {
+                        if (line.includes(playerName + ':')) {
+                            if (line.includes('posts small blind')) {
+                                const amount = parseInt(line.match(/(\d+)/)[1]);
+                                pot += amount;
+                                players[playerName].chips -= amount;
+                                actions.push({ 
+                                    type: 'blind', 
+                                    player: playerName, 
+                                    amount, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot
+                                });
+                            } else if (line.includes('posts big blind')) {
+                                const amount = parseInt(line.match(/(\d+)/)[1]);
+                                pot += amount;
+                                players[playerName].chips -= amount;
+                                actions.push({ 
+                                    type: 'blind', 
+                                    player: playerName, 
+                                    amount, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot
+                                });
+                            } else if (line.includes('raises')) {
+                                const match = line.match(/raises (\d+) to (\d+)/);
+                                if (match) {
+                                    const raiseAmount = parseInt(match[1]);
+                                    const totalAmount = parseInt(match[2]);
+                                    pot += totalAmount;
+                                    players[playerName].chips -= totalAmount;
+                                    actions.push({ 
+                                        type: 'raise', 
+                                        player: playerName, 
+                                        amount: totalAmount,
+                                        raiseAmount,
+                                        street: currentStreet,
+                                        line,
+                                        chips: players[playerName].chips,
+                                        pot
+                                    });
+                                }
+                            } else if (line.includes('calls')) {
+                                const amount = parseInt(line.match(/calls (\d+)/)[1]);
+                                pot += amount;
+                                players[playerName].chips -= amount;
+                                actions.push({ 
+                                    type: 'call', 
+                                    player: playerName, 
+                                    amount, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot
+                                });
+                            } else if (line.includes('bets')) {
+                                const amount = parseInt(line.match(/bets (\d+)/)[1]);
+                                pot += amount;
+                                players[playerName].chips -= amount;
+                                actions.push({ 
+                                    type: 'bet', 
+                                    player: playerName, 
+                                    amount, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot
+                                });
+                            } else if (line.includes('folds')) {
+                                actions.push({ 
+                                    type: 'fold', 
+                                    player: playerName, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot
+                                });
+                            } else if (line.includes('collected')) {
+                                const amount = parseInt(line.match(/collected (\d+)/)[1]);
+                                players[playerName].chips += amount;
+                                actions.push({ 
+                                    type: 'win', 
+                                    player: playerName, 
+                                    amount, 
+                                    street: currentStreet,
+                                    line,
+                                    chips: players[playerName].chips,
+                                    pot: 0
+                                });
+                            }
+                        } else if (line.includes(playerName + ' folds')) {
+                            actions.push({ 
+                                type: 'fold', 
+                                player: playerName, 
+                                street: currentStreet,
+                                line,
+                                chips: players[playerName].chips,
+                                pot
+                            });
+                        }
+                    });
+                });
+
+                return { actions, players, initialPot: pot };
+            }
+
+            extractPlayers(lines) {
+                const players = {};
+                let position = 1;
+                
+                lines.forEach(line => {
+                    const seatMatch = line.match(/^Seat (\d+): (.+?) \(\$(\d+) in chips\)/);
+                    if (seatMatch) {
+                        const seatNumber = parseInt(seatMatch[1]);
+                        const playerName = seatMatch[2];
+                        const chips = parseInt(seatMatch[3]);
+                        
+                        players[playerName] = {
+                            chips: chips,
+                            position: position++,
+                            isHero: line.includes('HeroPlayer') // Check if this is the hero
+                        };
+                    }
+                });
+
+                return players;
+            }
+        }
+
+        // アプリケーション状態
+        let parsedHand = null;
+        let currentActionIndex = -1;
+        let isPlaying = false;
+        let playInterval = null;
+
+        // DOM要素
+        const elements = {
+            parseBtn: document.getElementById('parseBtn'),
+            playBtn: document.getElementById('playBtn'),
+            pauseBtn: document.getElementById('pauseBtn'),
+            nextBtn: document.getElementById('nextBtn'),
+            prevBtn: document.getElementById('prevBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            handHistory: document.getElementById('handHistory'),
+            errorDisplay: document.getElementById('errorDisplay'),
+            currentStreet: document.getElementById('currentStreet'),
+            currentAction: document.getElementById('currentAction'),
+            currentPot: document.getElementById('currentPot'),
+            activePlayer: document.getElementById('activePlayer'),
+            actionHistory: document.getElementById('actionHistory'),
+            potDisplay: document.getElementById('potDisplay'),
+            animationSpeed: document.getElementById('animationSpeed')
+        };
+
+        // パーサー初期化
+        const parser = new SimplePokerParser();
+
+        // イベントリスナー
+        elements.parseBtn.addEventListener('click', parseHand);
+        elements.playBtn.addEventListener('click', startAutoPlay);
+        elements.pauseBtn.addEventListener('click', pauseAutoPlay);
+        elements.nextBtn.addEventListener('click', nextAction);
+        elements.prevBtn.addEventListener('click', prevAction);
+        elements.resetBtn.addEventListener('click', resetReplay);
+
+        function parseHand() {
+            try {
+                const handHistoryText = elements.handHistory.textContent;
+                parsedHand = parser.parse(handHistoryText);
+                
+                // UI更新
+                elements.errorDisplay.style.display = 'none';
+                enableControls();
+                resetReplay();
+                updateActionHistory();
+                
+                console.log('✅ ハンド解析完了:', parsedHand);
+                
+            } catch (error) {
+                showError('ハンド解析エラー: ' + error.message);
+                console.error('❌ 解析エラー:', error);
+            }
+        }
+
+        function enableControls() {
+            elements.playBtn.disabled = false;
+            elements.nextBtn.disabled = false;
+            elements.prevBtn.disabled = false;
+            elements.resetBtn.disabled = false;
+        }
+
+        function startAutoPlay() {
+            if (!parsedHand) return;
+            
+            // Clear any existing interval first
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+
+            isPlaying = true;
+            elements.playBtn.disabled = true;
+            elements.pauseBtn.disabled = false;
+            
+            const speed = parseFloat(elements.animationSpeed.value);
+            const interval = 2000 / speed;
+            
+            playInterval = setInterval(() => {
+                if (currentActionIndex >= parsedHand.actions.length - 1) {
+                    pauseAutoPlay();
+                    return;
+                }
+                nextAction();
+            }, interval);
+        }
+
+        function pauseAutoPlay() {
+            isPlaying = false;
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+            elements.playBtn.disabled = false;
+            elements.pauseBtn.disabled = true;
+        }
+
+        function nextAction() {
+            if (!parsedHand || currentActionIndex >= parsedHand.actions.length - 1) return;
+            
+            currentActionIndex++;
+            updateDisplay();
+            animateAction();
+        }
+
+        function prevAction() {
+            if (!parsedHand || currentActionIndex < 0) return;
+            
+            currentActionIndex--;
+
+            resetTable();
+
+            // Rebuild state up to the new action index
+            for (let i = 0; i <= currentActionIndex; i++) {
+                const action = parsedHand.actions[i];
+                if (action.type === 'street') {
+                    updateCommunityCards(action);
+                }
+            }
+
+            updateDisplay();
+        }
+
+        function resetReplay() {
+            currentActionIndex = -1;
+            pauseAutoPlay();
+            
+            if (parsedHand) {
+                updateDisplay();
+                resetTable();
+            }
+        }
+
+        function updateDisplay() {
+            if (!parsedHand) return;
+            
+            const action = parsedHand.actions[currentActionIndex];
+            
+            if (action) {
+                elements.currentStreet.textContent = action.street || 'unknown';
+                elements.currentAction.textContent = `${currentActionIndex + 1} / ${parsedHand.actions.length}`;
+                elements.currentPot.textContent = `$${action.pot || 0}`;
+                elements.activePlayer.textContent = action.player || '-';
+                elements.potDisplay.textContent = `Pot: $${action.pot || 0}`;
+                
+                updatePlayerDisplay(action);
+                updateCommunityCards(action);
+            } else {
+                // 初期状態
+                elements.currentStreet.textContent = 'preflop';
+                elements.currentAction.textContent = '0 / ' + parsedHand.actions.length;
+                elements.currentPot.textContent = '$0';
+                elements.activePlayer.textContent = '-';
+                elements.potDisplay.textContent = 'Pot: $0';
+            }
+            
+            updateActionHistoryHighlight();
+        }
+
+        function updatePlayerDisplay(action) {
+            // プレイヤー状態を更新
+            const playerElements = ['player1', 'player2', 'player3'];
+            playerElements.forEach(playerId => {
+                const element = document.getElementById(playerId);
+                element.classList.remove('active', 'hero');
+            });
+
+            if (action.player) {
+                const playerMap = {
+                    'HeroPlayer': 'player1',
+                    'Villain1': 'player2', 
+                    'Player3': 'player3'
+                };
+                
+                const activeElement = document.getElementById(playerMap[action.player]);
+                if (activeElement) {
+                    activeElement.classList.add('active');
+                    if (action.player === 'HeroPlayer') {
+                        activeElement.classList.add('hero');
+                    }
+                }
+                
+                // チップ表示更新
+                const chipsElement = document.getElementById(playerMap[action.player] + '-chips');
+                if (chipsElement && action.chips !== undefined) {
+                    chipsElement.textContent = `$${action.chips}`;
+                }
+                
+                // アクション表示
+                const actionElement = document.getElementById(playerMap[action.player] + '-action');
+                if (actionElement) {
+                    actionElement.textContent = action.type + (action.amount ? ` $${action.amount}` : '');
+                }
+            }
+        }
+
+        function updateCommunityCards(action) {
+            if (action.type === 'street' && action.cards) {
+                action.cards.forEach((card, index) => {
+                    const cardElement = document.getElementById(`card${index + 1}`);
+                    if (cardElement) {
+                        cardElement.textContent = card;
+                        cardElement.classList.remove('hidden');
+                        
+                        // カードの色を設定
+                        cardElement.classList.remove('hearts', 'spades');
+                        if (card.includes('h') || card.includes('d')) {
+                            cardElement.classList.add('hearts');
+                        } else {
+                            cardElement.classList.add('spades');
+                        }
+                    }
+                });
+            }
+        }
+
+        function animateAction() {
+            // カードアニメーション
+            const cards = document.querySelectorAll('.card:not(.hidden)');
+            cards.forEach(card => {
+                card.style.transform = 'scale(1.1) rotate(2deg)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1) rotate(0deg)';
+                }, 300);
+            });
+            
+            // プレイヤーアニメーション
+            const activePlayer = document.querySelector('.player-position.active');
+            if (activePlayer) {
+                activePlayer.style.transform += ' scale(1.05)';
+                setTimeout(() => {
+                    activePlayer.style.transform = activePlayer.style.transform.replace(' scale(1.05)', '');
+                }, 300);
+            }
+        }
+
+        function resetTable() {
+            // カードを隠す
+            for (let i = 1; i <= 5; i++) {
+                const card = document.getElementById(`card${i}`);
+                card.classList.add('hidden');
+                card.textContent = '?';
+                card.className = 'card hidden';
+            }
+            
+            // プレイヤー状態リセット
+            ['player1', 'player2', 'player3'].forEach(playerId => {
+                document.getElementById(playerId).classList.remove('active', 'hero');
+                document.getElementById(playerId + '-chips').textContent = '$1500';
+                document.getElementById(playerId + '-action').textContent = '';
+            });
+        }
+
+        function updateActionHistory() {
+            if (!parsedHand) return;
+            
+            const historyHTML = parsedHand.actions.map((action, index) => 
+                `<div class="action-item" data-index="${index}">
+                    ${index + 1}. [${action.street}] ${action.player || 'System'}: ${action.type}${action.amount ? ` $${action.amount}` : ''}
+                </div>`
+            ).join('');
+            
+            elements.actionHistory.innerHTML = historyHTML;
+        }
+
+        function updateActionHistoryHighlight() {
+            const items = elements.actionHistory.querySelectorAll('.action-item');
+            items.forEach((item, index) => {
+                item.classList.toggle('current', index === currentActionIndex);
+            });
+        }
+
+        function showError(message) {
+            elements.errorDisplay.textContent = message;
+            elements.errorDisplay.style.display = 'block';
+        }
+
+        // 初期化
+        console.log('🎮 リアルポーカーアニメーションテスト開始');
+    </script>
+</body>
+</html>
