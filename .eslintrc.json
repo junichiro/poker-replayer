@@ -18,8 +18,27 @@
   "env": {
     "es2020": true,
     "node": true,
-    "browser": true
+    "browser": true,
+    "jest": true
   },
+  "overrides": [
+    {
+      "files": ["**/__tests__/**/*", "**/*.test.*", "**/*.spec.*", "**/setupTests.ts"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "no-console": "off"
+      }
+    },
+    {
+      "files": ["**/*.stories.*"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off",
+        "storybook/no-renderer-packages": "off"
+      }
+    }
+  ],
   "rules": {
     "no-unused-vars": "off",
     "@typescript-eslint/no-unused-vars": [

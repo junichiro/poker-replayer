@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 // Simple mock of the entire PokerHandReplay component to test basic functionality
 const MockPokerHandReplay = ({ 
   handHistory, 
-  config = {}, 
+  config: _config = {}, 
   onActionChange, 
   onReplayEvent, 
   className = '',

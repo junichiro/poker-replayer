@@ -6,7 +6,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { Player } from '../Player';
 import type { PlayerProps } from '../Player';
-import type { Player as PlayerType } from '../../types';
+import type { Player as PlayerType, PlayingCard } from '../../types';
 
 // Mock the Card component
 jest.mock('../Card', () => ({
@@ -29,7 +29,7 @@ describe('Player Component', () => {
     currentChips: 850,
     isAllIn: false,
     position: 'BB',
-    cards: ['As', 'Kh'] as [string, string],
+    cards: ['As', 'Kh'],
     isHero: false,
   };
 
@@ -242,7 +242,7 @@ describe('Player Component', () => {
     test('displays mixed cards correctly when shown', () => {
       const playerWithMixedCards: PlayerType = {
         ...mockPlayer,
-        cards: ['2c', 'Ah'] as [string, string],
+        cards: ['2c', 'Ah'],
         isHero: true,
       };
       
@@ -272,12 +272,12 @@ describe('Player Component', () => {
       
       const TestPlayer = React.memo((props: PlayerProps & { irrelevant?: string }) => {
         renderCount++;
-        const { irrelevant, ...playerProps } = props;
+        const { irrelevant: _irrelevant, ...playerProps } = props;
         return <Player {...playerProps} />;
       });
 
       const { rerender } = render(<TestPlayer {...defaultProps} irrelevant="value1" />);
-      const initialRenderCount = renderCount;
+      const _initialRenderCount = renderCount;
 
       rerender(<TestPlayer {...defaultProps} irrelevant="value2" />);
       
@@ -304,7 +304,7 @@ describe('Player Component', () => {
 
       const updatedPlayer: PlayerType = {
         ...mockPlayer,
-        cards: ['Qd', 'Jc'] as [string, string],
+        cards: ['Qd', 'Jc'],
       };
 
       rerender(<Player player={updatedPlayer} showCards />);

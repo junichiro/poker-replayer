@@ -3,7 +3,7 @@
  */
 
 import React from 'react';
-import { render, screen, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 // Mock animation-related functionality
@@ -22,7 +22,7 @@ const AnimatedPokerComponent = ({
   enableAnimations = true,
   onAnimationStart,
   onAnimationEnd,
-  ...props 
+  ..._props 
 }: any) => {
   const [currentAnimation, setCurrentAnimation] = React.useState<string | null>(null);
   const [animationProgress, setAnimationProgress] = React.useState(0);

@@ -298,8 +298,10 @@ describe('Browser Compatibility Integration Tests', () => {
       const mockTouchEnd = jest.fn();
       
       Element.prototype.addEventListener = jest.fn((event, handler) => {
-        if (event === 'touchstart') mockTouchStart.mockImplementation(handler);
-        if (event === 'touchend') mockTouchEnd.mockImplementation(handler);
+        if (typeof handler === 'function') {
+          if (event === 'touchstart') mockTouchStart.mockImplementation(handler);
+          if (event === 'touchend') mockTouchEnd.mockImplementation(handler);
+        }
       });
 
       render(<PokerHandReplay handHistory={handHistories.basicCashGame} />);
