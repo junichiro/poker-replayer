@@ -344,11 +344,8 @@ Seat 3: Player3 folded before Flop (didn't bet)</div>
                 let currentStreet = 'preflop';
                 let pot = 0;
                 
-                const players = {
-                    'HeroPlayer': { chips: 1500, position: 1, isHero: true },
-                    'Villain1': { chips: 1500, position: 2 },
-                    'Player3': { chips: 1500, position: 3 }
-                };
+                // Extract players dynamically from hand history
+                const players = this.extractPlayers(lines);
 
                 lines.forEach((line, index) => {
                     line = line.trim();
@@ -484,6 +481,28 @@ Seat 3: Player3 folded before Flop (didn't bet)</div>
 
                 return { actions, players, initialPot: pot };
             }
+
+            extractPlayers(lines) {
+                const players = {};
+                let position = 1;
+                
+                lines.forEach(line => {
+                    const seatMatch = line.match(/^Seat (\d+): (.+?) \(\$(\d+) in chips\)/);
+                    if (seatMatch) {
+                        const seatNumber = parseInt(seatMatch[1]);
+                        const playerName = seatMatch[2];
+                        const chips = parseInt(seatMatch[3]);
+                        
+                        players[playerName] = {
+                            chips: chips,
+                            position: position++,
+                            isHero: line.includes('HeroPlayer') // Check if this is the hero
+                        };
+                    }
+                });
+
+                return players;
+            }
         }
 
         // アプリケーション状態
@@ -551,6 +570,12 @@ Seat 3: Player3 folded before Flop (didn't bet)</div>
         function startAutoPlay() {
             if (!parsedHand) return;
             
+            // Clear any existing interval first
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+
             isPlaying = true;
             elements.playBtn.disabled = true;
             elements.pauseBtn.disabled = false;
@@ -586,9 +611,20 @@ Seat 3: Player3 folded before Flop (didn't bet)</div>
         }
 
         function prevAction() {
-            if (!parsedHand || currentActionIndex <= -1) return;
+            if (!parsedHand || currentActionIndex < 0) return;
             
             currentActionIndex--;
+
+            resetTable();
+
+            // Rebuild state up to the new action index
+            for (let i = 0; i <= currentActionIndex; i++) {
+                const action = parsedHand.actions[i];
+                if (action.type === 'street') {
+                    updateCommunityCards(action);
+                }
+            }
+
             updateDisplay();
         }
 
@@ -674,6 +710,7 @@ Seat 3: Player3 folded before Flop (didn't bet)</div>
                         cardElement.classList.remove('hidden');
                         
                         // カードの色を設定
+                        cardElement.classList.remove('hearts', 'spades');
                         if (card.includes('h') || card.includes('d')) {
                             cardElement.classList.add('hearts');
                         } else {

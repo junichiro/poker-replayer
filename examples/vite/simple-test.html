@@ -164,6 +164,7 @@
     <script>
         let isPlaying = false;
         let currentAction = 0;
+        let playInterval = null;
         const actions = [
             "スモールブラインド 10",
             "ビッグブラインド 20", 
@@ -188,18 +189,31 @@
             btn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
             
             if (isPlaying) {
+                // Clear any existing interval first
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
+
                 const speed = parseFloat(document.getElementById('speed').value);
                 const interval = 2000 / speed; // Base interval 2 seconds
                 
-                const autoPlay = setInterval(() => {
+                playInterval = setInterval(() => {
                     if (!isPlaying || currentAction >= actions.length - 1) {
-                        clearInterval(autoPlay);
+                        clearInterval(playInterval);
+                        playInterval = null;
                         isPlaying = false;
                         btn.textContent = '▶ Play';
                         return;
                     }
                     nextAction();
                 }, interval);
+            } else {
+                // Pause: clear the interval
+                if (playInterval) {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                }
             }
         }
 

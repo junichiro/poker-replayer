@@ -32,7 +32,7 @@ Seat 3: Player3 folded before Flop (didn't bet)`;
 
 function App() {
   const [theme, setTheme] = useState<ComponentTheme>('dark');
-  const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeed>(1.0);
+  const [animationSpeed, setAnimationSpeed] = useState<number>(1.0);
   const [autoPlay, setAutoPlay] = useState(false);
 
   return (
@@ -90,7 +90,7 @@ function App() {
           config={{
             theme,
             autoPlay,
-            animationSpeed: typeof animationSpeed === 'number' ? animationSpeed : 1.0,
+            animationSpeed,
             tableShape: 'oval',
             cardDesign: 'four-color',
           }}
