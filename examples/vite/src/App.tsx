@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PokerHandReplay, type ComponentTheme, type Action, type ReplayEventCallback } from 'poker-hand-replay';
+import { PokerHandReplay, type ComponentTheme, type Action, type ReplayEventCallback, type AnimationSpeed } from 'poker-hand-replay';
 import './App.css';
 
 const sampleHandHistory = `PokerStars Hand #243490149326: Tournament #3476545632, $10+$1 USD Hold'em No Limit - Level I (10/20) - 2024/01/15 20:30:00 ET
@@ -32,26 +32,56 @@ Seat 3: Player3 folded before Flop (didn't bet)`;
 
 function App() {
   const [theme, setTheme] = useState<ComponentTheme>('dark');
+  const [animationSpeed, setAnimationSpeed] = useState<AnimationSpeed>(1.0);
+  const [autoPlay, setAutoPlay] = useState(false);
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>⚡ Vite + Poker Hand Replay</h1>
-        <p>Fast development with instant HMR</p>
+        <h1>🎮 Poker Animation Test</h1>
+        <p>アニメーション動作確認用デモ</p>
       </header>
 
       <div className="controls">
-        <label htmlFor="theme-select">Theme:</label>
-        <select 
-          id="theme-select"
-          value={theme} 
-          onChange={(e) => setTheme(e.target.value as ComponentTheme)}
-        >
-          <option value="dark">Dark</option>
-          <option value="light">Light</option>
-          <option value="casino">Casino</option>
-          <option value="professional">Professional</option>
-        </select>
+        <div className="control-group">
+          <label htmlFor="theme-select">テーマ:</label>
+          <select 
+            id="theme-select"
+            value={theme} 
+            onChange={(e) => setTheme(e.target.value as ComponentTheme)}
+          >
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+            <option value="casino">Casino</option>
+            <option value="professional">Professional</option>
+          </select>
+        </div>
+
+        <div className="control-group">
+          <label htmlFor="speed-select">アニメーション速度:</label>
+          <select 
+            id="speed-select"
+            value={animationSpeed} 
+            onChange={(e) => setAnimationSpeed(Number(e.target.value) as AnimationSpeed)}
+          >
+            <option value={0.5}>0.5x (ゆっくり)</option>
+            <option value={1.0}>1.0x (標準)</option>
+            <option value={1.5}>1.5x (速い)</option>
+            <option value={2.0}>2.0x (高速)</option>
+            <option value={3.0}>3.0x (超高速)</option>
+          </select>
+        </div>
+
+        <div className="control-group">
+          <label>
+            <input 
+              type="checkbox" 
+              checked={autoPlay}
+              onChange={(e) => setAutoPlay(e.target.checked)}
+            />
+            自動再生
+          </label>
+        </div>
       </div>
 
       <main className="replay-container">
@@ -59,16 +89,16 @@ function App() {
           handHistory={sampleHandHistory}
           config={{
             theme,
-            autoPlay: false,
-            animationSpeed: 1.5,
+            autoPlay,
+            animationSpeed: typeof animationSpeed === 'number' ? animationSpeed : 1.0,
             tableShape: 'oval',
             cardDesign: 'four-color',
           }}
           onActionChange={(action: Action, index: number) => {
-            console.log(`Action ${index + 1}:`, action);
+            console.log(`🎯 Action ${index + 1}:`, action);
           }}
           onReplayEvent={((event, data) => {
-            console.log('Replay event:', event, data);
+            console.log('🎬 Replay event:', event, data);
           }) as ReplayEventCallback}
         />
       </main>
