@@ -5,111 +5,111 @@ import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
-  
+
   return {
-  plugins: [
-    react({
-      // Optimize React for production builds
-      jsxRuntime: 'automatic',
-    }),
-    dts({
-      tsconfigPath: './tsconfig.build.json',
-      include: ['src/**/*'],
-      exclude: ['src/**/*.test.*', 'src/**/*.spec.*'],
-      insertTypesEntry: true,
-      copyDtsFiles: false,
-      rollupTypes: true,
-      // Generate a single declaration file for better compatibility
-      outDir: 'dist',
-      entryRoot: 'src',
-      // Better type generation for dual packages
-      respectExternal: true,
-    }),
-  ],
-  resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-      '@/components': resolve(__dirname, './src/components'),
-      '@/utils': resolve(__dirname, './src/utils'),
-      '@/types': resolve(__dirname, './src/types'),
-      '@/parser': resolve(__dirname, './src/parser'),
-    },
-  },
-  css: {
-    // PostCSS processing for CSS optimization
-    postcss: {},
-    // CSS code splitting - inline for library builds
-    modules: false,
-  },
-  build: {
-    lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
-      name: 'PokerHandReplay',
-    },
-    rollupOptions: {
-      external: ['react', 'react-dom', 'react/jsx-runtime'],
-      output: [
-        {
-          // ESM build
-          format: 'es',
-          entryFileNames: 'index.esm.js',
-          // Optimize for smaller bundles
-          compact: true,
-          // Ensure proper ESM exports
-          exports: 'named',
-        },
-        {
-          // CommonJS build
-          format: 'cjs',
-          entryFileNames: 'index.cjs.js',
-          // Optimize for smaller bundles
-          compact: true,
-          // Ensure proper CJS exports
-          exports: 'named',
-          // Add interop helpers for better compatibility
-          interop: 'auto',
-        },
-      ],
-      // Enhanced tree shaking configuration
-      treeshake: {
-        moduleSideEffects: false,
-        propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
+    plugins: [
+      react({
+        // Optimize React for production builds
+        jsxRuntime: 'automatic',
+      }),
+      dts({
+        tsconfigPath: './tsconfig.build.json',
+        include: ['src/**/*'],
+        exclude: ['src/**/*.test.*', 'src/**/*.spec.*'],
+        insertTypesEntry: true,
+        copyDtsFiles: false,
+        rollupTypes: true,
+        // Generate a single declaration file for better compatibility
+        outDir: 'dist',
+        entryRoot: 'src',
+        // Better type generation for dual packages
+        respectExternal: true,
+      }),
+    ],
+    resolve: {
+      alias: {
+        '@': resolve(__dirname, './src'),
+        '@/components': resolve(__dirname, './src/components'),
+        '@/utils': resolve(__dirname, './src/utils'),
+        '@/types': resolve(__dirname, './src/types'),
+        '@/parser': resolve(__dirname, './src/parser'),
       },
     },
-    // Production optimizations
-    sourcemap: true,
-    emptyOutDir: true,
-    minify: isProduction ? 'terser' : false,
-    target: 'es2020',
-    // Optimize bundle size in production
-    ...(isProduction && {
-      terserOptions: {
-        compress: {
-          drop_console: true,
-          drop_debugger: true,
-          pure_funcs: ['console.log', 'console.warn'],
-          passes: 2,
+    css: {
+      // PostCSS processing for CSS optimization
+      postcss: {},
+      // CSS code splitting - inline for library builds
+      modules: false,
+    },
+    build: {
+      lib: {
+        entry: resolve(__dirname, 'src/index.ts'),
+        name: 'PokerHandReplay',
+      },
+      rollupOptions: {
+        external: ['react', 'react-dom', 'react/jsx-runtime'],
+        output: [
+          {
+            // ESM build
+            format: 'es',
+            entryFileNames: 'index.esm.js',
+            // Optimize for smaller bundles
+            compact: true,
+            // Ensure proper ESM exports
+            exports: 'named',
+          },
+          {
+            // CommonJS build
+            format: 'cjs',
+            entryFileNames: 'index.cjs.js',
+            // Optimize for smaller bundles
+            compact: true,
+            // Ensure proper CJS exports
+            exports: 'named',
+            // Add interop helpers for better compatibility
+            interop: 'auto',
+          },
+        ],
+        // Enhanced tree shaking configuration
+        treeshake: {
+          moduleSideEffects: false,
+          propertyReadSideEffects: false,
+          tryCatchDeoptimization: false,
         },
-        mangle: {
-          properties: {
-            regex: /^_/,
+      },
+      // Production optimizations
+      sourcemap: true,
+      emptyOutDir: true,
+      minify: isProduction ? 'terser' : false,
+      target: 'es2020',
+      // Optimize bundle size in production
+      ...(isProduction && {
+        terserOptions: {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+            pure_funcs: ['console.log', 'console.warn'],
+            passes: 2,
+          },
+          mangle: {
+            properties: {
+              regex: /^_/,
+            },
+          },
+          format: {
+            comments: false,
           },
         },
-        format: {
-          comments: false,
-        },
-      },
-    }),
-    // Rollup-specific optimizations
-    chunkSizeWarningLimit: 100,
-  },
-  // Development optimizations
-  esbuild: {
-    target: 'es2020',
-    keepNames: false,
-    minifyIdentifiers: true,
-    minifySyntax: true,
-  },
+      }),
+      // Rollup-specific optimizations
+      chunkSizeWarningLimit: 100,
+    },
+    // Development optimizations
+    esbuild: {
+      target: 'es2020',
+      keepNames: false,
+      minifyIdentifiers: true,
+      minifySyntax: true,
+    },
   };
 });

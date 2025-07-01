@@ -2,7 +2,9 @@
 
 ## Project Overview
 
-This project is a React-based module for parsing and replaying PokerStars hand histories with visual animations. The module should be publishable as an npm package and easily embeddable in other projects.
+This project is a React-based module for parsing and replaying PokerStars hand
+histories with visual animations. The module should be publishable as an npm
+package and easily embeddable in other projects.
 
 ## Project Goals
 
@@ -15,12 +17,14 @@ This project is a React-based module for parsing and replaying PokerStars hand h
 ## Technical Requirements
 
 ### Core Dependencies
+
 - React (>= 16.8.0) - peer dependency
 - TypeScript for type definitions
 - Bundler (Rollup or Vite) for building the package
 - Lucide-react for icons
 
 ### Package Structure
+
 ```
 poker-hand-replay/
 ├── src/
@@ -51,6 +55,7 @@ poker-hand-replay/
 ## Implementation Tasks
 
 ### Phase 1: Core Parser Development
+
 1. Extract and refactor the PokerStarsParser class
 2. Add comprehensive parsing for all action types
 3. Handle edge cases (split pots, side pots, all-ins)
@@ -58,6 +63,7 @@ poker-hand-replay/
 5. Add unit tests for parser
 
 ### Phase 2: Component Architecture
+
 1. Split the monolithic component into smaller, reusable components
 2. Implement proper prop typing with TypeScript
 3. Add customization options (themes, sizes, animation speeds)
@@ -65,6 +71,7 @@ poker-hand-replay/
 5. Add error boundaries and loading states
 
 ### Phase 3: Package Setup
+
 1. Initialize npm package with proper metadata
 2. Configure TypeScript compilation
 3. Set up build process (Rollup/Vite)
@@ -72,6 +79,7 @@ poker-hand-replay/
 5. Add development scripts
 
 ### Phase 4: Documentation & Examples
+
 1. Write comprehensive README with usage examples
 2. Create API documentation
 3. Build example applications
@@ -79,6 +87,7 @@ poker-hand-replay/
 5. Create migration guide from inline usage
 
 ### Phase 5: Testing & Quality
+
 1. Unit tests for parser
 2. Component tests with React Testing Library
 3. Integration tests for full replay functionality
@@ -88,12 +97,13 @@ poker-hand-replay/
 ## API Design
 
 ### Basic Usage
+
 ```typescript
 import { PokerHandReplay } from 'poker-hand-replay';
 
 function App() {
   return (
-    <PokerHandReplay 
+    <PokerHandReplay
       handHistory={handHistoryString}
       theme="dark"
       autoPlay={false}
@@ -105,6 +115,7 @@ function App() {
 ```
 
 ### Advanced Usage
+
 ```typescript
 import { PokerStarsParser, ReplayController } from 'poker-hand-replay';
 
@@ -168,7 +179,24 @@ interface Pot {
 }
 
 type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
-type ActionType = 'blind' | 'ante' | 'deal' | 'fold' | 'check' | 'call' | 'bet' | 'raise' | 'show' | 'uncalled' | 'collected' | 'muck' | 'timeout' | 'disconnect' | 'reconnect' | 'sitout' | 'return';
+type ActionType =
+  | 'blind'
+  | 'ante'
+  | 'deal'
+  | 'fold'
+  | 'check'
+  | 'call'
+  | 'bet'
+  | 'raise'
+  | 'show'
+  | 'uncalled'
+  | 'collected'
+  | 'muck'
+  | 'timeout'
+  | 'disconnect'
+  | 'reconnect'
+  | 'sitout'
+  | 'return';
 type Position = 'BB' | 'SB' | 'BTN' | 'CO' | 'HJ' | 'MP' | 'EP' | 'UTG';
 ```
 

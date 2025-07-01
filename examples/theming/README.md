@@ -1,6 +1,7 @@
 # 🎨 Theming Example
 
-A comprehensive example demonstrating custom themes, color schemes, and visual customization of the Poker Hand Replay component.
+A comprehensive example demonstrating custom themes, color schemes, and visual
+customization of the Poker Hand Replay component.
 
 ## 🎯 What This Example Shows
 
@@ -25,13 +26,15 @@ npm start
 ## 🎨 Available Themes
 
 ### Built-in Themes
+
 - **Dark** - Default dark theme
-- **Light** - Clean light theme  
+- **Light** - Clean light theme
 - **Casino** - Green felt casino style
 - **Professional** - Minimal business theme
 - **Auto** - System preference detection
 
 ### Custom Themes
+
 - **Neon** - Cyberpunk neon colors
 - **Ocean** - Blue ocean theme
 - **Sunset** - Warm sunset colors
@@ -67,22 +70,22 @@ theming/
 
 ```typescript
 export const neonTheme: CustomTheme = {
-  name: "neon",
+  name: 'neon',
   colors: {
-    bgPrimary: "#0a0a0a",
-    bgSecondary: "#1a1a2e",
-    bgTable: "#16213e",
-    textPrimary: "#00ff88",
-    textSecondary: "#ff0080",
-    border: "#00ffff",
-    cardBg: "#000000",
-    cardText: "#00ff88",
-    heroHighlight: "#ff0080",
-    allInIndicator: "#ff4444",
-    actionHighlight: "#00ffff",
-    potColor: "#ffff00",
+    bgPrimary: '#0a0a0a',
+    bgSecondary: '#1a1a2e',
+    bgTable: '#16213e',
+    textPrimary: '#00ff88',
+    textSecondary: '#ff0080',
+    border: '#00ffff',
+    cardBg: '#000000',
+    cardText: '#00ff88',
+    heroHighlight: '#ff0080',
+    allInIndicator: '#ff4444',
+    actionHighlight: '#00ffff',
+    potColor: '#ffff00',
   },
-  className: "neon-theme"
+  className: 'neon-theme',
 };
 ```
 
@@ -90,21 +93,21 @@ export const neonTheme: CustomTheme = {
 
 ```typescript
 export const oceanTheme: CustomTheme = {
-  name: "ocean",
+  name: 'ocean',
   colors: {
-    bgPrimary: "#0f4c75",
-    bgSecondary: "#3282b8",
-    bgTable: "#0f3460",
-    textPrimary: "#ffffff",
-    textSecondary: "#bbe1fa",
-    border: "#3282b8",
-    cardBg: "#ffffff",
-    cardText: "#0f4c75",
-    heroHighlight: "#ffd700",
-    allInIndicator: "#ff6b6b",
-    actionHighlight: "#4ecdc4",
-    potColor: "#45b7d1",
-  }
+    bgPrimary: '#0f4c75',
+    bgSecondary: '#3282b8',
+    bgTable: '#0f3460',
+    textPrimary: '#ffffff',
+    textSecondary: '#bbe1fa',
+    border: '#3282b8',
+    cardBg: '#ffffff',
+    cardText: '#0f4c75',
+    heroHighlight: '#ffd700',
+    allInIndicator: '#ff6b6b',
+    actionHighlight: '#4ecdc4',
+    potColor: '#45b7d1',
+  },
 };
 ```
 
@@ -112,21 +115,21 @@ export const oceanTheme: CustomTheme = {
 
 ```typescript
 export const corporateTheme: CustomTheme = {
-  name: "corporate",
+  name: 'corporate',
   colors: {
-    bgPrimary: "#2c3e50",
-    bgSecondary: "#34495e",
-    bgTable: "#1abc9c",
-    textPrimary: "#ffffff",
-    textSecondary: "#bdc3c7",
-    border: "#95a5a6",
-    cardBg: "#ffffff",
-    cardText: "#2c3e50",
-    heroHighlight: "#f39c12",
-    allInIndicator: "#e74c3c",
-    actionHighlight: "#9b59b6",
-    potColor: "#27ae60",
-  }
+    bgPrimary: '#2c3e50',
+    bgSecondary: '#34495e',
+    bgTable: '#1abc9c',
+    textPrimary: '#ffffff',
+    textSecondary: '#bdc3c7',
+    border: '#95a5a6',
+    cardBg: '#ffffff',
+    cardText: '#2c3e50',
+    heroHighlight: '#f39c12',
+    allInIndicator: '#e74c3c',
+    actionHighlight: '#9b59b6',
+    potColor: '#27ae60',
+  },
 };
 ```
 
@@ -209,11 +212,11 @@ const ColorCustomizer = ({ theme, onColorChange }) => {
     --font-size-small: 10px;
     --spacing-small: 8px;
   }
-  
+
   .neon-theme {
     --glow-intensity: 0.5; /* Reduce glow on mobile */
   }
-  
+
   .ocean-theme {
     --wave-animation: none; /* Disable animations on mobile */
   }
@@ -224,21 +227,21 @@ const ColorCustomizer = ({ theme, onColorChange }) => {
 
 ```typescript
 export const highContrastTheme: CustomTheme = {
-  name: "high-contrast",
+  name: 'high-contrast',
   colors: {
-    bgPrimary: "#000000",
-    bgSecondary: "#000000", 
-    bgTable: "#000000",
-    textPrimary: "#ffffff",
-    textSecondary: "#ffff00",
-    border: "#ffffff",
-    cardBg: "#ffffff",
-    cardText: "#000000",
-    heroHighlight: "#ffff00",
-    allInIndicator: "#ff0000",
-    actionHighlight: "#00ff00",
-    potColor: "#00ffff",
-  }
+    bgPrimary: '#000000',
+    bgSecondary: '#000000',
+    bgTable: '#000000',
+    textPrimary: '#ffffff',
+    textSecondary: '#ffff00',
+    border: '#ffffff',
+    cardBg: '#ffffff',
+    cardText: '#000000',
+    heroHighlight: '#ffff00',
+    allInIndicator: '#ff0000',
+    actionHighlight: '#00ff00',
+    potColor: '#00ffff',
+  },
 };
 
 // WCAG AA compliant color ratios
@@ -258,17 +261,17 @@ const validateContrast = (bg: string, text: string) => {
   --poker-primary: #667eea;
   --poker-secondary: #764ba2;
   --poker-accent: #f093fb;
-  
+
   /* Component sizing */
   --poker-table-size: 400px;
   --poker-card-width: 50px;
   --poker-card-height: 70px;
-  
+
   /* Animation properties */
   --poker-transition-fast: 0.15s ease;
   --poker-transition-normal: 0.3s ease;
   --poker-transition-slow: 0.5s ease;
-  
+
   /* Shadows and effects */
   --poker-shadow-small: 0 2px 4px rgba(0, 0, 0, 0.1);
   --poker-shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.15);
@@ -282,7 +285,7 @@ const validateContrast = (bg: string, text: string) => {
 // Apply theme-specific CSS classes
 const getThemeClasses = (theme: string) => {
   const baseClasses = ['poker-replay'];
-  
+
   switch (theme) {
     case 'neon':
       return [...baseClasses, 'neon-theme', 'glow-effects'];
@@ -331,7 +334,7 @@ const getTheme = (themeName: string): CustomTheme => {
   if (themeCache.has(themeName)) {
     return themeCache.get(themeName)!;
   }
-  
+
   const theme = loadThemeConfig(themeName);
   themeCache.set(themeName, theme);
   return theme;
@@ -346,11 +349,11 @@ const ThemedReplayContainer = styled.div<{ theme: CustomTheme }>`
   background: ${props => props.theme.colors.bgPrimary};
   color: ${props => props.theme.colors.textPrimary};
   border: 1px solid ${props => props.theme.colors.border};
-  
+
   .poker-table {
     background: ${props => props.theme.colors.bgTable};
   }
-  
+
   .poker-card {
     background: ${props => props.theme.colors.cardBg};
     color: ${props => props.theme.colors.cardText};
@@ -378,4 +381,5 @@ const ThemedReplayContainer = styled.div<{ theme: CustomTheme }>`
 
 ---
 
-**Make it yours!** This example shows how to create beautiful, accessible themes for any brand or style.
+**Make it yours!** This example shows how to create beautiful, accessible themes
+for any brand or style.

@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+.tsbuildinfo
+*.tsbuildinfo
+
+# Generated files
+docs/
+storybook-static/
+.storybook/public/
+
+# Package files
+*.log
+*.lock
+package-lock.json
+yarn.lock
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Legacy/backup files
+*.bak
+*.backup
+
+# Configuration files that shouldn't be reformatted
+.browserslistrc
+
+# Large data files
+*.min.js
+*.min.css
+
+# Examples build outputs
+examples/*/dist/
+examples/*/build/
+
+# Test output files
+*.lcov

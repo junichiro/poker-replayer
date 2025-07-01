@@ -2,27 +2,27 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 
 // Simple mock of the entire PokerHandReplay component to test basic functionality
-const MockPokerHandReplay = ({ 
-  handHistory, 
-  config: _config = {}, 
-  onActionChange, 
-  onReplayEvent, 
+const MockPokerHandReplay = ({
+  handHistory,
+  config: _config = {},
+  onActionChange,
+  onReplayEvent,
   className = '',
   enableLoadingStates = true,
   enableErrorRecovery = true,
   loadingComponent,
   errorComponent,
-  ...props 
+  ...props
 }: any) => {
   const [currentActionIndex, setCurrentActionIndex] = React.useState(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
-  
+
   // Simulate parsing
   React.useEffect(() => {
     if (handHistory === null || handHistory === undefined) {
@@ -30,11 +30,11 @@ const MockPokerHandReplay = ({
       return;
     }
     if (handHistory === '') {
-      setError("Empty hand history");
+      setError('Empty hand history');
       return;
     }
     if (handHistory.includes('Invalid')) {
-      setError("Invalid hand history format");
+      setError('Invalid hand history format');
       return;
     }
     setError(null);
@@ -63,9 +63,8 @@ const MockPokerHandReplay = ({
   };
 
   if (enableLoadingStates && (handHistory === null || handHistory === undefined)) {
-    const LoadingComponent = loadingComponent || (() => 
-      <div data-testid="loading">Loading...</div>
-    );
+    const LoadingComponent =
+      loadingComponent || (() => <div data-testid="loading">Loading...</div>);
     return <LoadingComponent />;
   }
 
@@ -74,12 +73,14 @@ const MockPokerHandReplay = ({
   }
 
   if (error) {
-    const ErrorComponent = errorComponent || (() => (
-      <div data-testid="error-with-recovery">
-        <p>Error: {error}</p>
-        <button onClick={() => setError(null)}>Retry</button>
-      </div>
-    ));
+    const ErrorComponent =
+      errorComponent ||
+      (() => (
+        <div data-testid="error-with-recovery">
+          <p>Error: {error}</p>
+          <button onClick={() => setError(null)}>Retry</button>
+        </div>
+      ));
     return <ErrorComponent error={new Error(error)} retry={() => setError(null)} />;
   }
 
@@ -89,11 +90,11 @@ const MockPokerHandReplay = ({
         <h2>Hand #123456</h2>
         <div>Stakes: $1/$2</div>
       </div>
-      
+
       <div data-testid="table" data-action-index={currentActionIndex}>
         Table: 6-max
       </div>
-      
+
       <div data-testid="controls">
         <button onClick={handleReset} disabled={currentActionIndex === -1}>
           Reset
@@ -101,20 +102,14 @@ const MockPokerHandReplay = ({
         <button onClick={handlePrevious} disabled={currentActionIndex === -1}>
           Previous
         </button>
-        <button onClick={handlePlayPause}>
-          {isPlaying ? 'Pause' : 'Play'}
-        </button>
+        <button onClick={handlePlayPause}>{isPlaying ? 'Pause' : 'Play'}</button>
         <button onClick={handleNext} disabled={currentActionIndex >= 5}>
           Next
         </button>
-        <span data-testid="action-counter">
-          {currentActionIndex + 1} / 6
-        </span>
+        <span data-testid="action-counter">{currentActionIndex + 1} / 6</span>
       </div>
-      
-      <div data-testid="action-history">
-        Actions: {Math.max(0, currentActionIndex + 1)} / 6
-      </div>
+
+      <div data-testid="action-history">Actions: {Math.max(0, currentActionIndex + 1)} / 6</div>
     </div>
   );
 };
@@ -151,7 +146,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Basic Rendering', () => {
     test('renders main replay components', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
         expect(screen.getByTestId('table')).toBeInTheDocument();
@@ -162,14 +157,14 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
 
     test('applies custom className', () => {
       render(<PokerHandReplay handHistory={validHandHistory} className="custom-replay" />);
-      
+
       const replayContainer = screen.getByTestId('poker-hand-replay');
       expect(replayContainer).toHaveClass('custom-replay');
     });
 
     test('displays hand information', () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       expect(screen.getByText('Hand #123456')).toBeInTheDocument();
       expect(screen.getByText('Stakes: $1/$2')).toBeInTheDocument();
     });
@@ -178,7 +173,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Hand History Parsing', () => {
     test('handles valid hand history successfully', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('table')).toHaveAttribute('data-action-index', '-1');
         expect(screen.getByText('Table: 6-max')).toBeInTheDocument();
@@ -187,7 +182,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
 
     test('handles invalid hand history gracefully', async () => {
       render(<PokerHandReplay handHistory="Invalid hand history format" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('error-with-recovery')).toBeInTheDocument();
         expect(screen.getByText(/Invalid hand history format/)).toBeInTheDocument();
@@ -196,7 +191,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
 
     test('handles empty hand history', async () => {
       render(<PokerHandReplay handHistory="" />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('error-with-recovery')).toBeInTheDocument();
         expect(screen.getByText(/Empty hand history/)).toBeInTheDocument();
@@ -207,7 +202,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Playback Controls', () => {
     test('initializes with stopped state', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Play')).toBeInTheDocument();
         expect(screen.getByTestId('action-counter')).toHaveTextContent('0 / 6');
@@ -217,59 +212,59 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
     test('handles play/pause interaction', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Play')).toBeInTheDocument();
       });
-      
+
       const playButton = screen.getByText('Play');
       await user.click(playButton);
-      
+
       expect(screen.getByText('Pause')).toBeInTheDocument();
     });
 
     test('handles navigation controls', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Next')).toBeInTheDocument();
       });
-      
+
       const nextButton = screen.getByText('Next');
       await user.click(nextButton);
-      
+
       expect(screen.getByTestId('action-counter')).toHaveTextContent('1 / 6');
-      
+
       const previousButton = screen.getByText('Previous');
       await user.click(previousButton);
-      
+
       expect(screen.getByTestId('action-counter')).toHaveTextContent('0 / 6');
     });
 
     test('handles reset functionality', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Next')).toBeInTheDocument();
       });
-      
+
       // Move forward first
       const nextButton = screen.getByText('Next');
       await user.click(nextButton);
       expect(screen.getByTestId('action-counter')).toHaveTextContent('1 / 6');
-      
+
       // Then reset
       const resetButton = screen.getByText('Reset');
       await user.click(resetButton);
-      
+
       expect(screen.getByTestId('action-counter')).toHaveTextContent('0 / 6');
     });
 
     test('disables buttons appropriately', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Reset')).toBeDisabled();
         expect(screen.getByText('Previous')).toBeDisabled();
@@ -283,45 +278,32 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
     test('calls onActionChange when action changes', async () => {
       const onActionChange = jest.fn();
       const user = userEvent.setup();
-      
-      render(
-        <PokerHandReplay 
-          handHistory={validHandHistory} 
-          onActionChange={onActionChange}
-        />
-      );
-      
+
+      render(<PokerHandReplay handHistory={validHandHistory} onActionChange={onActionChange} />);
+
       await waitFor(() => {
         expect(screen.getByText('Next')).toBeInTheDocument();
       });
-      
+
       const nextButton = screen.getByText('Next');
       await user.click(nextButton);
-      
-      expect(onActionChange).toHaveBeenCalledWith(
-        { type: 'bet', amount: 100 },
-        0
-      );
+
+      expect(onActionChange).toHaveBeenCalledWith({ type: 'bet', amount: 100 }, 0);
     });
 
     test('calls onReplayEvent for replay events', async () => {
       const onReplayEvent = jest.fn();
       const user = userEvent.setup();
-      
-      render(
-        <PokerHandReplay 
-          handHistory={validHandHistory} 
-          onReplayEvent={onReplayEvent}
-        />
-      );
-      
+
+      render(<PokerHandReplay handHistory={validHandHistory} onReplayEvent={onReplayEvent} />);
+
       await waitFor(() => {
         expect(screen.getByText('Play')).toBeInTheDocument();
       });
-      
+
       const playButton = screen.getByText('Play');
       await user.click(playButton);
-      
+
       expect(onReplayEvent).toHaveBeenCalledWith('play');
     });
   });
@@ -329,24 +311,22 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Loading States', () => {
     test('shows loading when no hand history provided', () => {
       render(<PokerHandReplay handHistory="" enableLoadingStates={true} />);
-      
+
       // Note: empty string triggers error state, not loading state in our mock
       expect(screen.getByTestId('error-with-recovery')).toBeInTheDocument();
     });
 
     test('uses custom loading component', () => {
-      const CustomLoader = () => (
-        <div data-testid="custom-loader">Custom Loading...</div>
-      );
-      
+      const CustomLoader = () => <div data-testid="custom-loader">Custom Loading...</div>;
+
       render(
-        <PokerHandReplay 
+        <PokerHandReplay
           handHistory={null}
           enableLoadingStates={true}
           loadingComponent={CustomLoader}
         />
       );
-      
+
       expect(screen.getByTestId('custom-loader')).toBeInTheDocument();
     });
   });
@@ -354,14 +334,14 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Error Handling', () => {
     test('shows error recovery by default', () => {
       render(<PokerHandReplay handHistory="Invalid format" enableErrorRecovery={true} />);
-      
+
       expect(screen.getByTestId('error-with-recovery')).toBeInTheDocument();
       expect(screen.getByText('Retry')).toBeInTheDocument();
     });
 
     test('hides recovery when disabled', () => {
       render(<PokerHandReplay handHistory="Invalid format" enableErrorRecovery={false} />);
-      
+
       expect(screen.getByTestId('error-state')).toBeInTheDocument();
       expect(screen.queryByText('Retry')).not.toBeInTheDocument();
     });
@@ -373,15 +353,15 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
           <button onClick={retry}>Custom Retry</button>
         </div>
       );
-      
+
       render(
-        <PokerHandReplay 
+        <PokerHandReplay
           handHistory="Invalid format"
           enableErrorRecovery={true}
           errorComponent={CustomError}
         />
       );
-      
+
       expect(screen.getByTestId('custom-error')).toBeInTheDocument();
       expect(screen.getByText('Custom Retry')).toBeInTheDocument();
     });
@@ -389,12 +369,12 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
     test('can retry after error', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory="Invalid format" />);
-      
+
       expect(screen.getByTestId('error-with-recovery')).toBeInTheDocument();
-      
+
       const retryButton = screen.getByText('Retry');
       await user.click(retryButton);
-      
+
       // After retry, error should be cleared and normal component should render
       expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
     });
@@ -403,7 +383,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Accessibility', () => {
     test('has proper semantic structure', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
         expect(screen.getByTestId('controls')).toBeInTheDocument();
@@ -413,7 +393,7 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
 
     test('provides action counter with proper text', async () => {
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         const counter = screen.getByTestId('action-counter');
         expect(counter).toHaveTextContent('0 / 6');
@@ -424,27 +404,27 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
   describe('Performance', () => {
     test('handles component updates efficiently', async () => {
       const { rerender } = render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
       });
-      
+
       // Re-render with same props should not cause issues
       rerender(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
     });
 
     test('handles config changes efficiently', async () => {
       const { rerender } = render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
       });
-      
+
       const newConfig = { theme: 'light' };
       rerender(<PokerHandReplay handHistory={validHandHistory} config={newConfig} />);
-      
+
       expect(screen.getByTestId('poker-hand-replay')).toBeInTheDocument();
     });
   });
@@ -453,15 +433,15 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
     test('coordinates between table and controls', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByTestId('table')).toHaveAttribute('data-action-index', '-1');
         expect(screen.getByTestId('action-counter')).toHaveTextContent('0 / 6');
       });
-      
+
       const nextButton = screen.getByText('Next');
       await user.click(nextButton);
-      
+
       expect(screen.getByTestId('table')).toHaveAttribute('data-action-index', '0');
       expect(screen.getByTestId('action-counter')).toHaveTextContent('1 / 6');
     });
@@ -469,19 +449,19 @@ Seat 2: Villain1 (big blind) folded on the Flop`;
     test('maintains state consistency across interactions', async () => {
       const user = userEvent.setup();
       render(<PokerHandReplay handHistory={validHandHistory} />);
-      
+
       await waitFor(() => {
         expect(screen.getByText('Next')).toBeInTheDocument();
       });
-      
+
       // Move forward
       const nextButton = screen.getByText('Next');
       await user.click(nextButton);
-      
+
       // Start playing
       const playButton = screen.getByText('Play');
       await user.click(playButton);
-      
+
       // All components should reflect the state change
       expect(screen.getByTestId('table')).toHaveAttribute('data-action-index', '0');
       expect(screen.getByTestId('action-counter')).toHaveTextContent('1 / 6');

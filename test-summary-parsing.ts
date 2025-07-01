@@ -63,9 +63,11 @@ if (result1.success && result1.hand) {
   const pots = result1.hand.pots;
   console.log(`Found ${pots.length} pots:`);
   pots.forEach((pot, index) => {
-    console.log(`- Pot ${index + 1}: $${pot.amount} won by ${pot.players.join(', ')} ${pot.isSide ? '(side pot)' : '(main pot)'}`);
+    console.log(
+      `- Pot ${index + 1}: $${pot.amount} won by ${pot.players.join(', ')} ${pot.isSide ? '(side pot)' : '(main pot)'}`
+    );
   });
-  
+
   // Verify pot totals
   const totalPot = pots.reduce((sum, pot) => sum + pot.amount, 0);
   console.log(`Total pot amount: $${totalPot}`);
@@ -82,7 +84,11 @@ if (result2.success && result2.hand) {
   pots.forEach((pot, index) => {
     console.log(`- Pot ${index + 1}: $${pot.amount} won by ${pot.players.join(', ')}`);
   });
-  console.log(pots[0].players.includes('Winner') ? '✅ Winner correctly identified' : '❌ Winner not identified');
+  console.log(
+    pots[0].players.includes('Winner')
+      ? '✅ Winner correctly identified'
+      : '❌ Winner not identified'
+  );
 } else {
   console.log('❌ Failed to parse simple hand');
 }

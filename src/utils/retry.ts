@@ -5,7 +5,7 @@
  * circuit breaker patterns, and comprehensive error handling.
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface RetryConfig {
   /** Maximum number of retry attempts */
@@ -76,15 +76,11 @@ const defaultRetryConfig: Required<RetryConfig> = {
 /**
  * Calculate delay for next retry attempt
  */
-function calculateDelay(
-  attempt: number,
-  config: Required<RetryConfig>,
-): number {
+function calculateDelay(attempt: number, config: Required<RetryConfig>): number {
   let delay = config.initialDelay;
 
   if (config.exponentialBackoff) {
-    delay =
-      config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1);
+    delay = config.initialDelay * Math.pow(config.backoffMultiplier, attempt - 1);
   }
 
   // Apply maximum delay limit
@@ -144,7 +140,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
       while (currentAttempt < fullConfig.maxAttempts) {
         currentAttempt++;
 
-        setState((prev) => ({
+        setState(prev => ({
           ...prev,
           attempt: currentAttempt,
           isRetrying: currentAttempt > 1,
@@ -169,7 +165,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
 
           // Check if error is retryable
           if (!fullConfig.isRetryable(lastError)) {
-            setState((prev) => ({
+            setState(prev => ({
               ...prev,
               lastError,
               isRetrying: false,
@@ -188,7 +184,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
           if (currentAttempt < fullConfig.maxAttempts) {
             const delay = calculateDelay(currentAttempt, fullConfig);
 
-            setState((prev) => ({
+            setState(prev => ({
               ...prev,
               lastError,
               nextDelay: delay,
@@ -199,7 +195,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
             fullConfig.onRetry(currentAttempt, lastError);
 
             // Wait before next attempt
-            await new Promise((resolve) => {
+            await new Promise(resolve => {
               timeoutRef.current = setTimeout(resolve, delay);
             });
           }
@@ -209,7 +205,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
       // Max attempts exceeded
       const totalTime = Date.now() - operationStartTime;
 
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         maxAttemptsExceeded: true,
         isRetrying: false,
@@ -228,7 +224,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
         maxAttemptsExceeded: true,
       };
     },
-    [fullConfig, reset],
+    [fullConfig, reset]
   );
 
   // Cleanup on unmount
@@ -252,7 +248,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
  */
 export async function retry<T>(
   operation: () => Promise<T>,
-  config: Partial<RetryConfig> = {},
+  config: Partial<RetryConfig> = {}
 ): Promise<RetryResult<T>> {
   const fullConfig = { ...defaultRetryConfig, ...config };
   const startTime = Date.now();
@@ -295,7 +291,7 @@ export async function retry<T>(
         fullConfig.onRetry(currentAttempt, lastError);
 
         // Wait before next attempt
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
   }
@@ -320,20 +316,20 @@ export async function retry<T>(
 export class CircuitBreaker {
   private failures = 0;
   private lastFailureTime = 0;
-  private state: "closed" | "open" | "half-open" = "closed";
+  private state: 'closed' | 'open' | 'half-open' = 'closed';
 
   constructor(
     private maxFailures: number = 5,
     private timeout: number = 60000, // 1 minute
-    private monitoringPeriod: number = 120000, // 2 minutes
+    private monitoringPeriod: number = 120000 // 2 minutes
   ) {}
 
   async execute<T>(operation: () => Promise<T>): Promise<T> {
-    if (this.state === "open") {
+    if (this.state === 'open') {
       if (Date.now() - this.lastFailureTime >= this.timeout) {
-        this.state = "half-open";
+        this.state = 'half-open';
       } else {
-        throw new Error("Circuit breaker is OPEN - operation blocked");
+        throw new Error('Circuit breaker is OPEN - operation blocked');
       }
     }
 
@@ -341,8 +337,8 @@ export class CircuitBreaker {
       const result = await operation();
 
       // Success - reset circuit breaker
-      if (this.state === "half-open") {
-        this.state = "closed";
+      if (this.state === 'half-open') {
+        this.state = 'closed';
         this.failures = 0;
       }
 
@@ -358,7 +354,7 @@ export class CircuitBreaker {
     this.lastFailureTime = Date.now();
 
     if (this.failures >= this.maxFailures) {
-      this.state = "open";
+      this.state = 'open';
     }
 
     // Reset failure count after monitoring period
@@ -369,7 +365,7 @@ export class CircuitBreaker {
     }, this.monitoringPeriod);
   }
 
-  getState(): "closed" | "open" | "half-open" {
+  getState(): 'closed' | 'open' | 'half-open' {
     return this.state;
   }
 
@@ -380,7 +376,7 @@ export class CircuitBreaker {
   reset() {
     this.failures = 0;
     this.lastFailureTime = 0;
-    this.state = "closed";
+    this.state = 'closed';
   }
 }
 
@@ -389,7 +385,7 @@ export class CircuitBreaker {
  */
 export function withRetry<TArgs extends unknown[], TReturn>(
   fn: (...args: TArgs) => Promise<TReturn>,
-  config: Partial<RetryConfig> = {},
+  config: Partial<RetryConfig> = {}
 ) {
   return async (...args: TArgs): Promise<RetryResult<TReturn>> => {
     return retry(() => fn(...args), config);
@@ -410,10 +406,10 @@ export const retryPredicates = {
   networkErrors: (error: Error) => {
     const message = error.message.toLowerCase();
     return (
-      message.includes("network") ||
-      message.includes("timeout") ||
-      message.includes("connection") ||
-      message.includes("fetch")
+      message.includes('network') ||
+      message.includes('timeout') ||
+      message.includes('connection') ||
+      message.includes('fetch')
     );
   },
 
@@ -421,10 +417,10 @@ export const retryPredicates = {
   temporaryErrors: (error: Error) => {
     const message = error.message.toLowerCase();
     return (
-      message.includes("temporary") ||
-      message.includes("busy") ||
-      message.includes("retry") ||
-      message.includes("rate limit")
+      message.includes('temporary') ||
+      message.includes('busy') ||
+      message.includes('retry') ||
+      message.includes('rate limit')
     );
   },
 
@@ -433,10 +429,10 @@ export const retryPredicates = {
     const message = error.message.toLowerCase();
     // Don't retry syntax or validation errors - they're permanent
     return (
-      !message.includes("invalid") &&
-      !message.includes("syntax") &&
-      !message.includes("malformed") &&
-      !message.includes("validation")
+      !message.includes('invalid') &&
+      !message.includes('syntax') &&
+      !message.includes('malformed') &&
+      !message.includes('validation')
     );
   },
 };

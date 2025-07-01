@@ -2,9 +2,9 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 
 // Mock animation-related functionality
 const mockAnimations = {
@@ -17,29 +17,31 @@ const mockAnimations = {
 };
 
 // Mock component that simulates animation sequences
-const AnimatedPokerComponent = ({ 
+const AnimatedPokerComponent = ({
   animationSpeed = 1.0,
   enableAnimations = true,
   onAnimationStart,
   onAnimationEnd,
-  ..._props 
+  ..._props
 }: any) => {
   const [currentAnimation, setCurrentAnimation] = React.useState<string | null>(null);
   const [animationProgress, setAnimationProgress] = React.useState(0);
   const [isAnimating, setIsAnimating] = React.useState(false);
-  const [animationQueue, setAnimationQueue] = React.useState<Array<{ type: string; duration: number }>>([]);
+  const [animationQueue, setAnimationQueue] = React.useState<
+    Array<{ type: string; duration: number }>
+  >([]);
   const animationRef = React.useRef<boolean>(false);
 
   const processAnimationQueue = React.useCallback(async () => {
     if (animationRef.current || animationQueue.length === 0) return;
-    
+
     animationRef.current = true;
     const { type, duration } = animationQueue[0];
     setAnimationQueue(prev => prev.slice(1));
 
     await executeAnimation(type, duration);
     animationRef.current = false;
-    
+
     // Process next animation if any
     if (animationQueue.length > 0) {
       setTimeout(processAnimationQueue, 0);
@@ -53,7 +55,7 @@ const AnimatedPokerComponent = ({
   const executeAnimation = async (animationType: string, duration: number) => {
     // Check for reduced motion
     const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-    
+
     if (!enableAnimations || prefersReducedMotion) {
       mockAnimations[animationType as keyof typeof mockAnimations]?.();
       return Promise.resolve();
@@ -91,39 +93,30 @@ const AnimatedPokerComponent = ({
         <span data-testid="animation-progress">{animationProgress.toFixed(0)}%</span>
         <span data-testid="is-animating">{isAnimating.toString()}</span>
       </div>
-      
+
       <div data-testid="animation-controls">
-        <button 
-          onClick={() => triggerAnimation('cardDeal', 500)}
-          data-testid="card-deal-btn"
-        >
+        <button onClick={() => triggerAnimation('cardDeal', 500)} data-testid="card-deal-btn">
           Deal Cards
         </button>
-        <button 
-          onClick={() => triggerAnimation('cardFlip', 300)}
-          data-testid="card-flip-btn"
-        >
+        <button onClick={() => triggerAnimation('cardFlip', 300)} data-testid="card-flip-btn">
           Flip Cards
         </button>
-        <button 
+        <button
           onClick={() => triggerAnimation('chipMovement', 800)}
           data-testid="chip-movement-btn"
         >
           Move Chips
         </button>
-        <button 
-          onClick={() => triggerAnimation('potUpdate', 600)}
-          data-testid="pot-update-btn"
-        >
+        <button onClick={() => triggerAnimation('potUpdate', 600)} data-testid="pot-update-btn">
           Update Pot
         </button>
-        <button 
+        <button
           onClick={() => triggerAnimation('playerHighlight', 400)}
           data-testid="player-highlight-btn"
         >
           Highlight Player
         </button>
-        <button 
+        <button
           onClick={() => triggerAnimation('tableTransition', 1000)}
           data-testid="table-transition-btn"
         >
@@ -158,14 +151,14 @@ describe('Animation Sequences', () => {
       const user = userEvent.setup();
 
       render(
-        <AnimatedPokerComponent 
+        <AnimatedPokerComponent
           onAnimationStart={onAnimationStart}
           onAnimationEnd={onAnimationEnd}
         />
       );
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       await user.click(dealButton);
 
       // Should start animation
@@ -174,10 +167,13 @@ describe('Animation Sequences', () => {
       expect(screen.getByTestId('is-animating')).toHaveTextContent('true');
 
       // Wait for animation to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-        expect(screen.getByTestId('is-animating')).toHaveTextContent('false');
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+          expect(screen.getByTestId('is-animating')).toHaveTextContent('false');
+        },
+        { timeout: 2000 }
+      );
 
       expect(mockAnimations.cardDeal).toHaveBeenCalled();
       expect(onAnimationEnd).toHaveBeenCalledWith('cardDeal');
@@ -189,16 +185,19 @@ describe('Animation Sequences', () => {
 
       const dealButton = screen.getByTestId('card-deal-btn');
       const startTime = Date.now();
-      
+
       await user.click(dealButton);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 1000 }
+      );
 
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       // With 2x speed, should complete faster than normal
       expect(duration).toBeLessThan(400); // Normal would be ~500ms, 2x should be ~250ms
     });
@@ -208,7 +207,7 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent animationSpeed={0.1} />); // Very slow for testing
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       await user.click(dealButton);
 
       // Should show progress > 0 while animating
@@ -218,9 +217,12 @@ describe('Animation Sequences', () => {
       });
 
       // Eventually should reach 100%
-      await waitFor(() => {
-        expect(screen.getByTestId('animation-progress')).toHaveTextContent('0%');
-      }, { timeout: 10000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('animation-progress')).toHaveTextContent('0%');
+        },
+        { timeout: 10000 }
+      );
     });
   });
 
@@ -230,14 +232,17 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent />);
 
       const flipButton = screen.getByTestId('card-flip-btn');
-      
+
       await user.click(flipButton);
 
       expect(screen.getByTestId('current-animation')).toHaveTextContent('cardFlip');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 1000 }
+      );
 
       expect(mockAnimations.cardFlip).toHaveBeenCalled();
     });
@@ -247,16 +252,19 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent animationSpeed={10} />); // Fast animations
 
       const flipButton = screen.getByTestId('card-flip-btn');
-      
+
       // Trigger multiple flips quickly
       await user.click(flipButton);
       await user.click(flipButton);
       await user.click(flipButton);
 
       // Wait for all animations to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 2000 }
+      );
 
       // Should have called the animation at least once (queue may not process all immediately)
       expect(mockAnimations.cardFlip).toHaveBeenCalled();
@@ -269,14 +277,17 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent />);
 
       const chipButton = screen.getByTestId('chip-movement-btn');
-      
+
       await user.click(chipButton);
 
       expect(screen.getByTestId('current-animation')).toHaveTextContent('chipMovement');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 1500 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 1500 }
+      );
 
       expect(mockAnimations.chipMovement).toHaveBeenCalled();
     });
@@ -287,22 +298,25 @@ describe('Animation Sequences', () => {
 
       const chipButton = screen.getByTestId('chip-movement-btn');
       const potButton = screen.getByTestId('pot-update-btn');
-      
+
       // Trigger chip movement
       await user.click(chipButton);
-      
+
       // Wait for first animation to start
       await waitFor(() => {
         expect(screen.getByTestId('current-animation')).toHaveTextContent('chipMovement');
       });
-      
+
       // Trigger pot update while chip animation is running
       await user.click(potButton);
 
       // Wait for animations to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 3000 }
+      );
 
       expect(mockAnimations.chipMovement).toHaveBeenCalled();
       // Pot update should be queued (but may not complete in test timeframe)
@@ -315,23 +329,22 @@ describe('Animation Sequences', () => {
     test('highlights active player', async () => {
       const onAnimationStart = jest.fn();
       const user = userEvent.setup();
-      
-      render(
-        <AnimatedPokerComponent 
-          onAnimationStart={onAnimationStart}
-        />
-      );
+
+      render(<AnimatedPokerComponent onAnimationStart={onAnimationStart} />);
 
       const highlightButton = screen.getByTestId('player-highlight-btn');
-      
+
       await user.click(highlightButton);
 
       expect(onAnimationStart).toHaveBeenCalledWith('playerHighlight');
       expect(screen.getByTestId('current-animation')).toHaveTextContent('playerHighlight');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 1000 }
+      );
 
       expect(mockAnimations.playerHighlight).toHaveBeenCalled();
     });
@@ -343,14 +356,17 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent />);
 
       const transitionButton = screen.getByTestId('table-transition-btn');
-      
+
       await user.click(transitionButton);
 
       expect(screen.getByTestId('current-animation')).toHaveTextContent('tableTransition');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 1500 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 1500 }
+      );
 
       expect(mockAnimations.tableTransition).toHaveBeenCalled();
     });
@@ -358,24 +374,27 @@ describe('Animation Sequences', () => {
     test('handles long transition animations', async () => {
       const onAnimationEnd = jest.fn();
       const user = userEvent.setup();
-      
+
       render(
-        <AnimatedPokerComponent 
+        <AnimatedPokerComponent
           animationSpeed={0.5} // Slow animation
           onAnimationEnd={onAnimationEnd}
         />
       );
 
       const transitionButton = screen.getByTestId('table-transition-btn');
-      
+
       await user.click(transitionButton);
 
       // Should be animating for a while
       expect(screen.getByTestId('is-animating')).toHaveTextContent('true');
 
-      await waitFor(() => {
-        expect(screen.getByTestId('is-animating')).toHaveTextContent('false');
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('is-animating')).toHaveTextContent('false');
+        },
+        { timeout: 3000 }
+      );
 
       expect(onAnimationEnd).toHaveBeenCalledWith('tableTransition');
     });
@@ -389,7 +408,7 @@ describe('Animation Sequences', () => {
       expect(screen.getByTestId('animations-enabled')).toHaveTextContent('false');
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       await user.click(dealButton);
 
       // Should immediately call the mock without animation
@@ -400,11 +419,11 @@ describe('Animation Sequences', () => {
 
     test('displays correct animation speed', () => {
       const { rerender } = render(<AnimatedPokerComponent animationSpeed={1.5} />);
-      
+
       expect(screen.getByTestId('animation-speed')).toHaveTextContent('1.5x');
 
       rerender(<AnimatedPokerComponent animationSpeed={0.8} />);
-      
+
       expect(screen.getByTestId('animation-speed')).toHaveTextContent('0.8x');
     });
 
@@ -413,13 +432,16 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent animationSpeed={100} />);
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       await user.click(dealButton);
 
       // Should complete very quickly
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 100 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 100 }
+      );
 
       expect(mockAnimations.cardDeal).toHaveBeenCalled();
     });
@@ -431,7 +453,7 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent animationSpeed={2} />); // Moderate speed
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       // Start first animation
       await user.click(dealButton);
       expect(screen.getByTestId('current-animation')).toHaveTextContent('cardDeal');
@@ -440,9 +462,12 @@ describe('Animation Sequences', () => {
       await user.click(dealButton);
 
       // Wait for animations to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 3000 }
+      );
 
       // Both animations should have been executed
       expect(mockAnimations.cardDeal).toHaveBeenCalled();
@@ -454,16 +479,19 @@ describe('Animation Sequences', () => {
 
       const dealButton = screen.getByTestId('card-deal-btn');
       const flipButton = screen.getByTestId('card-flip-btn');
-      
+
       // Start deal animation
       await user.click(dealButton);
-      
+
       // Start flip animation (different type)
       await user.click(flipButton);
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 2000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 2000 }
+      );
 
       // Both should have been called
       expect(mockAnimations.cardDeal).toHaveBeenCalled();
@@ -477,7 +505,7 @@ describe('Animation Sequences', () => {
       const { unmount } = render(<AnimatedPokerComponent animationSpeed={0.1} />);
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       // Start animation
       await user.click(dealButton);
       expect(screen.getByTestId('is-animating')).toHaveTextContent('true');
@@ -505,9 +533,12 @@ describe('Animation Sequences', () => {
         await user.click(button);
       }
 
-      await waitFor(() => {
-        expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByTestId('current-animation')).toHaveTextContent('none');
+        },
+        { timeout: 3000 }
+      );
 
       // At least some animations should have been called
       expect(mockAnimations.cardDeal).toHaveBeenCalled();
@@ -522,7 +553,7 @@ describe('Animation Sequences', () => {
 
       const statusElement = screen.getByTestId('animation-status');
       expect(statusElement).toBeInTheDocument();
-      
+
       expect(screen.getByTestId('current-animation')).toBeInTheDocument();
       expect(screen.getByTestId('is-animating')).toBeInTheDocument();
     });
@@ -547,7 +578,7 @@ describe('Animation Sequences', () => {
       render(<AnimatedPokerComponent />);
 
       const dealButton = screen.getByTestId('card-deal-btn');
-      
+
       await user.click(dealButton);
 
       // With reduced motion, animations should complete immediately

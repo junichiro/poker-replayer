@@ -15,7 +15,8 @@
  * ```
  */
 
-import React from "react";
+import React from 'react';
+
 import {
   BaseComponentProps,
   ComponentSize,
@@ -24,7 +25,7 @@ import {
   CardRank,
   CardSuit,
   PLAYING_CARD_REGEX,
-} from "../types";
+} from '../types';
 
 /**
  * Props for the Card component using traditional approach
@@ -79,16 +80,16 @@ export type CardProps = CardPropsTraditional | CardPropsVariant;
  * Default props for the Card component
  */
 const defaultProps = {
-  size: "medium" as const,
+  size: 'medium' as const,
   isHidden: false,
-  className: "",
+  className: '',
 } satisfies Partial<CardPropsTraditional>;
 
 /**
  * Type guard to check if props use the variant approach
  */
 function isVariantProps(props: CardProps): props is CardPropsVariant {
-  return "variant" in props;
+  return 'variant' in props;
 }
 
 /**
@@ -96,12 +97,12 @@ function isVariantProps(props: CardProps): props is CardPropsVariant {
  * Supports both traditional props and discriminated union variants
  * Optimized with React.memo to prevent unnecessary re-renders
  */
-const CardComponent: React.FC<CardProps> = (props) => {
+const CardComponent: React.FC<CardProps> = props => {
   const {
     size = defaultProps.size,
     className = defaultProps.className,
     style,
-    "data-testid": testId,
+    'data-testid': testId,
   } = props;
 
   let cardValue: PlayingCard | undefined;
@@ -111,15 +112,15 @@ const CardComponent: React.FC<CardProps> = (props) => {
   if (isVariantProps(props)) {
     const { variant } = props;
     switch (variant.variant) {
-      case "visible":
+      case 'visible':
         cardValue = variant.card;
         isHidden = false;
         break;
-      case "hidden":
+      case 'hidden':
         cardValue = undefined;
         isHidden = true;
         break;
-      case "placeholder":
+      case 'placeholder':
         cardValue = undefined;
         isHidden = false;
         break;
@@ -146,7 +147,7 @@ const CardComponent: React.FC<CardProps> = (props) => {
   // Validate card format
   if (!PLAYING_CARD_REGEX.test(cardValue)) {
     console.warn(
-      `Invalid card format: ${cardValue}. Expected format: rank + suit (e.g., "As", "Kh")`,
+      `Invalid card format: ${cardValue}. Expected format: rank + suit (e.g., "As", "Kh")`
     );
     return (
       <div
@@ -161,18 +162,18 @@ const CardComponent: React.FC<CardProps> = (props) => {
 
   const suit = cardValue.slice(-1) as CardSuit;
   const rank = cardValue.slice(0, -1) as CardRank;
-  const isRed = ["h", "d"].includes(suit);
+  const isRed = ['h', 'd'].includes(suit);
 
   const suitSymbol: Record<CardSuit, string> = {
-    h: "♥",
-    d: "♦",
-    c: "♣",
-    s: "♠",
+    h: '♥',
+    d: '♦',
+    c: '♣',
+    s: '♠',
   };
 
   return (
     <div
-      className={`card card-${size} ${isRed ? "red" : "black"} ${className}`}
+      className={`card card-${size} ${isRed ? 'red' : 'black'} ${className}`}
       style={style}
       data-testid={testId}
       data-suit={suit}
@@ -187,15 +188,12 @@ const CardComponent: React.FC<CardProps> = (props) => {
  * Custom comparison function for React.memo
  * Only re-render if card-specific props have actually changed
  */
-function areCardPropsEqual(
-  prevProps: CardProps,
-  nextProps: CardProps,
-): boolean {
+function areCardPropsEqual(prevProps: CardProps, nextProps: CardProps): boolean {
   // Compare basic props
   if (
     prevProps.size !== nextProps.size ||
     prevProps.className !== nextProps.className ||
-    prevProps["data-testid"] !== nextProps["data-testid"]
+    prevProps['data-testid'] !== nextProps['data-testid']
   ) {
     return false;
   }
@@ -209,10 +207,7 @@ function areCardPropsEqual(
       return false;
     }
 
-    if (
-      prevVariant.variant === "visible" &&
-      nextVariant.variant === "visible"
-    ) {
+    if (prevVariant.variant === 'visible' && nextVariant.variant === 'visible') {
       return prevVariant.card === nextVariant.card;
     }
 
@@ -221,10 +216,7 @@ function areCardPropsEqual(
 
   // Handle traditional props comparison
   if (!isVariantProps(prevProps) && !isVariantProps(nextProps)) {
-    return (
-      prevProps.card === nextProps.card &&
-      prevProps.isHidden === nextProps.isHidden
-    );
+    return prevProps.card === nextProps.card && prevProps.isHidden === nextProps.isHidden;
   }
 
   // Mixed prop types - they're different

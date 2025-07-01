@@ -1,20 +1,22 @@
 # 🃏 Poker Hand Replay Examples
 
-This directory contains comprehensive examples demonstrating various use cases of the Poker Hand Replay component library.
+This directory contains comprehensive examples demonstrating various use cases
+of the Poker Hand Replay component library.
 
 ## 📁 Examples Overview
 
-| Example | Description | Framework | Complexity |
-|---------|-------------|-----------|------------|
-| [**basic**](./basic/) | Minimal setup with essential features | Create React App | ⭐ |
-| [**vite**](./vite/) | Vite setup with fast HMR | Vite + React | ⭐⭐ |
-| [**advanced**](./advanced/) | All features showcase (planned) | React | ⭐⭐⭐ |
-| [**theming**](./theming/) | Custom themes and styling (planned) | React | ⭐⭐ |
-| [**tournament**](./tournament/) | Tournament replay features (planned) | React | ⭐⭐⭐ |
+| Example                         | Description                           | Framework        | Complexity |
+| ------------------------------- | ------------------------------------- | ---------------- | ---------- |
+| [**basic**](./basic/)           | Minimal setup with essential features | Create React App | ⭐         |
+| [**vite**](./vite/)             | Vite setup with fast HMR              | Vite + React     | ⭐⭐       |
+| [**advanced**](./advanced/)     | All features showcase (planned)       | React            | ⭐⭐⭐     |
+| [**theming**](./theming/)       | Custom themes and styling (planned)   | React            | ⭐⭐       |
+| [**tournament**](./tournament/) | Tournament replay features (planned)  | React            | ⭐⭐⭐     |
 
 ## 🚀 Quick Start
 
 Each example is self-contained and includes:
+
 - 📄 **README.md** - Setup and usage instructions
 - 📦 **package.json** - Dependencies and scripts
 - 🔧 **Configuration files** - Framework-specific setup
@@ -37,11 +39,13 @@ npm start
 ## 🎯 Example Features
 
 ### Basic Example
+
 - ✅ Minimal component usage
 - ✅ Simple hand history parsing
 - ✅ Default theme and controls
 
 ### Advanced Example
+
 - ✅ All component features
 - ✅ Custom error handling
 - ✅ Loading states
@@ -49,18 +53,21 @@ npm start
 - ✅ Advanced configuration
 
 ### Framework Integration Examples
+
 - ✅ Next.js SSR considerations
 - ✅ Create React App setup
 - ✅ Vite configuration
 - ✅ TypeScript integration
 
 ### Theming Example
+
 - ✅ Custom theme creation
 - ✅ CSS variable overrides
 - ✅ Multiple theme switching
 - ✅ Responsive design
 
 ### Tournament Example
+
 - ✅ Tournament hand histories
 - ✅ Ante and blind handling
 - ✅ Multi-table scenarios
@@ -77,7 +84,8 @@ npm start
 ## 🛠️ Development
 
 ### Prerequisites
-- Node.js 16+ 
+
+- Node.js 16+
 - npm 7+ or yarn 1.22+
 
 ### Common Commands
@@ -101,7 +109,7 @@ npm run examples:clean
 Ready-to-use online templates (coming soon):
 
 - **Basic Example** - Get started instantly
-- **Vite Example** - Modern build tooling  
+- **Vite Example** - Modern build tooling
 - **Advanced Example** - Full features (planned)
 - **Theming Example** - Custom styling (planned)
 

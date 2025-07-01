@@ -1,12 +1,13 @@
 # 🚀 Advanced Example
 
-A comprehensive example showcasing all features and capabilities of the Poker Hand Replay component library.
+A comprehensive example showcasing all features and capabilities of the Poker
+Hand Replay component library.
 
 ## 🎯 What This Example Shows
 
 - ✅ **All Component Features** - Every configuration option and capability
 - ✅ **Advanced Error Handling** - Custom error boundaries and recovery
-- ✅ **Custom Loading States** - Progress indicators and skeleton loaders  
+- ✅ **Custom Loading States** - Progress indicators and skeleton loaders
 - ✅ **Event System** - Complete event handling and analytics
 - ✅ **Theme Customization** - Custom themes and color schemes
 - ✅ **Performance Optimization** - Memoization and efficient re-renders
@@ -113,7 +114,7 @@ const CustomErrorFallback = ({ error, retry, canRetry, boundaryName }) => (
 const HandAnalyzer = ({ hand, currentAction }) => {
   const potOdds = calculatePotOdds(hand, currentAction);
   const handStrength = evaluateHandStrength(hand.players[0].cards, hand.board);
-  
+
   return (
     <div className="hand-analysis">
       <div>Pot Odds: {potOdds}%</div>
@@ -130,17 +131,17 @@ const HandAnalyzer = ({ hand, currentAction }) => {
 // Live theme customization
 const ThemeCustomizer = ({ onThemeChange }) => {
   const [colors, setColors] = useState(defaultColors);
-  
+
   const updateColor = (key: string, value: string) => {
     const newColors = { ...colors, [key]: value };
     setColors(newColors);
     onThemeChange({ name: 'custom', colors: newColors });
   };
-  
+
   return (
     <div className="theme-editor">
       {Object.entries(colors).map(([key, value]) => (
-        <ColorPicker 
+        <ColorPicker
           key={key}
           label={key}
           value={value}
@@ -162,17 +163,17 @@ const usePerformanceMonitoring = () => {
     memoryUsage: 0,
     frameRate: 0,
   });
-  
+
   useEffect(() => {
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries();
       // Analyze performance metrics
     });
     observer.observe({ entryTypes: ['measure', 'navigation'] });
-    
+
     return () => observer.disconnect();
   }, []);
-  
+
   return metrics;
 };
 ```
@@ -187,7 +188,7 @@ const animationConfig = {
   enableCardAnimations: true,
   enableChipAnimations: true,
   enableActionHighlight: true,
-  cardDealDuration: 1200,      // Slower card dealing
+  cardDealDuration: 1200, // Slower card dealing
   actionTransitionDuration: 600, // Smooth transitions
   easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', // Custom easing
 };
@@ -205,7 +206,7 @@ const handleReplayEvent = (event: string, data?: any) => {
     timestamp: Date.now(),
     userAgent: navigator.userAgent,
   });
-  
+
   // Custom event handling
   switch (event) {
     case 'parseSuccess':
@@ -225,16 +226,16 @@ const handleReplayEvent = (event: string, data?: any) => {
 const useHandManager = () => {
   const [hands, setHands] = useState<HandHistory[]>([]);
   const [currentHand, setCurrentHand] = useState<number>(0);
-  
+
   const loadHand = useCallback(async (handHistory: string) => {
     const parser = new PokerStarsParser();
     const result = parser.parse(handHistory);
-    
+
     if (result.success) {
       setHands(prev => [...prev, result.hand]);
     }
   }, []);
-  
+
   return { hands, currentHand, setCurrentHand, loadHand };
 };
 ```
@@ -265,7 +266,7 @@ const useMemoryMonitoring = () => {
         console.log('Memory usage:', performance.memory);
       }
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, []);
 };
@@ -295,10 +296,10 @@ const trackReplayEvent = (event: string, data: any) => {
 const trackPerformance = () => {
   // First Contentful Paint
   const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
-  
+
   // Time to Interactive
   const ttiEntry = performance.getEntriesByName('time-to-interactive')[0];
-  
+
   // Send metrics to analytics
   sendAnalytics('performance', {
     fcp: fcpEntry?.startTime,
@@ -318,11 +319,11 @@ const trackPerformance = () => {
   --poker-success-color: #2ed573;
   --poker-error-color: #ff4757;
   --poker-warning-color: #ffa502;
-  
+
   --poker-table-felt: #0f5132;
   --poker-card-bg: #ffffff;
   --poker-card-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  
+
   --poker-animation-duration: 0.5s;
   --poker-animation-easing: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -336,11 +337,11 @@ const trackPerformance = () => {
     transform: scale(0.8);
     transform-origin: top center;
   }
-  
+
   .controls-panel {
     flex-direction: column;
   }
-  
+
   .theme-customizer {
     display: none; /* Hide on mobile for simplicity */
   }
@@ -371,7 +372,7 @@ const useKeyboardControls = () => {
           break;
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, []);
@@ -422,12 +423,13 @@ const usePokerStore = create((set, get) => ({
   hands: [],
   currentAction: 0,
   isPlaying: false,
-  
-  setHands: (hands) => set({ hands }),
-  nextAction: () => set((state) => ({ 
-    currentAction: Math.min(state.currentAction + 1, state.totalActions - 1) 
-  })),
-  togglePlay: () => set((state) => ({ isPlaying: !state.isPlaying })),
+
+  setHands: hands => set({ hands }),
+  nextAction: () =>
+    set(state => ({
+      currentAction: Math.min(state.currentAction + 1, state.totalActions - 1),
+    })),
+  togglePlay: () => set(state => ({ isPlaying: !state.isPlaying })),
 }));
 ```
 
@@ -450,4 +452,6 @@ This advanced example demonstrates best practices. Feel free to:
 
 ---
 
-**Need help?** [Open an issue](https://github.com/junichiro/poker-replayer/issues) or check the [discussions](https://github.com/junichiro/poker-replayer/discussions).
+**Need help?**
+[Open an issue](https://github.com/junichiro/poker-replayer/issues) or check the
+[discussions](https://github.com/junichiro/poker-replayer/discussions).

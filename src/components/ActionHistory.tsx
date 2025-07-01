@@ -2,14 +2,9 @@
  * Action history component for displaying the sequence of actions in the hand
  */
 
-import React, {
-  useMemo,
-  useCallback,
-  useState,
-  useEffect,
-  useRef,
-} from "react";
-import { Action } from "../types";
+import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+
+import { Action } from '../types';
 
 export interface ActionHistoryProps {
   /** List of actions to display */
@@ -48,27 +43,27 @@ const ActionItem = React.memo<ActionItemProps>(
     }, [onActionClick, isClickable, index]);
 
     const className = useMemo(() => {
-      const classes = ["action"];
-      if (index <= currentActionIndex) classes.push("played");
-      if (index === currentActionIndex) classes.push("current");
-      if (isClickable) classes.push("clickable");
-      return classes.join(" ");
+      const classes = ['action'];
+      if (index <= currentActionIndex) classes.push('played');
+      if (index === currentActionIndex) classes.push('current');
+      if (isClickable) classes.push('clickable');
+      return classes.join(' ');
     }, [index, currentActionIndex, isClickable]);
 
     return (
       <div
         className={className}
         onClick={handleClick}
-        style={{ minHeight: "24px" }} // Consistent height for virtualization
+        style={{ minHeight: '24px' }} // Consistent height for virtualization
       >
         <span className="street">{action.street}</span>
-        <span className="player">{action.player || "System"}</span>
+        <span className="player">{action.player || 'System'}</span>
         <span className="action-type">{action.type}</span>
         {action.amount && <span className="amount">${action.amount}</span>}
         {action.isAllIn && <span className="all-in">ALL IN</span>}
         {action.reason && <span className="reason">{action.reason}</span>}
         {action.cards && action.cards.length > 0 && (
-          <span className="cards">[{action.cards.join(", ")}]</span>
+          <span className="cards">[{action.cards.join(', ')}]</span>
         )}
       </div>
     );
@@ -82,10 +77,10 @@ const ActionItem = React.memo<ActionItemProps>(
       prevProps.onActionClick === nextProps.onActionClick &&
       prevProps.isClickable === nextProps.isClickable
     );
-  },
+  }
 );
 
-ActionItem.displayName = "ActionItem";
+ActionItem.displayName = 'ActionItem';
 
 // Virtual scrolling implementation for performance with large action lists
 const VirtualizedActionList: React.FC<{
@@ -94,13 +89,7 @@ const VirtualizedActionList: React.FC<{
   onActionClick?: (index: number) => void;
   itemHeight: number;
   maxHeight: number;
-}> = ({
-  actions,
-  currentActionIndex,
-  onActionClick,
-  itemHeight,
-  maxHeight,
-}) => {
+}> = ({ actions, currentActionIndex, onActionClick, itemHeight, maxHeight }) => {
   const [scrollTop, setScrollTop] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -109,7 +98,7 @@ const VirtualizedActionList: React.FC<{
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / itemHeight) + 1,
-      actions.length,
+      actions.length
     );
 
     return { startIndex, endIndex };
@@ -133,7 +122,7 @@ const VirtualizedActionList: React.FC<{
       ) {
         containerRef.current.scrollTo({
           top: Math.max(0, targetScrollTop - containerHeight / 2),
-          behavior: "smooth",
+          behavior: 'smooth',
         });
       }
     }
@@ -151,8 +140,8 @@ const VirtualizedActionList: React.FC<{
       className="action-list virtualized"
       style={{
         height: maxHeight,
-        overflowY: "auto",
-        position: "relative",
+        overflowY: 'auto',
+        position: 'relative',
       }}
       onScroll={handleScroll}
     >
@@ -188,14 +177,12 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
   actions,
   currentActionIndex,
   visible = true,
-  className = "",
+  className = '',
   onActionClick,
   enableVirtualization,
   itemHeight = 24,
   maxHeight = 200,
 }) => {
-  if (!visible) return null;
-
   // Determine if virtualization should be enabled
   const shouldVirtualize = useMemo(() => {
     if (enableVirtualization !== undefined) {
@@ -210,8 +197,10 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
     (index: number) => {
       onActionClick?.(index);
     },
-    [onActionClick],
+    [onActionClick]
   );
+
+  if (!visible) return null;
 
   const isClickable = !!onActionClick;
 
@@ -228,7 +217,7 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
           maxHeight={maxHeight}
         />
       ) : (
-        <div className="action-list" style={{ maxHeight, overflowY: "auto" }}>
+        <div className="action-list" style={{ maxHeight, overflowY: 'auto' }}>
           {actions.map((action, index) => (
             <ActionItem
               key={action.index}
@@ -251,7 +240,7 @@ const ActionHistoryComponent: React.FC<ActionHistoryProps> = ({
  */
 function areActionHistoryPropsEqual(
   prevProps: ActionHistoryProps,
-  nextProps: ActionHistoryProps,
+  nextProps: ActionHistoryProps
 ): boolean {
   // Compare basic props
   if (
@@ -290,9 +279,6 @@ function areActionHistoryPropsEqual(
  * Memoized ActionHistory component for optimal performance
  * Includes virtualization for large action lists and optimized re-rendering
  */
-export const ActionHistory = React.memo(
-  ActionHistoryComponent,
-  areActionHistoryPropsEqual,
-);
+export const ActionHistory = React.memo(ActionHistoryComponent, areActionHistoryPropsEqual);
 
 export default ActionHistory;

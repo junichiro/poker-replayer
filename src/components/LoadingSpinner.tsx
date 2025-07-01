@@ -5,17 +5,17 @@
  * sizes, and animation styles for different use cases.
  */
 
-import React from "react";
+import React from 'react';
 
 export interface LoadingSpinnerProps {
   /** Size of the spinner */
-  size?: "small" | "medium" | "large" | number;
+  size?: 'small' | 'medium' | 'large' | number;
   /** Loading message to display */
   message?: string;
   /** Color theme */
-  color?: "primary" | "secondary" | "success" | "warning" | "error" | string;
+  color?: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | string;
   /** Animation style */
-  variant?: "spin" | "pulse" | "dots" | "bars" | "card";
+  variant?: 'spin' | 'pulse' | 'dots' | 'bars' | 'card';
   /** Whether to show message below spinner */
   showMessage?: boolean;
   /** Custom CSS class */
@@ -43,11 +43,11 @@ export interface SkeletonProps {
   /** Height of skeleton */
   height?: string | number;
   /** Skeleton variant */
-  variant?: "text" | "rectangular" | "circular" | "card" | "table" | "player";
+  variant?: 'text' | 'rectangular' | 'circular' | 'card' | 'table' | 'player';
   /** Number of lines for text variant */
   lines?: number;
   /** Animation style */
-  animation?: "wave" | "pulse" | "none";
+  animation?: 'wave' | 'pulse' | 'none';
   /** Custom CSS class */
   className?: string;
 }
@@ -65,32 +65,32 @@ const sizeConfig = {
  * Color configuration
  */
 const colorConfig = {
-  primary: "#3498db",
-  secondary: "#95a5a6",
-  success: "#27ae60",
-  warning: "#f39c12",
-  error: "#e74c3c",
+  primary: '#3498db',
+  secondary: '#95a5a6',
+  success: '#27ae60',
+  warning: '#f39c12',
+  error: '#e74c3c',
 };
 
 /**
  * Basic loading spinner component
  */
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
-  size = "medium",
+  size = 'medium',
   message,
-  color = "primary",
-  variant = "spin",
+  color = 'primary',
+  variant = 'spin',
   showMessage = true,
-  className = "",
+  className = '',
   centered = true,
   overlay = false,
 }) => {
-  const spinnerSize = typeof size === "number" ? size : sizeConfig[size];
+  const spinnerSize = typeof size === 'number' ? size : sizeConfig[size];
   const spinnerColor = colorConfig[color as keyof typeof colorConfig] || color;
 
   const SpinnerComponent = () => {
     switch (variant) {
-      case "pulse":
+      case 'pulse':
         return (
           <div
             className="loading-pulse"
@@ -102,10 +102,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           />
         );
 
-      case "dots":
+      case 'dots':
         return (
           <div className="loading-dots">
-            {[0, 1, 2].map((i) => (
+            {[0, 1, 2].map(i => (
               <div
                 key={i}
                 className="loading-dot"
@@ -120,10 +120,10 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           </div>
         );
 
-      case "bars":
+      case 'bars':
         return (
           <div className="loading-bars">
-            {[0, 1, 2, 3, 4].map((i) => (
+            {[0, 1, 2, 3, 4].map(i => (
               <div
                 key={i}
                 className="loading-bar"
@@ -138,7 +138,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           </div>
         );
 
-      case "card":
+      case 'card':
         return (
           <div className="loading-card-flip">
             <div
@@ -168,13 +168,9 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const content = (
-    <div
-      className={`loading-spinner ${centered ? "centered" : ""} ${className}`}
-    >
+    <div className={`loading-spinner ${centered ? 'centered' : ''} ${className}`}>
       <SpinnerComponent />
-      {showMessage && message && (
-        <div className="loading-message">{message}</div>
-      )}
+      {showMessage && message && <div className="loading-message">{message}</div>}
 
       <style>{`
         .loading-spinner {
@@ -297,14 +293,14 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 export const ProgressSpinner: React.FC<ProgressSpinnerProps> = ({
   progress,
   showProgress = true,
-  progressColor = "#3498db",
-  backgroundColor = "#ecf0f1",
-  size = "medium",
+  progressColor = '#3498db',
+  backgroundColor = '#ecf0f1',
+  size = 'medium',
   message,
-  className = "",
+  className = '',
   ..._props
 }) => {
-  const spinnerSize = typeof size === "number" ? size : sizeConfig[size];
+  const spinnerSize = typeof size === 'number' ? size : sizeConfig[size];
   const strokeWidth = Math.max(2, spinnerSize / 12);
   const radius = (spinnerSize - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -342,10 +338,7 @@ export const ProgressSpinner: React.FC<ProgressSpinnerProps> = ({
         </svg>
 
         {showProgress && (
-          <div
-            className="progress-text"
-            style={{ fontSize: Math.max(10, spinnerSize / 4) }}
-          >
+          <div className="progress-text" style={{ fontSize: Math.max(10, spinnerSize / 4) }}>
             {Math.round(progress)}%
           </div>
         )}
@@ -398,67 +391,67 @@ export const ProgressSpinner: React.FC<ProgressSpinnerProps> = ({
 export const Skeleton: React.FC<SkeletonProps> = ({
   width,
   height,
-  variant = "text",
+  variant = 'text',
   lines = 1,
-  animation = "wave",
-  className = "",
+  animation = 'wave',
+  className = '',
 }) => {
   const getSkeletonStyle = () => {
     const baseStyle: React.CSSProperties = {
-      backgroundColor: "#f0f0f0",
-      borderRadius: "4px",
+      backgroundColor: '#f0f0f0',
+      borderRadius: '4px',
     };
 
     switch (variant) {
-      case "circular":
+      case 'circular':
         return {
           ...baseStyle,
           width: width || height || 40,
           height: height || width || 40,
-          borderRadius: "50%",
+          borderRadius: '50%',
         };
 
-      case "rectangular":
+      case 'rectangular':
         return {
           ...baseStyle,
-          width: width || "100%",
+          width: width || '100%',
           height: height || 20,
         };
 
-      case "card":
+      case 'card':
         return {
           ...baseStyle,
           width: width || 60,
           height: height || 80,
-          borderRadius: "8px",
+          borderRadius: '8px',
         };
 
-      case "table":
+      case 'table':
         return {
           ...baseStyle,
-          width: width || "100%",
+          width: width || '100%',
           height: height || 200,
-          borderRadius: "8px",
+          borderRadius: '8px',
         };
 
-      case "player":
+      case 'player':
         return {
           ...baseStyle,
           width: width || 100,
           height: height || 60,
-          borderRadius: "8px",
+          borderRadius: '8px',
         };
 
       default: // 'text'
         return {
           ...baseStyle,
-          width: width || "100%",
+          width: width || '100%',
           height: height || 16,
         };
     }
   };
 
-  if (variant === "text" && lines > 1) {
+  if (variant === 'text' && lines > 1) {
     return (
       <div className={`skeleton-text ${className}`}>
         {Array.from({ length: lines }, (_, i) => (
@@ -467,7 +460,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
             className={`skeleton-line ${animation}`}
             style={{
               ...getSkeletonStyle(),
-              width: i === lines - 1 ? "75%" : "100%",
+              width: i === lines - 1 ? '75%' : '100%',
             }}
           />
         ))}
@@ -519,10 +512,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   }
 
   return (
-    <div
-      className={`skeleton ${animation} ${className}`}
-      style={getSkeletonStyle()}
-    >
+    <div className={`skeleton ${animation} ${className}`} style={getSkeletonStyle()}>
       <style>{`
         .skeleton {
           position: relative;

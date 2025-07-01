@@ -5,7 +5,7 @@
     "noEmit": true,
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
-    
+
     // Less strict for development
     "noUnusedLocals": false,
     "noUnusedParameters": false

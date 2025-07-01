@@ -2,8 +2,9 @@
  * Pot display component for showing pot amounts and types
  */
 
-import React from "react";
-import { Pot as PotType } from "../types";
+import React from 'react';
+
+import { Pot as PotType } from '../types';
 
 export interface PotProps {
   /** Pot data to display */
@@ -14,17 +15,11 @@ export interface PotProps {
   className?: string;
 }
 
-const PotComponent: React.FC<PotProps> = ({
-  pot,
-  showDetails = false,
-  className = "",
-}) => {
-  const potTypeClass = pot.isSide ? "side-pot" : "main-pot";
+const PotComponent: React.FC<PotProps> = ({ pot, showDetails = false, className = '' }) => {
+  const potTypeClass = pot.isSide ? 'side-pot' : 'main-pot';
 
   return (
-    <div
-      className={`pot ${potTypeClass} ${pot.isSplit ? "split-pot" : ""} ${className}`}
-    >
+    <div className={`pot ${potTypeClass} ${pot.isSplit ? 'split-pot' : ''} ${className}`}>
       <div className="pot-amount">${pot.amount}</div>
 
       {pot.isSide && pot.sidePotLevel && (
@@ -36,18 +31,14 @@ const PotComponent: React.FC<PotProps> = ({
       {showDetails && (
         <div className="pot-details">
           {pot.players.length > 0 && (
-            <div className="pot-winners">Winners: {pot.players.join(", ")}</div>
+            <div className="pot-winners">Winners: {pot.players.join(', ')}</div>
           )}
 
           {pot.eligiblePlayers && pot.eligiblePlayers.length > 0 && (
-            <div className="pot-eligible">
-              Eligible: {pot.eligiblePlayers.join(", ")}
-            </div>
+            <div className="pot-eligible">Eligible: {pot.eligiblePlayers.join(', ')}</div>
           )}
 
-          {pot.oddChipWinner && (
-            <div className="odd-chip">Odd chip: {pot.oddChipWinner}</div>
-          )}
+          {pot.oddChipWinner && <div className="odd-chip">Odd chip: {pot.oddChipWinner}</div>}
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 # 🃏 Basic Example
 
-A minimal example demonstrating the core functionality of the Poker Hand Replay component.
+A minimal example demonstrating the core functionality of the Poker Hand Replay
+component.
 
 ## 🎯 What This Example Shows
 
@@ -47,7 +48,7 @@ import { PokerHandReplay } from 'poker-hand-replay';
 
 function App() {
   return (
-    <PokerHandReplay 
+    <PokerHandReplay
       handHistory={handHistoryString}
       config={{
         theme: "dark",
@@ -96,7 +97,7 @@ const handleActionChange = (action: Action, index: number) => {
 
 ```typescript
 // Available themes: "light", "dark", "auto", "casino", "professional"
-<PokerHandReplay 
+<PokerHandReplay
   config={{ theme: "casino" }}
   handHistory={handHistory}
 />
@@ -106,7 +107,7 @@ const handleActionChange = (action: Action, index: number) => {
 
 ```typescript
 // Speed range: 0.5 (slow) to 3.0 (fast)
-<PokerHandReplay 
+<PokerHandReplay
   config={{ animationSpeed: 2.0 }}
   handHistory={handHistory}
 />
@@ -116,7 +117,7 @@ const handleActionChange = (action: Action, index: number) => {
 
 ```typescript
 // Enable auto-play for automatic progression
-<PokerHandReplay 
+<PokerHandReplay
   config={{ autoPlay: true }}
   handHistory={handHistory}
 />
@@ -127,16 +128,19 @@ const handleActionChange = (action: Action, index: number) => {
 ### Common Issues
 
 **Component not rendering**
+
 - Ensure you have React 16.8+ installed
 - Check that the hand history string is valid
 - Verify TypeScript configuration
 
 **Parse errors**
+
 - Check hand history format (must be PokerStars format)
 - Ensure the string is complete and properly formatted
 - Use the error callback to debug parsing issues
 
 **Styling issues**
+
 - Import the component CSS if required
 - Check for CSS conflicts with your existing styles
 - Use the `className` prop for custom styling
@@ -155,4 +159,6 @@ const handleActionChange = (action: Action, index: number) => {
 
 ---
 
-**Need help?** [Open an issue](https://github.com/junichiro/poker-replayer/issues) or check the [discussions](https://github.com/junichiro/poker-replayer/discussions).
+**Need help?**
+[Open an issue](https://github.com/junichiro/poker-replayer/issues) or check the
+[discussions](https://github.com/junichiro/poker-replayer/discussions).

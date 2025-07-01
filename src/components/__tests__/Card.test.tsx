@@ -2,22 +2,23 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+import type { PlayingCard } from '../../types';
 import { Card } from '../Card';
 import type { CardProps } from '../Card';
-import type { PlayingCard } from '../../types';
 
 describe('Card Component', () => {
   describe('Rendering with Traditional Props', () => {
     test('renders visible card with valid card value', () => {
       render(<Card card="As" size="medium" data-testid="ace-spades" />);
-      
+
       const card = screen.getByTestId('ace-spades');
       expect(card).toBeInTheDocument();
       expect(card).toHaveClass('card', 'card-medium', 'black');
       expect(card).toHaveAttribute('data-suit', 's');
-      
+
       // Check card content
       expect(screen.getByText('A')).toBeInTheDocument(); // rank
       expect(screen.getByText('♠')).toBeInTheDocument(); // suit symbol
@@ -25,7 +26,7 @@ describe('Card Component', () => {
 
     test('renders red cards with correct styling', () => {
       render(<Card card="Kh" data-testid="king-hearts" />);
-      
+
       const card = screen.getByTestId('king-hearts');
       expect(card).toHaveClass('red');
       expect(card).toHaveAttribute('data-suit', 'h');
@@ -35,7 +36,7 @@ describe('Card Component', () => {
 
     test('renders black cards with correct styling', () => {
       render(<Card card="Qc" data-testid="queen-clubs" />);
-      
+
       const card = screen.getByTestId('queen-clubs');
       expect(card).toHaveClass('black');
       expect(card).toHaveAttribute('data-suit', 'c');
@@ -45,7 +46,7 @@ describe('Card Component', () => {
 
     test('renders diamond cards as red', () => {
       render(<Card card="Jd" data-testid="jack-diamonds" />);
-      
+
       const card = screen.getByTestId('jack-diamonds');
       expect(card).toHaveClass('red');
       expect(card).toHaveAttribute('data-suit', 'd');
@@ -55,11 +56,11 @@ describe('Card Component', () => {
 
     test('renders hidden card when isHidden is true', () => {
       render(<Card card="As" isHidden data-testid="hidden-card" />);
-      
+
       const card = screen.getByTestId('hidden-card');
       expect(card).toHaveClass('card-hidden');
       expect(card.querySelector('.card-back')).toBeInTheDocument();
-      
+
       // Should not show rank or suit
       expect(screen.queryByText('A')).not.toBeInTheDocument();
       expect(screen.queryByText('♠')).not.toBeInTheDocument();
@@ -67,7 +68,7 @@ describe('Card Component', () => {
 
     test('renders hidden card when no card value provided', () => {
       render(<Card data-testid="no-card" />);
-      
+
       const card = screen.getByTestId('no-card');
       expect(card).toHaveClass('card-hidden');
       expect(card.querySelector('.card-back')).toBeInTheDocument();
@@ -86,7 +87,7 @@ describe('Card Component', () => {
 
     test('applies custom className', () => {
       render(<Card card="As" className="custom-class" data-testid="card" />);
-      
+
       const card = screen.getByTestId('card');
       expect(card).toHaveClass('custom-class');
     });
@@ -94,7 +95,7 @@ describe('Card Component', () => {
     test('applies custom styles', () => {
       const customStyle = { border: '2px solid red' };
       render(<Card card="As" style={customStyle} data-testid="card" />);
-      
+
       const card = screen.getByTestId('card');
       expect(card).toHaveStyle('border: 2px solid red');
     });
@@ -102,13 +103,8 @@ describe('Card Component', () => {
 
   describe('Rendering with Variant Props', () => {
     test('renders visible card variant', () => {
-      render(
-        <Card 
-          variant={{ variant: 'visible', card: 'Ts' }} 
-          data-testid="ten-spades" 
-        />
-      );
-      
+      render(<Card variant={{ variant: 'visible', card: 'Ts' }} data-testid="ten-spades" />);
+
       const card = screen.getByTestId('ten-spades');
       expect(card).toHaveClass('card', 'black');
       expect(card).toHaveAttribute('data-suit', 's');
@@ -117,26 +113,16 @@ describe('Card Component', () => {
     });
 
     test('renders hidden card variant', () => {
-      render(
-        <Card 
-          variant={{ variant: 'hidden' }} 
-          data-testid="hidden-variant" 
-        />
-      );
-      
+      render(<Card variant={{ variant: 'hidden' }} data-testid="hidden-variant" />);
+
       const card = screen.getByTestId('hidden-variant');
       expect(card).toHaveClass('card-hidden');
       expect(card.querySelector('.card-back')).toBeInTheDocument();
     });
 
     test('renders placeholder card variant', () => {
-      render(
-        <Card 
-          variant={{ variant: 'placeholder' }} 
-          data-testid="placeholder-card" 
-        />
-      );
-      
+      render(<Card variant={{ variant: 'placeholder' }} data-testid="placeholder-card" />);
+
       const card = screen.getByTestId('placeholder-card');
       expect(card).toHaveClass('card-hidden');
       expect(card.querySelector('.card-back')).toBeInTheDocument();
@@ -146,24 +132,24 @@ describe('Card Component', () => {
   describe('Error Handling', () => {
     test('renders error state for invalid card format', () => {
       const consoleSpy = jest.spyOn(console, 'warn').mockImplementation();
-      
-      render(<Card card={"XX" as PlayingCard} data-testid="invalid-card" />);
-      
+
+      render(<Card card={'XX' as PlayingCard} data-testid="invalid-card" />);
+
       const card = screen.getByTestId('invalid-card');
       expect(card).toHaveClass('card-invalid');
       expect(card.querySelector('.card-error')).toBeInTheDocument();
       expect(screen.getByText('?')).toBeInTheDocument();
-      
+
       expect(consoleSpy).toHaveBeenCalledWith(
         'Invalid card format: XX. Expected format: rank + suit (e.g., "As", "Kh")'
       );
-      
+
       consoleSpy.mockRestore();
     });
 
     test('handles empty string card gracefully', () => {
-      render(<Card card={"" as PlayingCard} data-testid="empty-card" />);
-      
+      render(<Card card={'' as PlayingCard} data-testid="empty-card" />);
+
       const card = screen.getByTestId('empty-card');
       expect(card).toHaveClass('card-hidden');
     });
@@ -175,15 +161,15 @@ describe('Card Component', () => {
     const suitSymbols = { h: '♥', d: '♦', c: '♣', s: '♠' };
     const redSuits = ['h', 'd'];
 
-    test.each(ranks)('renders rank %s correctly', (rank) => {
+    test.each(ranks)('renders rank %s correctly', rank => {
       render(<Card card={`${rank}s` as PlayingCard} data-testid={`card-${rank}`} />);
       expect(screen.getByText(rank)).toBeInTheDocument();
     });
 
-    test.each(suits)('renders suit %s correctly', (suit) => {
+    test.each(suits)('renders suit %s correctly', suit => {
       render(<Card card={`A${suit}` as PlayingCard} data-testid={`card-${suit}`} />);
       expect(screen.getByText(suitSymbols[suit as keyof typeof suitSymbols])).toBeInTheDocument();
-      
+
       const card = screen.getByTestId(`card-${suit}`);
       if (redSuits.includes(suit)) {
         expect(card).toHaveClass('red');
@@ -196,14 +182,14 @@ describe('Card Component', () => {
   describe('Accessibility', () => {
     test('has proper data attributes for screen readers', () => {
       render(<Card card="As" data-testid="accessible-card" />);
-      
+
       const card = screen.getByTestId('accessible-card');
       expect(card).toHaveAttribute('data-suit', 's');
     });
 
     test('hidden cards do not expose card information', () => {
       render(<Card card="As" isHidden data-testid="hidden-accessible" />);
-      
+
       const card = screen.getByTestId('hidden-accessible');
       expect(card).not.toHaveAttribute('data-suit');
       expect(card.textContent).not.toContain('A');
@@ -214,7 +200,7 @@ describe('Card Component', () => {
   describe('Performance and Memoization', () => {
     test('does not re-render when irrelevant props change', () => {
       let renderCount = 0;
-      
+
       const TestCard = React.memo((props: CardProps & { irrelevant?: string }) => {
         renderCount++;
         const { irrelevant: _irrelevant, ...cardProps } = props;
@@ -226,19 +212,19 @@ describe('Card Component', () => {
 
       // Changing irrelevant prop should not cause Card to re-render
       rerender(<TestCard card="As" irrelevant="value2" />);
-      
+
       // The TestCard will re-render, but the inner Card should be memoized
       expect(screen.getByTestId('memo-card')).toBeInTheDocument();
     });
 
     test('re-renders when card value changes', () => {
       const { rerender } = render(<Card card="As" data-testid="changing-card" />);
-      
+
       expect(screen.getByText('A')).toBeInTheDocument();
       expect(screen.getByText('♠')).toBeInTheDocument();
 
       rerender(<Card card="Kh" data-testid="changing-card" />);
-      
+
       expect(screen.getByText('K')).toBeInTheDocument();
       expect(screen.getByText('♥')).toBeInTheDocument();
       expect(screen.queryByText('A')).not.toBeInTheDocument();
@@ -263,12 +249,7 @@ describe('Card Component', () => {
       const { rerender } = render(<Card card="As" data-testid="switching-card" />);
       expect(screen.getByText('A')).toBeInTheDocument();
 
-      rerender(
-        <Card 
-          variant={{ variant: 'visible', card: 'Kh' }} 
-          data-testid="switching-card" 
-        />
-      );
+      rerender(<Card variant={{ variant: 'visible', card: 'Kh' }} data-testid="switching-card" />);
       expect(screen.getByText('K')).toBeInTheDocument();
       expect(screen.getByText('♥')).toBeInTheDocument();
     });

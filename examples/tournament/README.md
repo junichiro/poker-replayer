@@ -1,6 +1,7 @@
 # 🏆 Tournament Example
 
-A specialized example demonstrating tournament-specific features of the Poker Hand Replay component, including antes, blinds, and multi-table scenarios.
+A specialized example demonstrating tournament-specific features of the Poker
+Hand Replay component, including antes, blinds, and multi-table scenarios.
 
 ## 🎯 What This Example Shows
 
@@ -28,12 +29,12 @@ npm start
 
 ```typescript
 const tournamentTypes = {
-  sng: "Sit & Go Tournament",
-  mtt: "Multi-Table Tournament", 
-  satellite: "Satellite Tournament",
-  freeroll: "Freeroll Tournament",
-  bounty: "Bounty Tournament",
-  shootout: "Shootout Tournament",
+  sng: 'Sit & Go Tournament',
+  mtt: 'Multi-Table Tournament',
+  satellite: 'Satellite Tournament',
+  freeroll: 'Freeroll Tournament',
+  bounty: 'Bounty Tournament',
+  shootout: 'Shootout Tournament',
 };
 ```
 
@@ -241,17 +242,17 @@ const BlindTimer = ({ currentLevel, nextLevel, timeLeft }) => {
         <div className="blinds">{currentLevel.small}/{currentLevel.big}</div>
         {currentLevel.ante && <div className="ante">Ante: {currentLevel.ante}</div>}
       </div>
-      
+
       <div className="timer">
         <div className="time-left">{formatTime(timeLeft)}</div>
         <div className="progress-bar">
-          <div 
-            className="progress" 
+          <div
+            className="progress"
             style={{ width: `${(timeLeft / currentLevel.duration) * 100}%` }}
           />
         </div>
       </div>
-      
+
       <div className="next-level">
         <h4>Next: {nextLevel.small}/{nextLevel.big}</h4>
         {nextLevel.ante && <span>Ante: {nextLevel.ante}</span>}
@@ -269,8 +270,8 @@ const PayoutTable = ({ payouts, totalPlayers, currentPlayers }) => (
     <h3>Prize Structure</h3>
     <div className="payout-grid">
       {payouts.map((payout, index) => (
-        <div 
-          key={index} 
+        <div
+          key={index}
           className={`payout-row ${currentPlayers <= index + 1 ? 'in-money' : ''}`}
         >
           <span className="position">{index + 1}</span>
@@ -306,7 +307,7 @@ const PlayerStackTracker = ({ players, averageStack }) => (
           <span className="name">{player.name}</span>
           <span className="chips">{player.chips.toLocaleString()}</span>
           <div className="stack-bar">
-            <div 
+            <div
               className="stack-fill"
               style={{ width: `${(player.chips / averageStack) * 50}%` }}
             />
@@ -328,14 +329,14 @@ const PlayerStackTracker = ({ players, averageStack }) => (
 const calculateICM = (stacks: number[], payouts: number[]) => {
   // Independent Chip Model calculation
   const totalChips = stacks.reduce((sum, stack) => sum + stack, 0);
-  
+
   return stacks.map(stack => {
     const chipPercentage = stack / totalChips;
     const equityValue = payouts.reduce((equity, payout, index) => {
       const probability = calculateFinishProbability(stack, stacks, index);
-      return equity + (probability * payout);
+      return equity + probability * payout;
     }, 0);
-    
+
     return {
       chips: stack,
       percentage: chipPercentage,
@@ -356,8 +357,12 @@ const calculateBubbleFactor = (
   payouts: number
 ) => {
   const chipEquity = playerStack / (averageStack * playersLeft);
-  const prizeEquity = calculateICMEquity(playerStack, allStacks, payoutStructure);
-  
+  const prizeEquity = calculateICMEquity(
+    playerStack,
+    allStacks,
+    payoutStructure
+  );
+
   return chipEquity / prizeEquity;
 };
 ```
@@ -372,18 +377,18 @@ const TableBalancer = ({ tables, targetSize }) => {
     // Algorithm to balance player counts across tables
     const totalPlayers = tables.reduce((sum, table) => sum + table.players.length, 0);
     const tablesNeeded = Math.ceil(totalPlayers / targetSize);
-    
+
     // Redistribute players
     return redistributePlayers(tables, tablesNeeded, targetSize);
   };
-  
+
   useEffect(() => {
     const balanced = balanceTables();
     if (balanced !== tables) {
       onTablesRebalanced(balanced);
     }
   }, [tables]);
-  
+
   return (
     <div className="table-balancer">
       {tables.map(table => (
@@ -421,7 +426,7 @@ const SatelliteTracker = ({ target, seats, qualified }) => (
 
 ```typescript
 const tournamentConfig = {
-  theme: "professional",
+  theme: 'professional',
   showChipCounts: true,
   showBlindLevels: true,
   highlightBubble: true,
@@ -454,4 +459,5 @@ const tournamentConfig = {
 
 ---
 
-**Tournament ready!** This example covers everything from early play to final table scenarios.
+**Tournament ready!** This example covers everything from early play to final
+table scenarios.

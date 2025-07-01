@@ -5,14 +5,14 @@
     "module": "ESNext",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
-    
+
     // Module Resolution
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
-    
+
     // Type Checking - Strict Mode (balanced for existing codebase)
     "strict": true,
     "noImplicitAny": true,
@@ -25,7 +25,7 @@
     "exactOptionalPropertyTypes": false,
     "noPropertyAccessFromIndexSignature": false,
     "noFallthroughCasesInSwitch": true,
-    
+
     // Emit Options
     "declaration": true,
     "declarationMap": true,
@@ -33,15 +33,15 @@
     "removeComments": false,
     "importHelpers": false,
     "downlevelIteration": true,
-    
+
     // Interop Constraints
     "forceConsistentCasingInFileNames": true,
     "allowImportingTsExtensions": false,
-    
+
     // Performance
     "skipLibCheck": true,
     "incremental": true,
-    
+
     // Path Mapping
     "baseUrl": ".",
     "paths": {
@@ -52,9 +52,7 @@
       "@/parser/*": ["src/parser/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "node_modules",
     "dist",
