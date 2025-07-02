@@ -24,21 +24,25 @@ const meta: Meta<typeof Player> = {
       control: 'object',
       description: 'Player data object containing name, chips, cards, and position',
     },
-    isCurrentPlayer: {
-      control: 'boolean',
-      description: 'Whether this is the player whose turn it is',
+    currentChips: {
+      control: 'number',
+      description: 'Current chip count during the hand (overrides player.chips)',
     },
-    isHero: {
+    isAllIn: {
       control: 'boolean',
-      description: 'Whether this is the main player (user)',
+      description: 'Whether the player is all-in',
     },
     showCards: {
       control: 'boolean',
       description: "Whether to show the player's hole cards",
     },
-    onClick: {
-      action: 'clicked',
-      description: 'Called when player is clicked',
+    seatPosition: {
+      control: 'number',
+      description: 'Seat position at the table (for positioning)',
+    },
+    maxSeats: {
+      control: 'number',
+      description: 'Maximum number of seats at the table (for positioning)',
     },
   },
 };
@@ -53,99 +57,96 @@ const samplePlayer: PlayerType = {
   chips: 1500,
   cards: ['As', 'Kh'],
   position: 'BTN',
-  isActive: true,
+  isHero: false,
+  currentChips: 1500,
   isAllIn: false,
-  currentBet: 0,
-  isDealer: false,
-  isFolded: false,
-  hasBigBlind: false,
-  hasSmallBlind: false,
 };
 
 export const Default: Story = {
   args: {
     player: samplePlayer,
     showCards: true,
-    onClick: logAction('player-clicked'),
+    seatPosition: 1,
+    maxSeats: 6,
   },
 };
 
 export const CurrentPlayer: Story = {
   args: {
     player: samplePlayer,
-    isCurrentPlayer: true,
     showCards: true,
-    onClick: logAction('player-clicked'),
+    currentChips: 1200,
+    seatPosition: 1,
+    maxSeats: 6,
   },
 };
 
 export const HeroPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'Hero',
+      isHero: true,
     },
-    isHero: true,
-    showCards: true,
-    onClick: logAction('player-clicked'),
   },
 };
 
 // Player positions
 export const ButtonPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'BTN',
-      isDealer: true,
     },
-    showCards: true,
   },
 };
 
 export const BigBlindPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'BB',
-      hasBigBlind: true,
-      currentBet: 20,
+      currentChips: 1480,
     },
-    showCards: true,
+    seatPosition: 3,
   },
 };
 
 export const SmallBlindPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'SB',
-      hasSmallBlind: true,
-      currentBet: 10,
+      currentChips: 1490,
     },
-    showCards: true,
+    seatPosition: 2,
   },
 };
 
 // Player states
 export const AllInPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
-      isAllIn: true,
-      chips: 0,
-      currentBet: 1500,
+      chips: 1500,
+      allInAmount: 1500,
     },
-    showCards: true,
+    isAllIn: true,
+    currentChips: 0,
   },
 };
 
 export const FoldedPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
-      isFolded: true,
-      cards: [],
+      cards: undefined,
     },
     showCards: false,
   },
@@ -153,11 +154,12 @@ export const FoldedPlayer: Story = {
 
 export const InactivePlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
-      isActive: false,
       chips: 0,
     },
+    currentChips: 0,
     showCards: false,
   },
 };
@@ -165,6 +167,7 @@ export const InactivePlayer: Story = {
 // Card visibility states
 export const HiddenCards: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'Opponent',
@@ -175,76 +178,79 @@ export const HiddenCards: Story = {
 
 export const ShownCards: Story = {
   args: {
+    ...Default.args,
     player: samplePlayer,
-    showCards: true,
   },
 };
 
 // Different chip amounts
 export const ShortStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'ShortStack',
       chips: 250,
     },
-    showCards: true,
+    currentChips: 250,
   },
 };
 
 export const BigStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'BigStack',
       chips: 15000,
     },
-    showCards: true,
+    currentChips: 15000,
   },
 };
 
 export const MidStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'MidStack',
       chips: 3750,
     },
-    showCards: true,
+    currentChips: 3750,
   },
 };
 
 // Premium hands showcase
 export const PocketAces: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'LuckyPlayer',
       cards: ['As', 'Ah'],
     },
-    showCards: true,
   },
 };
 
 export const PocketKings: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'StrongHand',
       cards: ['Ks', 'Kh'],
     },
-    showCards: true,
   },
 };
 
 export const AceKingSuited: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'BigSlick',
       cards: ['As', 'Ks'],
     },
-    showCards: true,
   },
 };
 
@@ -258,13 +264,9 @@ export const SixPlayerTable: Story = {
         chips: 1500,
         cards: ['As', 'Kh'],
         position: 'UTG',
-        isActive: true,
+        isHero: true,
+        currentChips: 1480,
         isAllIn: false,
-        currentBet: 20,
-        isDealer: false,
-        isFolded: false,
-        hasBigBlind: false,
-        hasSmallBlind: false,
       },
       {
         seat: 2,
@@ -272,27 +274,16 @@ export const SixPlayerTable: Story = {
         chips: 2000,
         cards: ['Qs', 'Jh'],
         position: 'MP',
-        isActive: true,
+        currentChips: 1980,
         isAllIn: false,
-        currentBet: 20,
-        isDealer: false,
-        isFolded: false,
-        hasBigBlind: false,
-        hasSmallBlind: false,
       },
       {
         seat: 3,
         name: 'Player3',
         chips: 750,
-        cards: [],
         position: 'CO',
-        isActive: false,
+        currentChips: 750,
         isAllIn: false,
-        currentBet: 0,
-        isDealer: false,
-        isFolded: true,
-        hasBigBlind: false,
-        hasSmallBlind: false,
       },
       {
         seat: 4,
@@ -300,13 +291,8 @@ export const SixPlayerTable: Story = {
         chips: 3200,
         cards: ['Td', '9c'],
         position: 'BTN',
-        isActive: true,
+        currentChips: 3120,
         isAllIn: false,
-        currentBet: 80,
-        isDealer: true,
-        isFolded: false,
-        hasBigBlind: false,
-        hasSmallBlind: false,
       },
       {
         seat: 5,
@@ -314,13 +300,8 @@ export const SixPlayerTable: Story = {
         chips: 1000,
         cards: ['8h', '7s'],
         position: 'SB',
-        isActive: true,
+        currentChips: 990,
         isAllIn: false,
-        currentBet: 10,
-        isDealer: false,
-        isFolded: false,
-        hasBigBlind: false,
-        hasSmallBlind: true,
       },
       {
         seat: 6,
@@ -328,13 +309,8 @@ export const SixPlayerTable: Story = {
         chips: 1800,
         cards: ['Ac', '2d'],
         position: 'BB',
-        isActive: true,
+        currentChips: 1780,
         isAllIn: false,
-        currentBet: 20,
-        isDealer: false,
-        isFolded: false,
-        hasBigBlind: true,
-        hasSmallBlind: false,
       },
     ];
 
@@ -352,10 +328,10 @@ export const SixPlayerTable: Story = {
           <Player
             key={player.seat}
             player={player}
-            isHero={index === 0}
-            isCurrentPlayer={index === 3}
             showCards={index === 0} // Only show hero's cards
-            onClick={logAction(`player-${player.seat}-clicked`)}
+            currentChips={player.currentChips}
+            seatPosition={player.seat}
+            maxSeats={6}
           />
         ))}
       </div>
@@ -375,10 +351,9 @@ export const SixPlayerTable: Story = {
 // Interactive player with actions
 export const InteractivePlayer: Story = {
   args: {
+    ...Default.args,
     player: samplePlayer,
-    isCurrentPlayer: true,
-    showCards: true,
-    onClick: logAction('player-clicked'),
+    currentChips: 1400,
   },
   parameters: {
     docs: {
