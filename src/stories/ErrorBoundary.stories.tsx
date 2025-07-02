@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 
-import { ErrorBoundary } from '../components/ErrorBoundary';
+import { ErrorBoundary, type ErrorFallbackProps } from '../components/ErrorBoundary';
 
 // Component that throws an error for testing
 const ErrorThrowingComponent = ({ shouldThrow = false, errorMessage = 'Test error' }) => {
@@ -215,7 +215,7 @@ export const RuntimeError: Story = {
 // Custom fallback UI
 export const CustomFallback: Story = {
   render: args => {
-    const customFallback = (
+    const CustomFallbackComponent: React.FC<ErrorFallbackProps> = ({ error, retry, canRetry }) => (
       <div
         style={{
           padding: '40px',
@@ -228,14 +228,34 @@ export const CustomFallback: Story = {
       >
         <h2 style={{ color: '#dc3545' }}>🎲 Poker Error</h2>
         <p>Oops! Something went wrong with the poker component.</p>
+        <p style={{ fontSize: '12px', marginTop: '10px', fontFamily: 'monospace' }}>
+          {error.message}
+        </p>
         <p style={{ fontSize: '14px', marginTop: '20px' }}>
           Please try refreshing the page or contact support if the problem persists.
         </p>
+        {canRetry && (
+          <button
+            style={{
+              marginTop: '15px',
+              padding: '8px 16px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              marginRight: '10px',
+            }}
+            onClick={retry}
+          >
+            Retry
+          </button>
+        )}
         <button
           style={{
             marginTop: '15px',
             padding: '8px 16px',
-            backgroundColor: '#007bff',
+            backgroundColor: '#6c757d',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
@@ -249,7 +269,7 @@ export const CustomFallback: Story = {
     );
 
     return (
-      <ErrorBoundary {...args} fallback={customFallback}>
+      <ErrorBoundary {...args} fallback={CustomFallbackComponent}>
         <div style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
           <h3>Component with Custom Fallback</h3>
           <ErrorThrowingComponent shouldThrow={true} errorMessage="Error with custom fallback UI" />

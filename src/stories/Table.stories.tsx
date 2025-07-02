@@ -53,12 +53,9 @@ type Story = StoryObj<typeof meta>;
 
 // Sample data
 const sampleTable: TableInfo = {
-  id: 'table-1',
   name: 'Table 1',
   maxSeats: 6,
-  dealerSeat: 1,
-  smallBlind: 10,
-  bigBlind: 20,
+  buttonSeat: 1,
 };
 
 const samplePlayers: Player[] = [

@@ -23,38 +23,25 @@ const meta: Meta<typeof PokerHandReplay> = {
       control: 'text',
       description: 'PokerStars hand history text to parse and replay',
     },
-    autoPlay: {
-      control: 'boolean',
-      description: 'Whether to start playing automatically',
-    },
-    theme: {
-      control: { type: 'select' },
-      options: ['light', 'dark', 'casino', 'professional'],
-      description: 'Visual theme for the replay',
-    },
-    animationSpeed: {
-      control: { type: 'range', min: 0.1, max: 3, step: 0.1 },
-      description: 'Speed of animations (1 = normal)',
-    },
-    showControls: {
-      control: 'boolean',
-      description: 'Whether to show playback controls',
-    },
-    showActionHistory: {
-      control: 'boolean',
-      description: 'Whether to show action history panel',
-    },
-    showPotInfo: {
-      control: 'boolean',
-      description: 'Whether to show pot information',
+    config: {
+      control: 'object',
+      description: 'Configuration options for the replay',
     },
     onActionChange: {
       action: 'action-change',
       description: 'Called when the current action changes',
     },
-    onReplayEnd: {
-      action: 'replay-end',
-      description: 'Called when replay reaches the end',
+    onReplayEvent: {
+      action: 'replay-event',
+      description: 'Called when replay events occur (start, pause, end, etc.)',
+    },
+    enableLoadingStates: {
+      control: 'boolean',
+      description: 'Whether to show loading states during parsing',
+    },
+    enableErrorRecovery: {
+      control: 'boolean',
+      description: 'Whether to enable automatic error recovery',
     },
   },
 };
@@ -193,21 +180,25 @@ Seat 6: Hero showed [Jh Js] and won ($175.75) with three of a kind, Jacks`;
 export const Default: Story = {
   args: {
     handHistory: sampleHandHistory,
-    autoPlay: false,
-    theme: 'light',
-    animationSpeed: 1,
-    showControls: true,
-    showActionHistory: true,
-    showPotInfo: true,
+    config: {
+      autoPlay: false,
+      theme: 'light',
+      animationSpeed: 1,
+    },
     onActionChange: logAction('action-change'),
-    onReplayEnd: logAction('replay-end'),
+    onReplayEvent: logAction('replay-event'),
+    enableLoadingStates: true,
+    enableErrorRecovery: true,
   },
 };
 
 export const AutoPlay: Story = {
   args: {
     ...Default.args,
-    autoPlay: true,
+    config: {
+      ...Default.args!.config,
+      autoPlay: true,
+    },
   },
 };
 
@@ -215,21 +206,30 @@ export const AutoPlay: Story = {
 export const DarkTheme: Story = {
   args: {
     ...Default.args,
-    theme: 'dark',
+    config: {
+      ...Default.args!.config,
+      theme: 'dark',
+    },
   },
 };
 
 export const CasinoTheme: Story = {
   args: {
     ...Default.args,
-    theme: 'casino',
+    config: {
+      ...Default.args!.config,
+      theme: 'casino',
+    },
   },
 };
 
 export const ProfessionalTheme: Story = {
   args: {
     ...Default.args,
-    theme: 'professional',
+    config: {
+      ...Default.args!.config,
+      theme: 'professional',
+    },
   },
 };
 
@@ -237,42 +237,53 @@ export const ProfessionalTheme: Story = {
 export const SlowMotion: Story = {
   args: {
     ...Default.args,
-    animationSpeed: 0.3,
-    autoPlay: true,
+    config: {
+      ...Default.args!.config,
+      animationSpeed: 0.3,
+      autoPlay: true,
+    },
   },
 };
 
 export const FastForward: Story = {
   args: {
     ...Default.args,
-    animationSpeed: 2.5,
-    autoPlay: true,
+    config: {
+      ...Default.args!.config,
+      animationSpeed: 2.5,
+      autoPlay: true,
+    },
   },
 };
 
-// UI variations
-export const MinimalUI: Story = {
+// Different configuration variants
+export const NoAutoPlay: Story = {
   args: {
     ...Default.args,
-    showControls: false,
-    showActionHistory: false,
-    showPotInfo: false,
+    config: {
+      ...Default.args!.config,
+      autoPlay: false,
+    },
   },
 };
 
-export const ControlsOnly: Story = {
+export const LargeSize: Story = {
   args: {
     ...Default.args,
-    showActionHistory: false,
-    showPotInfo: false,
+    config: {
+      ...Default.args!.config,
+      size: 'large',
+    },
   },
 };
 
-export const HistoryOnly: Story = {
+export const SmallSize: Story = {
   args: {
     ...Default.args,
-    showControls: false,
-    showPotInfo: false,
+    config: {
+      ...Default.args!.config,
+      size: 'small',
+    },
   },
 };
 
@@ -281,7 +292,10 @@ export const TournamentHand: Story = {
   args: {
     ...Default.args,
     handHistory: tournamentHandHistory,
-    theme: 'professional',
+    config: {
+      ...Default.args!.config,
+      theme: 'professional',
+    },
   },
   parameters: {
     docs: {
@@ -297,8 +311,11 @@ export const AllInScenario: Story = {
   args: {
     ...Default.args,
     handHistory: allInHandHistory,
-    theme: 'casino',
-    animationSpeed: 0.8,
+    config: {
+      ...Default.args!.config,
+      theme: 'casino',
+      animationSpeed: 0.8,
+    },
   },
   parameters: {
     docs: {
@@ -338,14 +355,15 @@ Seat 2: Villain showed [Kh Ks] and won ($40.00) with three of a kind, Kings`;
     return (
       <PokerHandReplay
         handHistory={premiumHandHistory}
-        autoPlay={false}
-        theme="dark"
-        animationSpeed={1}
-        showControls={true}
-        showActionHistory={true}
-        showPotInfo={true}
+        config={{
+          autoPlay: false,
+          theme: 'dark',
+          animationSpeed: 1,
+        }}
         onActionChange={logAction('premium-hand-action-change')}
-        onReplayEnd={logAction('premium-hand-replay-end')}
+        onReplayEvent={logAction('premium-hand-replay-event')}
+        enableLoadingStates={true}
+        enableErrorRecovery={true}
       />
     );
   },
@@ -391,7 +409,10 @@ export const EmptyHandHistory: Story = {
 export const Interactive: Story = {
   args: {
     ...Default.args,
-    animationSpeed: 1.2,
+    config: {
+      ...Default.args!.config,
+      animationSpeed: 1.2,
+    },
   },
   parameters: {
     docs: {

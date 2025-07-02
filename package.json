@@ -59,7 +59,8 @@
     "prepack": "npm run build",
     "prepare": "husky",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic --exit-zero-on-changes"
   },
   "keywords": [
     "poker",
@@ -131,6 +132,7 @@
     "@typescript-eslint/parser": "^8.35.1",
     "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "^10.4.21",
+    "chromatic": "^13.0.1",
     "cssnano": "^7.0.7",
     "eslint": "^8.0.0",
     "eslint-config-prettier": "^10.1.5",
