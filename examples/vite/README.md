@@ -1,6 +1,7 @@
 # ⚡ Vite Example
 
-A modern Vite + React example showcasing fast development and optimized builds with the Poker Hand Replay component.
+A modern Vite + React example showcasing fast development and optimized builds
+with the Poker Hand Replay component.
 
 ## 🎯 What This Example Shows
 
@@ -90,7 +91,7 @@ const isDev = import.meta.env.DEV;
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const config = {
-  theme: isDev ? "dark" : "professional",
+  theme: isDev ? 'dark' : 'professional',
   enableSounds: !isDev, // Disable sounds in development
 };
 ```
@@ -143,10 +144,7 @@ export const PokerDemo = () => (
   <div className={styles.container}>
     <h1 className={styles.title}>Poker Hand Replay</h1>
     <div className={styles.replayWrapper}>
-      <PokerHandReplay
-        handHistory={handHistory}
-        className={styles.replay}
-      />
+      <PokerHandReplay handHistory={handHistory} className={styles.replay} />
     </div>
   </div>
 );
@@ -172,4 +170,5 @@ npm run preview
 
 ---
 
-**Ready to build fast?** This example shows how Vite can accelerate your poker app development!
+**Ready to build fast?** This example shows how Vite can accelerate your poker
+app development!

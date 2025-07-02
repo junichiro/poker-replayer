@@ -2,18 +2,18 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 
 // Mock accessible poker component for comprehensive a11y testing
-const AccessiblePokerReplay = ({ 
+const AccessiblePokerReplay = ({
   enableScreenReaderAnnouncements = true,
   enableKeyboardNavigation = true,
   enableHighContrast = false,
   enableReducedMotion = false,
   announceActions = true,
-  ..._props 
+  ..._props
 }: any) => {
   const [currentAction, setCurrentAction] = React.useState(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -47,7 +47,9 @@ const AccessiblePokerReplay = ({
       const newIndex = currentAction + 1;
       setCurrentAction(newIndex);
       const action = actions[newIndex];
-      announce(`Action ${newIndex + 1}: ${action.player} ${action.type}${action.amount ? ` $${action.amount}` : ''}`);
+      announce(
+        `Action ${newIndex + 1}: ${action.player} ${action.type}${action.amount ? ` $${action.amount}` : ''}`
+      );
     }
   };
 
@@ -141,7 +143,7 @@ const AccessiblePokerReplay = ({
   };
 
   return (
-    <div 
+    <div
       className={`poker-replay ${enableHighContrast ? 'high-contrast' : ''} ${enableReducedMotion ? 'reduced-motion' : ''}`}
       data-testid="accessible-poker-replay"
       role="application"
@@ -150,24 +152,19 @@ const AccessiblePokerReplay = ({
     >
       {/* Screen reader description */}
       <div id="replay-description" className="sr-only">
-        Interactive poker hand replay. Use space to play/pause, arrow keys to navigate, home to reset.
+        Interactive poker hand replay. Use space to play/pause, arrow keys to navigate, home to
+        reset.
       </div>
 
       {/* Live region for announcements */}
-      <div 
-        aria-live="polite" 
-        aria-atomic="true"
-        className="sr-only"
-        data-testid="announcements"
-      >
+      <div aria-live="polite" aria-atomic="true" className="sr-only" data-testid="announcements">
         {announcements[announcements.length - 1]}
       </div>
 
       {/* Status information */}
       <div className="replay-status" role="status" aria-live="polite">
         <span className="sr-only">
-          {isPlaying ? 'Playing' : 'Paused'}, 
-          Action {currentAction + 1} of {actions.length}
+          {isPlaying ? 'Playing' : 'Paused'}, Action {currentAction + 1} of {actions.length}
         </span>
         <div data-testid="visual-status">
           {isPlaying ? '▶️' : '⏸️'} {currentAction + 1}/{actions.length}
@@ -221,25 +218,25 @@ const AccessiblePokerReplay = ({
       </div>
 
       {/* Table representation */}
-      <div 
-        className="table" 
-        role="img" 
+      <div
+        className="table"
+        role="img"
         aria-label={`Poker table with ${players.length} players`}
         data-testid="poker-table"
       >
         <div className="table-info">
           <h2 id="table-title">Tournament Table</h2>
-          <div aria-describedby="table-title">6-max No Limit Hold'em</div>
+          <div aria-describedby="table-title">6-max No Limit Hold&apos;em</div>
         </div>
 
         {/* Players */}
         <div className="players" role="group" aria-label="Players">
-          {players.map((player) => (
+          {players.map(player => (
             <div
               key={player.id}
               className="player"
               data-testid={`player-${player.id}`}
-              role="group"
+              role="button"
               aria-labelledby={`player-${player.id}-name`}
               aria-describedby={`player-${player.id}-info`}
               tabIndex={0}
@@ -263,7 +260,7 @@ const AccessiblePokerReplay = ({
                     key={index}
                     className="card"
                     data-testid={`card-${player.id}-${index}`}
-                    role="img"
+                    role="button"
                     aria-label={`Card ${card}`}
                     tabIndex={0}
                   >
@@ -280,9 +277,15 @@ const AccessiblePokerReplay = ({
         <div className="community-cards" role="group" aria-label="Community cards">
           <h3 className="sr-only">Board Cards</h3>
           <div className="flop">
-            <div className="card" role="img" aria-label="Ace of hearts">♥️A</div>
-            <div className="card" role="img" aria-label="Seven of clubs">♣️7</div>
-            <div className="card" role="img" aria-label="Two of diamonds">♦️2</div>
+            <div className="card" role="img" aria-label="Ace of hearts">
+              ♥️A
+            </div>
+            <div className="card" role="img" aria-label="Seven of clubs">
+              ♣️7
+            </div>
+            <div className="card" role="img" aria-label="Two of diamonds">
+              ♦️2
+            </div>
           </div>
         </div>
 
@@ -308,6 +311,13 @@ const AccessiblePokerReplay = ({
               onClick={() => {
                 setCurrentAction(index);
                 announce(`Jumped to action ${index + 1}`);
+              }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setCurrentAction(index);
+                  announce(`Jumped to action ${index + 1}`);
+                }
               }}
             >
               <span className="sr-only">
@@ -417,21 +427,24 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       // Main application
-      expect(screen.getByRole('application')).toHaveAttribute('aria-label', 'Poker Hand Replay Player');
-      
+      expect(screen.getByRole('application')).toHaveAttribute(
+        'aria-label',
+        'Poker Hand Replay Player'
+      );
+
       // Toolbar
       expect(screen.getByRole('toolbar')).toHaveAttribute('aria-label', 'Playback controls');
-      
+
       // Buttons with proper labels
       expect(screen.getByRole('button', { name: 'Reset to beginning' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Previous action' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Start playback' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Next action' })).toBeInTheDocument();
-      
+
       // Table and players
       expect(screen.getByRole('img', { name: /Poker table/ })).toBeInTheDocument();
       expect(screen.getByRole('group', { name: 'Players' })).toBeInTheDocument();
-      
+
       // Action history
       expect(screen.getByRole('log', { name: 'Action history' })).toBeInTheDocument();
     });
@@ -440,12 +453,14 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       // Headings hierarchy
-      expect(screen.getByRole('heading', { level: 2, name: 'Tournament Table' })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { level: 2, name: 'Tournament Table' })
+      ).toBeInTheDocument();
       expect(screen.getByRole('heading', { level: 3, name: 'Action History' })).toBeInTheDocument();
-      
+
       // Lists for action history
       expect(screen.getByRole('list')).toBeInTheDocument();
-      
+
       // Status regions (multiple exist)
       expect(screen.getAllByRole('status').length).toBeGreaterThan(0);
     });
@@ -455,11 +470,11 @@ describe('Accessibility Features', () => {
 
       // Description
       expect(screen.getByText(/Interactive poker hand replay/)).toBeInTheDocument();
-      
+
       // Player information
       expect(screen.getByText('BB position, 1500 chips')).toBeInTheDocument();
       expect(screen.getByText('SB position, 1500 chips')).toBeInTheDocument();
-      
+
       // Card information
       expect(screen.getByRole('img', { name: 'Card As' })).toBeInTheDocument();
       expect(screen.getByRole('img', { name: 'Ace of hearts' })).toBeInTheDocument();
@@ -471,7 +486,7 @@ describe('Accessibility Features', () => {
       // Visual indicators should be hidden
       const visualElements = document.querySelectorAll('[aria-hidden="true"]');
       expect(visualElements.length).toBeGreaterThan(0);
-      
+
       // Status icons
       expect(screen.getByTestId('visual-status')).toBeInTheDocument();
     });
@@ -482,9 +497,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       expect(screen.getByTestId('is-playing')).toHaveTextContent('false');
-      
+
       fireEvent.keyDown(document, { key: ' ' });
-      
+
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
       expect(screen.getByRole('button', { name: 'Pause playback' })).toBeInTheDocument();
     });
@@ -493,11 +508,11 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       expect(screen.getByTestId('current-action')).toHaveTextContent('-1');
-      
+
       // Right arrow to advance
       fireEvent.keyDown(document, { key: 'ArrowRight' });
       expect(screen.getByTestId('current-action')).toHaveTextContent('0');
-      
+
       // Left arrow to go back
       fireEvent.keyDown(document, { key: 'ArrowLeft' });
       expect(screen.getByTestId('current-action')).toHaveTextContent('-1');
@@ -510,11 +525,11 @@ describe('Accessibility Features', () => {
       fireEvent.keyDown(document, { key: 'ArrowRight' });
       fireEvent.keyDown(document, { key: 'ArrowRight' });
       expect(screen.getByTestId('current-action')).toHaveTextContent('1');
-      
+
       // Home to reset
       fireEvent.keyDown(document, { key: 'Home' });
       expect(screen.getByTestId('current-action')).toHaveTextContent('-1');
-      
+
       // End to jump to end
       fireEvent.keyDown(document, { key: 'End' });
       expect(screen.getByTestId('current-action')).toHaveTextContent('5');
@@ -525,10 +540,10 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       const playButton = screen.getByRole('button', { name: 'Start playback' });
-      
+
       await user.click(playButton); // Focus the button
       fireEvent.keyDown(document, { key: 'Enter' });
-      
+
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
     });
 
@@ -537,7 +552,7 @@ describe('Accessibility Features', () => {
 
       fireEvent.keyDown(document, { key: ' ' });
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       // Should not respond to keyboard events
       expect(screen.getByTestId('is-playing')).toHaveTextContent('false');
       expect(screen.getByTestId('current-action')).toHaveTextContent('-1');
@@ -560,9 +575,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('[Screen Reader]: Action 1: Player1 blind $10');
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -571,9 +586,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       fireEvent.keyDown(document, { key: ' ' });
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('[Screen Reader]: Playback started');
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -584,9 +599,9 @@ describe('Accessibility Features', () => {
 
       const nextButton = screen.getByRole('button', { name: 'Next action' });
       await user.click(nextButton);
-      
+
       expect(consoleSpy).toHaveBeenCalledWith('[Screen Reader]: Focused on Next action button');
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -603,9 +618,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay enableScreenReaderAnnouncements={false} />);
 
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       expect(consoleSpy).not.toHaveBeenCalledWith(expect.stringContaining('[Screen Reader]'));
-      
+
       consoleSpy.mockRestore();
     });
 
@@ -615,13 +630,11 @@ describe('Accessibility Features', () => {
       // Status regions should exist (there are multiple)
       const statusRegions = screen.getAllByRole('status');
       expect(statusRegions.length).toBeGreaterThan(0);
-      
+
       // At least one should have aria-live
-      const liveStatusRegion = statusRegions.find(region => 
-        region.hasAttribute('aria-live')
-      );
+      const liveStatusRegion = statusRegions.find(region => region.hasAttribute('aria-live'));
       expect(liveStatusRegion).toHaveAttribute('aria-live', 'polite');
-      
+
       // Should contain current state
       expect(screen.getByText(/Paused, Action 0 of 6/)).toBeInTheDocument();
     });
@@ -633,9 +646,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       const playButton = screen.getByRole('button', { name: 'Start playback' });
-      
+
       await user.click(playButton);
-      
+
       expect(playButton).toHaveFocus();
       expect(screen.getByTestId('focused-element')).toHaveTextContent('play-pause');
     });
@@ -648,17 +661,17 @@ describe('Accessibility Features', () => {
       await user.tab();
       // Reset and Previous buttons are disabled initially, so they might be skipped
       const focusedButton = document.activeElement;
-      
+
       // The first focusable button should be either Reset, Previous, or Play
       const buttonLabels = ['Reset to beginning', 'Previous action', 'Start playback'];
       const buttonLabel = focusedButton?.getAttribute('aria-label');
       expect(buttonLabels).toContain(buttonLabel);
-      
+
       // Tab a few more times and verify we can reach the Next button
       await user.tab();
       await user.tab();
       await user.tab();
-      
+
       // Verify we can reach the Next action button
       const nextButton = screen.getByRole('button', { name: 'Next action' });
       expect(nextButton).toBeInTheDocument();
@@ -672,12 +685,12 @@ describe('Accessibility Features', () => {
       const player1 = screen.getByTestId('player-1');
       await user.click(player1);
       expect(player1).toHaveFocus();
-      
+
       // Cards should be focusable
       const card = screen.getByTestId('card-1-0');
       await user.click(card);
       expect(card).toHaveFocus();
-      
+
       // Action history items should be focusable
       const action = screen.getByTestId('action-0');
       await user.click(action);
@@ -696,21 +709,33 @@ describe('Accessibility Features', () => {
     test('provides tooltips for buttons', () => {
       render(<AccessiblePokerReplay />);
 
-      expect(screen.getByRole('button', { name: 'Start playback' })).toHaveAttribute('title', 'Play (Space)');
-      expect(screen.getByRole('button', { name: 'Next action' })).toHaveAttribute('title', 'Next action (Right arrow)');
-      expect(screen.getByRole('button', { name: 'Previous action' })).toHaveAttribute('title', 'Previous action (Left arrow)');
-      expect(screen.getByRole('button', { name: 'Reset to beginning' })).toHaveAttribute('title', 'Reset to beginning (Home)');
+      expect(screen.getByRole('button', { name: 'Start playback' })).toHaveAttribute(
+        'title',
+        'Play (Space)'
+      );
+      expect(screen.getByRole('button', { name: 'Next action' })).toHaveAttribute(
+        'title',
+        'Next action (Right arrow)'
+      );
+      expect(screen.getByRole('button', { name: 'Previous action' })).toHaveAttribute(
+        'title',
+        'Previous action (Left arrow)'
+      );
+      expect(screen.getByRole('button', { name: 'Reset to beginning' })).toHaveAttribute(
+        'title',
+        'Reset to beginning (Home)'
+      );
     });
 
     test('indicates current action visually and semantically', async () => {
       render(<AccessiblePokerReplay />);
 
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       const currentAction = screen.getByTestId('action-0');
       expect(currentAction).toHaveClass('current');
       expect(currentAction).toHaveAttribute('aria-selected', 'true');
-      
+
       // Screen reader text should indicate current
       expect(screen.getByText(/Action 1.*current/)).toBeInTheDocument();
     });
@@ -741,11 +766,11 @@ describe('Accessibility Features', () => {
       });
 
       render(<AccessiblePokerReplay enableReducedMotion={true} />);
-      
+
       // Component should have reduced motion class when enabled
       const component = screen.getByTestId('accessible-poker-replay');
       expect(component).toHaveClass('reduced-motion');
-      
+
       // Verify matchMedia is available for use
       expect(window.matchMedia).toBeDefined();
     });
@@ -757,9 +782,9 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       const firstAction = screen.getByTestId('action-0');
-      
+
       await user.click(firstAction);
-      
+
       expect(firstAction).toHaveAttribute('aria-selected', 'true');
       expect(screen.getByTestId('current-action')).toHaveTextContent('0');
     });
@@ -781,9 +806,12 @@ describe('Accessibility Features', () => {
       // Initially at beginning, so previous and reset should be disabled
       expect(screen.getByRole('button', { name: 'Previous action' })).toBeDisabled();
       expect(screen.getByRole('button', { name: 'Reset to beginning' })).toBeDisabled();
-      
+
       // These should still be accessible to screen readers
-      expect(screen.getByRole('button', { name: 'Previous action' })).toHaveAttribute('aria-label', 'Previous action');
+      expect(screen.getByRole('button', { name: 'Previous action' })).toHaveAttribute(
+        'aria-label',
+        'Previous action'
+      );
     });
 
     test('handles end state properly', async () => {
@@ -791,7 +819,7 @@ describe('Accessibility Features', () => {
 
       // Jump to end
       fireEvent.keyDown(document, { key: 'End' });
-      
+
       // Next should be disabled
       expect(screen.getByRole('button', { name: 'Next action' })).toBeDisabled();
       expect(screen.getByTestId('current-action')).toHaveTextContent('5');
@@ -802,7 +830,7 @@ describe('Accessibility Features', () => {
 
       const liveRegion = screen.getByTestId('announcements');
       expect(liveRegion).toBeInTheDocument();
-      
+
       // Should still have proper ARIA attributes even when announcements are disabled
       expect(liveRegion).toHaveAttribute('aria-live', 'polite');
     });
@@ -813,8 +841,11 @@ describe('Accessibility Features', () => {
       render(<AccessiblePokerReplay />);
 
       // Main description should be linked
-      expect(screen.getByRole('application')).toHaveAttribute('aria-describedby', 'replay-description');
-      
+      expect(screen.getByRole('application')).toHaveAttribute(
+        'aria-describedby',
+        'replay-description'
+      );
+
       // Players should have detailed information
       const player1 = screen.getByTestId('player-1');
       expect(player1).toHaveAttribute('aria-labelledby', 'player-1-name');
@@ -829,7 +860,7 @@ describe('Accessibility Features', () => {
       buttons.forEach(button => {
         expect(button).toHaveAttribute('aria-label');
       });
-      
+
       // Action items should be selectable
       const actions = screen.getAllByRole('option');
       actions.forEach(action => {

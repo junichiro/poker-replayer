@@ -7,28 +7,28 @@
     "noEmit": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    
+
     // Override emit options for tests
     "declaration": false,
     "declarationMap": false,
     "importHelpers": false,
     "downlevelIteration": false,
-    
+
     // Jest compatibility
     "moduleResolution": "node",
     "isolatedModules": true,
     "resolveJsonModule": true,
-    
+
     // Test-specific type checking
     "strict": true,
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    
+
     // Enhanced testing experience
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    
+
     // Test environment libraries
     "types": ["jest", "node"],
     "lib": ["ES2020", "DOM", "DOM.Iterable"]
@@ -42,10 +42,5 @@
     "**/*.spec.tsx",
     "test-*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "coverage",
-    "src/index.ts"
-  ]
+  "exclude": ["node_modules", "dist", "coverage", "src/index.ts"]
 }

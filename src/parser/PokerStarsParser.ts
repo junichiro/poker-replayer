@@ -11,7 +11,7 @@ import {
   PLAYING_CARD_REGEX,
   CollectedAction,
   PotCalculation,
-} from "../types";
+} from '../types';
 
 /**
  * Validates if a string is a valid playing card and returns it as PlayingCard type
@@ -19,7 +19,7 @@ import {
 function toPlayingCard(cardString: string): PlayingCard {
   if (!PLAYING_CARD_REGEX.test(cardString)) {
     throw new Error(
-      `Invalid card format: ${cardString}. Expected format: rank + suit (e.g., "As", "Kh")`,
+      `Invalid card format: ${cardString}. Expected format: rank + suit (e.g., "As", "Kh")`
     );
   }
   return cardString as PlayingCard;
@@ -54,27 +54,25 @@ export class PokerStarsParser {
   public parse(handHistory: string): ParserResult {
     try {
       this.reset();
-      
+
       // Handle empty input correctly
       if (!handHistory.trim()) {
-        return this.createError("Empty hand history");
+        return this.createError('Empty hand history');
       }
-      
+
       this.lines = handHistory
         .trim()
-        .split("\n")
-        .map((line) => line.trim());
+        .split('\n')
+        .map(line => line.trim());
 
       if (this.lines.length === 0) {
-        return this.createError("Empty hand history");
+        return this.createError('Empty hand history');
       }
 
       const hand = this.parseHand();
       return { success: true, hand };
     } catch (error) {
-      return this.createError(
-        error instanceof Error ? error.message : "Unknown parsing error",
-      );
+      return this.createError(error instanceof Error ? error.message : 'Unknown parsing error');
     }
   }
 
@@ -102,14 +100,14 @@ export class PokerStarsParser {
     if (ante) actions.push(...ante);
 
     // Parse preflop actions
-    const preflopActions = this.parseStreetActions("preflop");
+    const preflopActions = this.parseStreetActions('preflop');
     actions.push(...preflopActions);
 
     // Parse flop
     const flopCards = this.parseFlop();
     if (flopCards.length > 0) {
       board.push(...toPlayingCardArray(flopCards));
-      const flopActions = this.parseStreetActions("flop");
+      const flopActions = this.parseStreetActions('flop');
       actions.push(...flopActions);
     }
 
@@ -117,7 +115,7 @@ export class PokerStarsParser {
     const turnCard = this.parseTurn();
     if (turnCard) {
       board.push(toPlayingCard(turnCard));
-      const turnActions = this.parseStreetActions("turn");
+      const turnActions = this.parseStreetActions('turn');
       actions.push(...turnActions);
     }
 
@@ -125,7 +123,7 @@ export class PokerStarsParser {
     const riverCard = this.parseRiver();
     if (riverCard) {
       board.push(toPlayingCard(riverCard));
-      const riverActions = this.parseStreetActions("river");
+      const riverActions = this.parseStreetActions('river');
       actions.push(...riverActions);
     }
 
@@ -162,24 +160,20 @@ export class PokerStarsParser {
     const handIdMatch = line.match(/Hand #(\d+)/);
     const tournamentMatch = line.match(/Tournament #(\d+)/);
     const stakesMatch = line.match(/\$?([\d.]+)\/\$?([\d.]+)/);
-    const dateMatch = line.match(
-      /(\d{4})\/(\d{2})\/(\d{2}) (\d{1,2}):(\d{2}):(\d{2})/,
-    );
+    const dateMatch = line.match(/(\d{4})\/(\d{2})\/(\d{2}) (\d{1,2}):(\d{2}):(\d{2})/);
 
     if (!handIdMatch) {
-      throw new Error("Invalid header: Hand ID not found");
+      throw new Error('Invalid header: Hand ID not found');
     }
 
-    const stakes = stakesMatch
-      ? `$${stakesMatch[1]}/$${stakesMatch[2]}`
-      : "Unknown";
+    const stakes = stakesMatch ? `$${stakesMatch[1]}/$${stakesMatch[2]}` : 'Unknown';
 
     if (!dateMatch) {
-      throw new Error("Invalid header: Date not found or in an invalid format");
+      throw new Error('Invalid header: Date not found or in an invalid format');
     }
 
     const date = new Date(
-      `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4].padStart(2, "0")}:${dateMatch[5]}:${dateMatch[6]}`,
+      `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4].padStart(2, '0')}:${dateMatch[5]}:${dateMatch[6]}`
     );
 
     this.nextLine();
@@ -199,7 +193,7 @@ export class PokerStarsParser {
     const buttonMatch = line.match(/Seat #(\d+) is the button/);
 
     if (!tableMatch) {
-      throw new Error("Invalid table info");
+      throw new Error('Invalid table info');
     }
 
     this.nextLine();
@@ -214,11 +208,9 @@ export class PokerStarsParser {
   private parsePlayers(): Player[] {
     const players: Player[] = [];
 
-    while (this.hasMoreLines() && this.getLine().startsWith("Seat")) {
+    while (this.hasMoreLines() && this.getLine().startsWith('Seat')) {
       const line = this.getLine();
-      const seatMatch = line.match(
-        /Seat (\d+): ([^\s]+) \(\$?([\d.]+) in chips\)/,
-      );
+      const seatMatch = line.match(/Seat (\d+): ([^\s]+) \(\$?([\d.]+) in chips\)/);
 
       if (seatMatch) {
         const player = {
@@ -245,53 +237,39 @@ export class PokerStarsParser {
     const blinds: Action[] = [];
     const ante: Action[] = [];
 
-    while (this.hasMoreLines() && this.getLine().includes("posts")) {
+    while (this.hasMoreLines() && this.getLine().includes('posts')) {
       const line = this.getLine();
 
       // Standard blind patterns
-      const smallBlindMatch = line.match(
-        /([^:]+): posts small blind \$?([\d.]+)/,
-      );
+      const smallBlindMatch = line.match(/([^:]+): posts small blind \$?([\d.]+)/);
       const bigBlindMatch = line.match(/([^:]+): posts big blind \$?([\d.]+)/);
 
       // Ante patterns
       const anteMatch = line.match(/([^:]+): posts the ante \$?([\d.]+)/);
 
       // Tournament-specific patterns
-      const combinedBlindMatch = line.match(
-        /([^:]+): posts small & big blinds \$?([\d.]+)/,
-      );
-      const deadBlindMatch = line.match(
-        /([^:]+): posts dead blind \$?([\d.]+)/,
-      );
+      const combinedBlindMatch = line.match(/([^:]+): posts small & big blinds \$?([\d.]+)/);
+      const deadBlindMatch = line.match(/([^:]+): posts dead blind \$?([\d.]+)/);
 
       if (smallBlindMatch) {
         const amount = parseFloat(smallBlindMatch[2]);
-        blinds.push(
-          this.createAction("blind", smallBlindMatch[1], amount, "preflop"),
-        );
+        blinds.push(this.createAction('blind', smallBlindMatch[1], amount, 'preflop'));
         this.totalPotContributions += amount;
       } else if (bigBlindMatch) {
         const amount = parseFloat(bigBlindMatch[2]);
-        blinds.push(
-          this.createAction("blind", bigBlindMatch[1], amount, "preflop"),
-        );
+        blinds.push(this.createAction('blind', bigBlindMatch[1], amount, 'preflop'));
         this.totalPotContributions += amount;
       } else if (anteMatch) {
         const amount = parseFloat(anteMatch[2]);
-        ante.push(this.createAction("ante", anteMatch[1], amount, "preflop"));
+        ante.push(this.createAction('ante', anteMatch[1], amount, 'preflop'));
         this.totalPotContributions += amount;
       } else if (combinedBlindMatch) {
         const amount = parseFloat(combinedBlindMatch[2]);
-        blinds.push(
-          this.createAction("blind", combinedBlindMatch[1], amount, "preflop"),
-        );
+        blinds.push(this.createAction('blind', combinedBlindMatch[1], amount, 'preflop'));
         this.totalPotContributions += amount;
       } else if (deadBlindMatch) {
         const amount = parseFloat(deadBlindMatch[2]);
-        blinds.push(
-          this.createAction("blind", deadBlindMatch[1], amount, "preflop"),
-        );
+        blinds.push(this.createAction('blind', deadBlindMatch[1], amount, 'preflop'));
         this.totalPotContributions += amount;
       }
 
@@ -304,15 +282,15 @@ export class PokerStarsParser {
   private parseHoleCards(): Map<string, [string, string]> {
     const holeCards = new Map<string, [string, string]>();
 
-    if (this.hasMoreLines() && this.getLine().includes("HOLE CARDS")) {
+    if (this.hasMoreLines() && this.getLine().includes('HOLE CARDS')) {
       this.nextLine();
 
-      while (this.hasMoreLines() && this.getLine().startsWith("Dealt to")) {
+      while (this.hasMoreLines() && this.getLine().startsWith('Dealt to')) {
         const line = this.getLine();
         const match = line.match(/Dealt to ([^\s]+) \[([^\]]+)\]/);
 
         if (match) {
-          const cards = match[2].split(" ");
+          const cards = match[2].split(' ');
           if (cards.length === 2) {
             holeCards.set(match[1], cards as [string, string]);
           }
@@ -333,11 +311,11 @@ export class PokerStarsParser {
 
       // Check if we've reached the next street
       if (
-        line.includes("FLOP") ||
-        line.includes("TURN") ||
-        line.includes("RIVER") ||
-        line.includes("SHOW DOWN") ||
-        line.includes("SUMMARY")
+        line.includes('FLOP') ||
+        line.includes('TURN') ||
+        line.includes('RIVER') ||
+        line.includes('SHOW DOWN') ||
+        line.includes('SUMMARY')
       ) {
         break;
       }
@@ -359,15 +337,15 @@ export class PokerStarsParser {
     const allInPatterns = [
       {
         regex: /([^:]+): raises \$?([\d.]+) to \$?([\d.]+) and is all-in/,
-        type: "raise" as ActionType,
+        type: 'raise' as ActionType,
       },
       {
         regex: /([^:]+): calls \$?([\d.]+) and is all-in/,
-        type: "call" as ActionType,
+        type: 'call' as ActionType,
       },
       {
         regex: /([^:]+): bets \$?([\d.]+) and is all-in/,
-        type: "bet" as ActionType,
+        type: 'bet' as ActionType,
       },
     ];
 
@@ -378,7 +356,7 @@ export class PokerStarsParser {
         const player = match[1];
         let amount: number;
 
-        if (pattern.type === "raise") {
+        if (pattern.type === 'raise') {
           amount = parseFloat(match[3]);
         } else {
           amount = parseFloat(match[2]);
@@ -399,16 +377,16 @@ export class PokerStarsParser {
 
     // Player state and special action patterns
     const specialPatterns = [
-      { regex: /([^:]+): mucks hand/, type: "muck" as ActionType },
-      { regex: /([^:]+) has timed out/, type: "timeout" as ActionType },
-      { regex: /([^:]+) is disconnected/, type: "disconnect" as ActionType },
-      { regex: /([^:]+) is connected/, type: "reconnect" as ActionType },
-      { regex: /([^:]+): sits out/, type: "sitout" as ActionType },
-      { regex: /([^:]+) is sitting out/, type: "sitout" as ActionType },
-      { regex: /([^:]+) has returned/, type: "return" as ActionType },
+      { regex: /([^:]+): mucks hand/, type: 'muck' as ActionType },
+      { regex: /([^:]+) has timed out/, type: 'timeout' as ActionType },
+      { regex: /([^:]+) is disconnected/, type: 'disconnect' as ActionType },
+      { regex: /([^:]+) is connected/, type: 'reconnect' as ActionType },
+      { regex: /([^:]+): sits out/, type: 'sitout' as ActionType },
+      { regex: /([^:]+) is sitting out/, type: 'sitout' as ActionType },
+      { regex: /([^:]+) has returned/, type: 'return' as ActionType },
       {
         regex: /([^:]+) will be allowed to play after the button/,
-        type: "return" as ActionType,
+        type: 'return' as ActionType,
       },
     ];
 
@@ -417,18 +395,13 @@ export class PokerStarsParser {
       const match = line.match(pattern.regex);
       if (match) {
         const player = match[1];
-        const action = this.createAction(
-          pattern.type,
-          player,
-          undefined,
-          street,
-        );
+        const action = this.createAction(pattern.type, player, undefined, street);
 
         // Add reason for timeout/disconnect actions
-        if (pattern.type === "timeout") {
-          action.reason = "Player timed out";
-        } else if (pattern.type === "disconnect") {
-          action.reason = "Player disconnected";
+        if (pattern.type === 'timeout') {
+          action.reason = 'Player timed out';
+        } else if (pattern.type === 'disconnect') {
+          action.reason = 'Player disconnected';
         }
 
         return action;
@@ -437,21 +410,21 @@ export class PokerStarsParser {
 
     // Standard action patterns
     const standardPatterns = [
-      { regex: /([^:]+): folds/, type: "fold" as ActionType },
-      { regex: /([^:]+): checks/, type: "check" as ActionType },
-      { regex: /([^:]+): calls \$?([\d.]+)/, type: "call" as ActionType },
-      { regex: /([^:]+): bets \$?([\d.]+)/, type: "bet" as ActionType },
+      { regex: /([^:]+): folds/, type: 'fold' as ActionType },
+      { regex: /([^:]+): checks/, type: 'check' as ActionType },
+      { regex: /([^:]+): calls \$?([\d.]+)/, type: 'call' as ActionType },
+      { regex: /([^:]+): bets \$?([\d.]+)/, type: 'bet' as ActionType },
       {
         regex: /([^:]+): raises \$?([\d.]+) to \$?([\d.]+)/,
-        type: "raise" as ActionType,
+        type: 'raise' as ActionType,
       },
       {
         regex: /Uncalled bet \(\$?([\d.]+)\) returned to ([^\s]+)/,
-        type: "uncalled" as ActionType,
+        type: 'uncalled' as ActionType,
       },
       {
         regex: /([^:]+) collected \$?([\d.]+) from (?:side |main )?pot/,
-        type: "collected" as ActionType,
+        type: 'collected' as ActionType,
       },
     ];
 
@@ -459,37 +432,35 @@ export class PokerStarsParser {
     for (const pattern of standardPatterns) {
       const match = line.match(pattern.regex);
       if (match) {
-        const player = pattern.type === "uncalled" ? match[2] : match[1];
+        const player = pattern.type === 'uncalled' ? match[2] : match[1];
         let amount: number | undefined;
 
-        if (pattern.type === "raise") {
+        if (pattern.type === 'raise') {
           amount = parseFloat(match[3]);
         } else if (
-          pattern.type === "call" ||
-          pattern.type === "bet" ||
-          pattern.type === "collected"
+          pattern.type === 'call' ||
+          pattern.type === 'bet' ||
+          pattern.type === 'collected'
         ) {
           amount = parseFloat(match[2]);
-        } else if (pattern.type === "uncalled") {
+        } else if (pattern.type === 'uncalled') {
           amount = parseFloat(match[1]);
         }
 
         // Handle player state changes and chip tracking
-        if (pattern.type === "fold") {
+        if (pattern.type === 'fold') {
           this.activePlayers.delete(player);
         } else if (
           amount &&
-          (pattern.type === "call" ||
-            pattern.type === "bet" ||
-            pattern.type === "raise")
+          (pattern.type === 'call' || pattern.type === 'bet' || pattern.type === 'raise')
         ) {
           const currentChips = this.playerChips.get(player) || 0;
           this.playerChips.set(player, Math.max(0, currentChips - amount));
           this.totalPotContributions += amount;
-        } else if (amount && pattern.type === "collected") {
+        } else if (amount && pattern.type === 'collected') {
           const currentChips = this.playerChips.get(player) || 0;
           this.playerChips.set(player, currentChips + amount);
-        } else if (amount && pattern.type === "uncalled") {
+        } else if (amount && pattern.type === 'uncalled') {
           const currentChips = this.playerChips.get(player) || 0;
           this.playerChips.set(player, currentChips + amount);
         }
@@ -502,24 +473,24 @@ export class PokerStarsParser {
   }
 
   private parseFlop(): string[] {
-    if (this.hasMoreLines() && this.getLine().includes("FLOP")) {
+    if (this.hasMoreLines() && this.getLine().includes('FLOP')) {
       const line = this.getLine();
       const match = line.match(/\[([^\]]+)\]/);
       this.nextLine();
-      return match ? match[1].split(" ") : [];
+      return match ? match[1].split(' ') : [];
     }
     return [];
   }
 
   private parseTurn(): string | null {
-    return this.parseStreetCard("TURN");
+    return this.parseStreetCard('TURN');
   }
 
   private parseRiver(): string | null {
-    return this.parseStreetCard("RIVER");
+    return this.parseStreetCard('RIVER');
   }
 
-  private parseStreetCard(street: "TURN" | "RIVER"): string | null {
+  private parseStreetCard(street: 'TURN' | 'RIVER'): string | null {
     if (this.hasMoreLines() && this.getLine().includes(street)) {
       const line = this.getLine();
       const match = line.match(/\[([^\]]+)\] \[([^\]]+)\]/);
@@ -532,21 +503,16 @@ export class PokerStarsParser {
   private parseShowdown(): Action[] {
     const actions: Action[] = [];
 
-    if (this.hasMoreLines() && this.getLine().includes("SHOW DOWN")) {
+    if (this.hasMoreLines() && this.getLine().includes('SHOW DOWN')) {
       this.nextLine();
 
-      while (this.hasMoreLines() && !this.getLine().includes("SUMMARY")) {
+      while (this.hasMoreLines() && !this.getLine().includes('SUMMARY')) {
         const line = this.getLine();
         const showMatch = line.match(/([^:]+): shows \[([^\]]+)\]/);
 
         if (showMatch) {
-          const action = this.createAction(
-            "show",
-            showMatch[1],
-            undefined,
-            "showdown",
-          );
-          action.cards = showMatch[2].split(" ");
+          const action = this.createAction('show', showMatch[1], undefined, 'showdown');
+          action.cards = showMatch[2].split(' ');
           actions.push(action);
         }
 
@@ -565,7 +531,7 @@ export class PokerStarsParser {
     const potCalculation = this.calculatePotStructure();
 
     // Skip to SUMMARY section
-    while (this.hasMoreLines() && !this.getLine().includes("SUMMARY")) {
+    while (this.hasMoreLines() && !this.getLine().includes('SUMMARY')) {
       this.nextLine();
     }
 
@@ -592,15 +558,15 @@ export class PokerStarsParser {
       const patterns = [
         {
           regex: /([^:]+) collected \$?([\d.]+) from main pot/,
-          type: "main" as const,
+          type: 'main' as const,
         },
         {
           regex: /([^:]+) collected \$?([\d.]+) from side pot(?:-(\d+))?/,
-          type: "side" as const,
+          type: 'side' as const,
         },
         {
           regex: /([^:]+) collected \$?([\d.]+) from pot/,
-          type: "single" as const,
+          type: 'single' as const,
         },
       ];
 
@@ -614,7 +580,7 @@ export class PokerStarsParser {
           };
 
           // Extract side pot level if present
-          if (pattern.type === "side" && match[3]) {
+          if (pattern.type === 'side' && match[3]) {
             action.sidePotLevel = parseInt(match[3]);
           }
 
@@ -628,9 +594,7 @@ export class PokerStarsParser {
   }
 
   private calculatePotStructure(): PotCalculation {
-    const allInAmounts = Array.from(this.allInPlayers.values()).sort(
-      (a, b) => a - b,
-    );
+    const allInAmounts = Array.from(this.allInPlayers.values()).sort((a, b) => a - b);
 
     const calculation: PotCalculation = {
       totalPot: this.totalPotContributions,
@@ -641,8 +605,7 @@ export class PokerStarsParser {
     // Calculate side pot structure based on all-in amounts and active players
     if (allInAmounts.length > 0) {
       let prevAmount = 0;
-      const _totalActivePlayers =
-        this.activePlayers.size + this.allInPlayers.size;
+      const _totalActivePlayers = this.activePlayers.size + this.allInPlayers.size;
 
       allInAmounts.forEach((amount, index) => {
         // Include both remaining all-in players and active non-all-in players
@@ -669,7 +632,7 @@ export class PokerStarsParser {
 
   private parsePotLines(
     _collectedActions: CollectedAction[],
-    _potCalculation: PotCalculation,
+    _potCalculation: PotCalculation
   ): Pot[] {
     const pots: Pot[] = [];
 
@@ -682,9 +645,7 @@ export class PokerStarsParser {
 
         // Parse main and side pots from the line
         const mainPotMatch = line.match(/Main pot \$?([\d.]+)/);
-        const sidePotMatches = Array.from(
-          line.matchAll(/Side pot(?:-(\d+))? \$?([\d.]+)/g),
-        );
+        const sidePotMatches = Array.from(line.matchAll(/Side pot(?:-(\d+))? \$?([\d.]+)/g));
 
         if (mainPotMatch) {
           // Create main pot
@@ -733,26 +694,22 @@ export class PokerStarsParser {
     if (sidePotLevel === 0) {
       const eligible = new Set<string>();
       // Add active players (not folded)
-      this.activePlayers.forEach((player) => eligible.add(player));
+      this.activePlayers.forEach(player => eligible.add(player));
       // Add all-in players
       this.allInPlayers.forEach((_, player) => eligible.add(player));
       return Array.from(eligible);
     }
 
     // For side pots, only players who contributed enough are eligible
-    const allInAmounts = Array.from(this.allInPlayers.entries()).sort(
-      ([_, a], [__, b]) => a - b,
-    );
+    const allInAmounts = Array.from(this.allInPlayers.entries()).sort(([_, a], [__, b]) => a - b);
 
     if (sidePotLevel <= allInAmounts.length) {
       const eligible = new Set<string>();
       // Add remaining all-in players who contributed enough
-      allInAmounts
-        .slice(sidePotLevel - 1)
-        .forEach(([player, _]) => eligible.add(player));
+      allInAmounts.slice(sidePotLevel - 1).forEach(([player, _]) => eligible.add(player));
       // Add active players who can contest higher side pots
       if (this.activePlayers.size > 0) {
-        this.activePlayers.forEach((player) => eligible.add(player));
+        this.activePlayers.forEach(player => eligible.add(player));
       }
       return Array.from(eligible);
     }
@@ -760,31 +717,20 @@ export class PokerStarsParser {
     return [];
   }
 
-  private validateAndEnhancePots(
-    pots: Pot[],
-    collectedActions: CollectedAction[],
-  ): void {
+  private validateAndEnhancePots(pots: Pot[], collectedActions: CollectedAction[]): void {
     // Match collected actions to pots
     for (const pot of pots) {
-      const relevantActions = collectedActions.filter((action) => {
-        if (pot.isSide && action.type === "side") {
-          return (
-            !action.sidePotLevel || action.sidePotLevel === pot.sidePotLevel
-          );
-        } else if (
-          !pot.isSide &&
-          (action.type === "main" || action.type === "single")
-        ) {
+      const relevantActions = collectedActions.filter(action => {
+        if (pot.isSide && action.type === 'side') {
+          return !action.sidePotLevel || action.sidePotLevel === pot.sidePotLevel;
+        } else if (!pot.isSide && (action.type === 'main' || action.type === 'single')) {
           return true;
         }
         return false;
       });
 
       // Check for split pots
-      const totalCollected = relevantActions.reduce(
-        (sum, action) => sum + action.amount,
-        0,
-      );
+      const totalCollected = relevantActions.reduce((sum, action) => sum + action.amount, 0);
 
       if (relevantActions.length > 1) {
         pot.isSplit = true;
@@ -795,13 +741,9 @@ export class PokerStarsParser {
 
         if (hasOddChip) {
           // Find who gets the odd chip (usually determined by position)
-          const sortedActions = relevantActions.sort(
-            (a, b) => a.amount - b.amount,
-          );
-          const maxAmount = Math.max(...sortedActions.map((a) => a.amount));
-          const oddChipWinner = sortedActions.find(
-            (a) => a.amount === maxAmount,
-          );
+          const sortedActions = relevantActions.sort((a, b) => a.amount - b.amount);
+          const maxAmount = Math.max(...sortedActions.map(a => a.amount));
+          const oddChipWinner = sortedActions.find(a => a.amount === maxAmount);
 
           if (oddChipWinner) {
             pot.oddChipWinner = oddChipWinner.player;
@@ -810,13 +752,11 @@ export class PokerStarsParser {
       }
 
       // Add all winners to the pot
-      pot.players = relevantActions.map((action) => action.player);
+      pot.players = relevantActions.map(action => action.player);
 
       // Validate pot math
       if (Math.abs(totalCollected - pot.amount) > 0.01) {
-        console.warn(
-          `Pot amount mismatch: expected ${pot.amount}, collected ${totalCollected}`,
-        );
+        console.warn(`Pot amount mismatch: expected ${pot.amount}, collected ${totalCollected}`);
       }
     }
 
@@ -832,9 +772,7 @@ export class PokerStarsParser {
       const line = this.getLine();
 
       const wonMatch = line.match(/Seat \d+: ([^\s]+).*won \((\d+)\)/);
-      const collectedMatch = line.match(
-        /Seat \d+: ([^\s]+).*collected \((\d+)\)/,
-      );
+      const collectedMatch = line.match(/Seat \d+: ([^\s]+).*collected \((\d+)\)/);
       const match = wonMatch || collectedMatch;
 
       if (match) {
@@ -843,10 +781,7 @@ export class PokerStarsParser {
 
         // Find appropriate pot for this winner
         for (const pot of pots) {
-          if (
-            Math.abs(pot.amount - amount) < 0.01 &&
-            !pot.players.includes(winner)
-          ) {
+          if (Math.abs(pot.amount - amount) < 0.01 && !pot.players.includes(winner)) {
             pot.players.push(winner);
             break;
           }
@@ -862,7 +797,7 @@ export class PokerStarsParser {
 
   private updatePlayersWithHoleCards(
     players: Player[],
-    holeCards: Map<string, [string, string]>,
+    holeCards: Map<string, [string, string]>
   ): void {
     for (const player of players) {
       const cards = holeCards.get(player.name);
@@ -877,7 +812,7 @@ export class PokerStarsParser {
     type: ActionType,
     player: string,
     amount?: number,
-    street: Street = "preflop",
+    street: Street = 'preflop'
   ): Action {
     return {
       index: this.actionIndex++,
@@ -895,16 +830,14 @@ export class PokerStarsParser {
         message,
         line: this.currentLineIndex,
         context:
-          this.currentLineIndex < this.lines.length
-            ? this.lines[this.currentLineIndex]
-            : undefined,
+          this.currentLineIndex < this.lines.length ? this.lines[this.currentLineIndex] : undefined,
       },
     };
   }
 
   private getLine(): string {
     if (this.currentLineIndex >= this.lines.length) {
-      throw new Error("Unexpected end of hand history");
+      throw new Error('Unexpected end of hand history');
     }
     return this.lines[this.currentLineIndex];
   }

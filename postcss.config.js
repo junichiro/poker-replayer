@@ -14,15 +14,18 @@ module.exports = {
     // Remove unused CSS (helpful for tree shaking CSS)
     ...(process.env.NODE_ENV === 'production' && {
       cssnano: {
-        preset: ['default', {
-          discardComments: {
-            removeAll: true,
+        preset: [
+          'default',
+          {
+            discardComments: {
+              removeAll: true,
+            },
+            minifySelectors: true,
+            minifyParams: true,
+            normalizeWhitespace: true,
+            discardUnused: false, // Keep false for library builds
           },
-          minifySelectors: true,
-          minifyParams: true,
-          normalizeWhitespace: true,
-          discardUnused: false, // Keep false for library builds
-        }],
+        ],
       },
     }),
   },

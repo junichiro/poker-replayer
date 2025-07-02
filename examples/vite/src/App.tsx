@@ -1,5 +1,11 @@
 import { useState } from 'react';
-import { PokerHandReplay, type ComponentTheme, type Action, type ReplayEventCallback, type AnimationSpeed } from 'poker-hand-replay';
+import {
+  PokerHandReplay,
+  type ComponentTheme,
+  type Action,
+  type ReplayEventCallback,
+  type AnimationSpeed,
+} from 'poker-hand-replay';
 import './App.css';
 
 const sampleHandHistory = `PokerStars Hand #243490149326: Tournament #3476545632, $10+$1 USD Hold'em No Limit - Level I (10/20) - 2024/01/15 20:30:00 ET
@@ -45,10 +51,10 @@ function App() {
       <div className="controls">
         <div className="control-group">
           <label htmlFor="theme-select">テーマ:</label>
-          <select 
+          <select
             id="theme-select"
-            value={theme} 
-            onChange={(e) => setTheme(e.target.value as ComponentTheme)}
+            value={theme}
+            onChange={e => setTheme(e.target.value as ComponentTheme)}
           >
             <option value="dark">Dark</option>
             <option value="light">Light</option>
@@ -59,10 +65,10 @@ function App() {
 
         <div className="control-group">
           <label htmlFor="speed-select">アニメーション速度:</label>
-          <select 
+          <select
             id="speed-select"
-            value={animationSpeed} 
-            onChange={(e) => setAnimationSpeed(Number(e.target.value) as AnimationSpeed)}
+            value={animationSpeed}
+            onChange={e => setAnimationSpeed(Number(e.target.value) as AnimationSpeed)}
           >
             <option value={0.5}>0.5x (ゆっくり)</option>
             <option value={1.0}>1.0x (標準)</option>
@@ -74,10 +80,10 @@ function App() {
 
         <div className="control-group">
           <label>
-            <input 
-              type="checkbox" 
+            <input
+              type="checkbox"
               checked={autoPlay}
-              onChange={(e) => setAutoPlay(e.target.checked)}
+              onChange={e => setAutoPlay(e.target.checked)}
             />
             自動再生
           </label>
@@ -97,16 +103,24 @@ function App() {
           onActionChange={(action: Action, index: number) => {
             console.log(`🎯 Action ${index + 1}:`, action);
           }}
-          onReplayEvent={((event, data) => {
-            console.log('🎬 Replay event:', event, data);
-          }) as ReplayEventCallback}
+          onReplayEvent={
+            ((event, data) => {
+              console.log('🎬 Replay event:', event, data);
+            }) as ReplayEventCallback
+          }
         />
       </main>
 
       <footer className="app-footer">
         <p>
-          Built with ⚡ <a href="https://vitejs.dev" target="_blank">Vite</a> and 
-          🃏 <a href="../../README.md" target="_blank">Poker Hand Replay</a>
+          Built with ⚡{' '}
+          <a href="https://vitejs.dev" target="_blank">
+            Vite
+          </a>{' '}
+          and 🃏{' '}
+          <a href="../../README.md" target="_blank">
+            Poker Hand Replay
+          </a>
         </p>
         <p>
           Edit <code>src/App.tsx</code> and save to see changes instantly!

@@ -2,17 +2,17 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import React from 'react';
 
 // Mock comprehensive poker replay component for user interaction testing
-const InteractivePokerReplay = ({ 
+const InteractivePokerReplay = ({
   onUserAction,
   enableKeyboardControls = true,
   enableTouchControls = true,
   enableMouseControls: _enableMouseControls = true,
-  ..._props 
+  ..._props
 }: any) => {
   const [currentActionIndex, setCurrentActionIndex] = React.useState(-1);
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -165,7 +165,7 @@ const InteractivePokerReplay = ({
   };
 
   return (
-    <div 
+    <div
       data-testid="interactive-poker-replay"
       className="poker-replay"
       tabIndex={0}
@@ -195,7 +195,7 @@ const InteractivePokerReplay = ({
         >
           Reset
         </button>
-        
+
         <button
           data-testid="previous-btn"
           onClick={handlePrevious}
@@ -206,19 +206,19 @@ const InteractivePokerReplay = ({
         >
           Previous
         </button>
-        
+
         <button
           data-testid="play-pause-btn"
           onClick={handlePlayPause}
           onFocus={() => handleFocus('play-pause')}
           onBlur={handleBlur}
-          onTouchStart={(e) => handleTouchStart(e, 'play-pause')}
-          onTouchEnd={(e) => handleTouchEnd(e, 'play-pause')}
+          onTouchStart={e => handleTouchStart(e, 'play-pause')}
+          onTouchEnd={e => handleTouchEnd(e, 'play-pause')}
           aria-label={isPlaying ? 'Pause' : 'Play'}
         >
           {isPlaying ? 'Pause' : 'Play'}
         </button>
-        
+
         <button
           data-testid="next-btn"
           onClick={handleNext}
@@ -233,14 +233,14 @@ const InteractivePokerReplay = ({
 
       {/* Players */}
       <div data-testid="players" className="players">
-        {mockPlayers.map((player) => (
+        {mockPlayers.map(player => (
           <div
             key={player.id}
             data-testid={`player-${player.id}`}
             className={`player ${selectedPlayer === player.id ? 'selected' : ''}`}
             onClick={() => handlePlayerClick(player.id)}
-            onTouchStart={(e) => handleTouchStart(e, `player-${player.id}`)}
-            onTouchEnd={(e) => handleTouchEnd(e, `player-${player.id}`)}
+            onTouchStart={e => handleTouchStart(e, `player-${player.id}`)}
+            onTouchEnd={e => handleTouchEnd(e, `player-${player.id}`)}
             tabIndex={0}
             onFocus={() => handleFocus(`player-${player.id}`)}
             onBlur={handleBlur}
@@ -249,7 +249,7 @@ const InteractivePokerReplay = ({
           >
             <span className="player-name">{player.name}</span>
             <span className="player-chips">${player.chips}</span>
-            
+
             {/* Player cards */}
             <div className="player-cards">
               {player.cards.map((card, index) => (
@@ -284,8 +284,8 @@ const InteractivePokerReplay = ({
               index === currentActionIndex ? 'current' : ''
             }`}
             onClick={() => handleActionClick(index)}
-            onTouchStart={(e) => handleTouchStart(e, `action-${index}`)}
-            onTouchEnd={(e) => handleTouchEnd(e, `action-${index}`)}
+            onTouchStart={e => handleTouchStart(e, `action-${index}`)}
+            onTouchEnd={e => handleTouchEnd(e, `action-${index}`)}
             tabIndex={0}
             onFocus={() => handleFocus(`action-${index}`)}
             onBlur={handleBlur}
@@ -328,9 +328,9 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const playButton = screen.getByTestId('play-pause-btn');
-      
+
       await user.click(playButton);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'play-pause', { isPlaying: false });
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
       expect(playButton).toHaveTextContent('Pause');
@@ -342,20 +342,20 @@ describe('User Interactions', () => {
 
       const nextButton = screen.getByTestId('next-btn');
       const previousButton = screen.getByTestId('previous-btn');
-      
+
       // Initially previous should be disabled
       expect(previousButton).toBeDisabled();
-      
+
       // Click next
       await user.click(nextButton);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'next', { index: -1 });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('0');
       expect(previousButton).not.toBeDisabled();
-      
+
       // Click previous
       await user.click(previousButton);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'previous', { index: 0 });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('-1');
     });
@@ -366,15 +366,15 @@ describe('User Interactions', () => {
 
       const nextButton = screen.getByTestId('next-btn');
       const resetButton = screen.getByTestId('reset-btn');
-      
+
       // Move forward first
       await user.click(nextButton);
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('0');
       expect(resetButton).not.toBeDisabled();
-      
+
       // Reset
       await user.click(resetButton);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'reset');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('-1');
       expect(screen.getByTestId('is-playing')).toHaveTextContent('false');
@@ -386,24 +386,24 @@ describe('User Interactions', () => {
 
       const player1 = screen.getByTestId('player-1');
       const player2 = screen.getByTestId('player-2');
-      
+
       // Select player 1
       await user.click(player1);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'player-click', { playerId: 1 });
       expect(screen.getByTestId('selected-player')).toHaveTextContent('1');
       expect(player1).toHaveClass('selected');
-      
+
       // Select player 2 (should deselect player 1)
       await user.click(player2);
-      
+
       expect(screen.getByTestId('selected-player')).toHaveTextContent('2');
       expect(player1).not.toHaveClass('selected');
       expect(player2).toHaveClass('selected');
-      
+
       // Click same player again to deselect
       await user.click(player2);
-      
+
       expect(screen.getByTestId('selected-player')).toHaveTextContent('none');
       expect(player2).not.toHaveClass('selected');
     });
@@ -413,9 +413,9 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const action2 = screen.getByTestId('action-2');
-      
+
       await user.click(action2);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'action-click', { actionIndex: 2 });
       expect(screen.getByTestId('selected-action')).toHaveTextContent('2');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('2');
@@ -428,15 +428,15 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const card = screen.getByTestId('card-1-0');
-      
+
       await user.hover(card);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'card-hover', { cardId: '1-0' });
       expect(screen.getByTestId('hovered-card')).toHaveTextContent('1-0');
       expect(card).toHaveClass('hovered');
-      
+
       await user.unhover(card);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'card-leave');
       expect(screen.getByTestId('hovered-card')).toHaveTextContent('none');
       expect(card).not.toHaveClass('hovered');
@@ -449,9 +449,9 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       fireEvent.keyDown(document, { key: ' ' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'play-pause', { isPlaying: false });
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
     });
@@ -461,16 +461,16 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       // Right arrow to go forward
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'next', { index: -1 });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('0');
-      
+
       // Left arrow to go back
       fireEvent.keyDown(document, { key: 'ArrowLeft' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'previous', { index: 0 });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('-1');
     });
@@ -480,21 +480,21 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       // Move forward first
       fireEvent.keyDown(document, { key: 'ArrowRight' });
       fireEvent.keyDown(document, { key: 'ArrowRight' });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('1');
-      
+
       // Home key to reset
       fireEvent.keyDown(document, { key: 'Home' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'reset');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('-1');
-      
+
       // End key to go to end
       fireEvent.keyDown(document, { key: 'End' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'goto-end');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('5');
     });
@@ -504,17 +504,21 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       // Press '1' to select player 1
       fireEvent.keyDown(document, { key: '1' });
-      
-      expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'select-player', { playerIndex: 0 });
+
+      expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'select-player', {
+        playerIndex: 0,
+      });
       expect(screen.getByTestId('selected-player')).toHaveTextContent('0');
-      
+
       // Press '2' to select player 2
       fireEvent.keyDown(document, { key: '2' });
-      
-      expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'select-player', { playerIndex: 1 });
+
+      expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'select-player', {
+        playerIndex: 1,
+      });
       expect(screen.getByTestId('selected-player')).toHaveTextContent('1');
     });
 
@@ -525,18 +529,18 @@ describe('User Interactions', () => {
       const mainElement = screen.getByTestId('interactive-poker-replay');
       const player1 = screen.getByTestId('player-1');
       const action0 = screen.getByTestId('action-0');
-      
+
       // Select player and action first
       await user.click(player1);
       await user.click(action0);
-      
+
       expect(screen.getByTestId('selected-player')).toHaveTextContent('1');
       expect(screen.getByTestId('selected-action')).toHaveTextContent('0');
-      
+
       // Press Escape to clear selections
       mainElement.focus();
       fireEvent.keyDown(document, { key: 'Escape' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'clear-selection');
       expect(screen.getByTestId('selected-player')).toHaveTextContent('none');
       expect(screen.getByTestId('selected-action')).toHaveTextContent('none');
@@ -544,20 +548,21 @@ describe('User Interactions', () => {
 
     test('disables keyboard controls when enableKeyboardControls is false', async () => {
       render(
-        <InteractivePokerReplay 
-          onUserAction={mockOnUserAction} 
-          enableKeyboardControls={false}
-        />
+        <InteractivePokerReplay onUserAction={mockOnUserAction} enableKeyboardControls={false} />
       );
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       fireEvent.keyDown(document, { key: ' ' });
       fireEvent.keyDown(document, { key: 'ArrowRight' });
-      
+
       // Should not respond to keyboard events
-      expect(mockOnUserAction).not.toHaveBeenCalledWith('keyboard', expect.any(String), expect.any(Object));
+      expect(mockOnUserAction).not.toHaveBeenCalledWith(
+        'keyboard',
+        expect.any(String),
+        expect.any(Object)
+      );
       expect(screen.getByTestId('is-playing')).toHaveTextContent('false');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('-1');
     });
@@ -568,17 +573,17 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const playButton = screen.getByTestId('play-pause-btn');
-      
+
       fireEvent.touchStart(playButton, { touches: [{ clientX: 100, clientY: 100 }] });
-      
-      expect(mockOnUserAction).toHaveBeenCalledWith('touch', 'touch-start', { 
-        action: 'play-pause', 
-        touches: 1 
+
+      expect(mockOnUserAction).toHaveBeenCalledWith('touch', 'touch-start', {
+        action: 'play-pause',
+        touches: 1,
       });
       expect(screen.getByTestId('is-dragging')).toHaveTextContent('true');
-      
+
       fireEvent.touchEnd(playButton);
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('touch', 'touch-end', { action: 'play-pause' });
       expect(screen.getByTestId('is-dragging')).toHaveTextContent('false');
     });
@@ -587,34 +592,35 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const player1 = screen.getByTestId('player-1');
-      
-      fireEvent.touchStart(player1, { 
+
+      fireEvent.touchStart(player1, {
         touches: [
           { clientX: 100, clientY: 100 },
-          { clientX: 150, clientY: 150 }
-        ] 
+          { clientX: 150, clientY: 150 },
+        ],
       });
-      
-      expect(mockOnUserAction).toHaveBeenCalledWith('touch', 'touch-start', { 
-        action: 'player-1', 
-        touches: 2 
+
+      expect(mockOnUserAction).toHaveBeenCalledWith('touch', 'touch-start', {
+        action: 'player-1',
+        touches: 2,
       });
     });
 
     test('disables touch controls when enableTouchControls is false', async () => {
       render(
-        <InteractivePokerReplay 
-          onUserAction={mockOnUserAction} 
-          enableTouchControls={false}
-        />
+        <InteractivePokerReplay onUserAction={mockOnUserAction} enableTouchControls={false} />
       );
 
       const playButton = screen.getByTestId('play-pause-btn');
-      
+
       fireEvent.touchStart(playButton, { touches: [{ clientX: 100, clientY: 100 }] });
-      
+
       // Should not respond to touch events
-      expect(mockOnUserAction).not.toHaveBeenCalledWith('touch', expect.any(String), expect.any(Object));
+      expect(mockOnUserAction).not.toHaveBeenCalledWith(
+        'touch',
+        expect.any(String),
+        expect.any(Object)
+      );
       expect(screen.getByTestId('is-dragging')).toHaveTextContent('false');
     });
   });
@@ -624,12 +630,12 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
-      
+
       // Use act to wrap focus events
       await act(async () => {
         fireEvent.focus(mainElement);
       });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('focus', 'focus', { elementType: 'main' });
       expect(screen.getByTestId('focused-element')).toHaveTextContent('main');
     });
@@ -642,7 +648,7 @@ describe('User Interactions', () => {
       const playBtn = screen.getByTestId('play-pause-btn');
       const player1 = screen.getByTestId('player-1');
       const card = screen.getByTestId('card-1-0');
-      
+
       // These elements should be focusable
       expect(resetBtn.tagName).toBe('BUTTON');
       expect(playBtn.tagName).toBe('BUTTON');
@@ -659,18 +665,18 @@ describe('User Interactions', () => {
       const playButton = screen.getByTestId('play-pause-btn');
       const nextButton = screen.getByTestId('next-btn');
       const player1 = screen.getByTestId('player-1');
-      
+
       // Rapid clicks
       await user.click(playButton);
       await user.click(nextButton);
       await user.click(player1);
       await user.click(playButton); // Pause
-      
+
       // Focus events also fire, so we check for at least the main actions
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'play-pause', expect.any(Object));
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'next', expect.any(Object));
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'player-click', expect.any(Object));
-      
+
       expect(screen.getByTestId('is-playing')).toHaveTextContent('false');
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('0');
       expect(screen.getByTestId('selected-player')).toHaveTextContent('1');
@@ -682,25 +688,25 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       const nextButton = screen.getByTestId('next-btn');
-      
+
       // Start with mouse click
       await user.click(nextButton);
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('0');
-      
+
       // Continue with keyboard
       await act(async () => {
         fireEvent.focus(mainElement);
         fireEvent.keyDown(document, { key: 'ArrowRight' });
       });
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('1');
-      
+
       // Mix in touch
       await act(async () => {
         fireEvent.touchStart(nextButton, { touches: [{ clientX: 100, clientY: 100 }] });
       });
       // Touch events should trigger drag state (but this might not persist)
       // At minimum, verify the event was handled
-      
+
       // Different input types should work together
       expect(mockOnUserAction).toHaveBeenCalledWith('mouse', 'next', expect.any(Object));
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'next', expect.any(Object));
@@ -716,13 +722,13 @@ describe('User Interactions', () => {
       await user.click(screen.getByTestId('play-pause-btn')); // Start playing
       await user.click(screen.getByTestId('player-2')); // Select player 2
       await user.click(screen.getByTestId('action-3')); // Jump to action 3
-      
+
       // State should be consistent
       expect(screen.getByTestId('current-action-index')).toHaveTextContent('3');
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
       expect(screen.getByTestId('selected-player')).toHaveTextContent('2');
       expect(screen.getByTestId('selected-action')).toHaveTextContent('3');
-      
+
       // Verify UI reflects state
       expect(screen.getByTestId('action-3')).toHaveClass('selected');
       expect(screen.getByTestId('action-3')).toHaveClass('current');
@@ -739,10 +745,14 @@ describe('User Interactions', () => {
       expect(screen.getByRole('button', { name: 'Previous action' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Play' })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Next action' })).toBeInTheDocument();
-      
-      expect(screen.getByRole('button', { name: 'Player Player1, 1500 chips' })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Player Player2, 1500 chips' })).toBeInTheDocument();
-      
+
+      expect(
+        screen.getByRole('button', { name: 'Player Player1, 1500 chips' })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: 'Player Player2, 1500 chips' })
+      ).toBeInTheDocument();
+
       expect(screen.getByRole('img', { name: 'Card As' })).toBeInTheDocument();
       expect(screen.getByRole('img', { name: 'Card Kh' })).toBeInTheDocument();
     });
@@ -752,9 +762,9 @@ describe('User Interactions', () => {
       render(<InteractivePokerReplay onUserAction={mockOnUserAction} />);
 
       const playButton = screen.getByRole('button', { name: 'Play' });
-      
+
       await user.click(playButton);
-      
+
       expect(screen.getByRole('button', { name: 'Pause' })).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Play' })).not.toBeInTheDocument();
     });
@@ -764,7 +774,7 @@ describe('User Interactions', () => {
 
       const shortcutsSection = screen.getByTestId('keyboard-shortcuts');
       expect(shortcutsSection).toBeInTheDocument();
-      
+
       expect(screen.getByText('Space: Play/Pause')).toBeInTheDocument();
       expect(screen.getByText('← →: Previous/Next action')).toBeInTheDocument();
       expect(screen.getByText('Home: Reset to beginning')).toBeInTheDocument();
@@ -778,16 +788,13 @@ describe('User Interactions', () => {
     test('can disable mouse controls', async () => {
       const user = userEvent.setup();
       render(
-        <InteractivePokerReplay 
-          onUserAction={mockOnUserAction} 
-          enableMouseControls={false}
-        />
+        <InteractivePokerReplay onUserAction={mockOnUserAction} enableMouseControls={false} />
       );
 
       const playButton = screen.getByTestId('play-pause-btn');
-      
+
       await user.click(playButton);
-      
+
       // Button should still be clickable (this test mainly ensures no errors)
       // In a real implementation, mouse controls being disabled might prevent the action
       expect(playButton).toBeInTheDocument();
@@ -795,8 +802,8 @@ describe('User Interactions', () => {
 
     test('works with all input methods disabled except keyboard', () => {
       render(
-        <InteractivePokerReplay 
-          onUserAction={mockOnUserAction} 
+        <InteractivePokerReplay
+          onUserAction={mockOnUserAction}
           enableMouseControls={false}
           enableTouchControls={false}
           enableKeyboardControls={true}
@@ -805,9 +812,9 @@ describe('User Interactions', () => {
 
       const mainElement = screen.getByTestId('interactive-poker-replay');
       mainElement.focus();
-      
+
       fireEvent.keyDown(document, { key: ' ' });
-      
+
       expect(mockOnUserAction).toHaveBeenCalledWith('keyboard', 'play-pause', { isPlaying: false });
       expect(screen.getByTestId('is-playing')).toHaveTextContent('true');
     });

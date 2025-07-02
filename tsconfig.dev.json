@@ -7,31 +7,24 @@
     "noEmit": true,
     "incremental": true,
     "tsBuildInfoFile": "./.tsbuildinfo",
-    
+
     // Enhanced development experience
     "preserveWatchOutput": true,
     "pretty": true,
-    
+
     // Less strict for development
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    
+
     // Enhanced debugging
     "sourceMap": true,
     "inlineSourceMap": false,
     "inlineSources": true,
-    
+
     // Fast type checking
     "skipLibCheck": true,
     "assumeChangesOnlyAffectDirectDependencies": true
   },
-  "include": [
-    "src/**/*",
-    "test-*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "coverage"
-  ]
+  "include": ["src/**/*", "test-*.ts"],
+  "exclude": ["node_modules", "dist", "coverage"]
 }

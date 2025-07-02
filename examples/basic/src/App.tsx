@@ -1,9 +1,9 @@
 import React, { useState, useCallback } from 'react';
-import { 
-  PokerHandReplay, 
-  type Action, 
+import {
+  PokerHandReplay,
+  type Action,
   type ComponentTheme,
-  type ReplayEventCallback 
+  type ReplayEventCallback,
 } from 'poker-hand-replay';
 import { handHistories } from './hand-data';
 import './index.css';
@@ -23,18 +23,18 @@ type HandKey = keyof typeof handHistories;
 function App() {
   // State for current hand selection
   const [selectedHand, setSelectedHand] = useState<HandKey>('sample');
-  
+
   // State for theme selection
   const [selectedTheme, setSelectedTheme] = useState<ComponentTheme>('dark');
-  
+
   // State for error messages
   const [error, setError] = useState<string | null>(null);
-  
+
   // State for success messages
   const [status, setStatus] = useState<string | null>(null);
-  
+
   // State for action logging
-  const [actionLog, setActionLog] = useState<Array<{action: Action, index: number}>>([]);
+  const [actionLog, setActionLog] = useState<Array<{ action: Action; index: number }>>([]);
   const [currentActionIndex, setCurrentActionIndex] = useState<number>(-1);
 
   // Handle action changes for logging
@@ -57,38 +57,38 @@ function App() {
   // Handle replay events for error/success feedback
   const handleReplayEvent: ReplayEventCallback = useCallback((event, data) => {
     console.log('Replay event:', event, data);
-    
+
     switch (event) {
       case 'parseError':
         setError(data?.error?.message || 'Failed to parse hand history');
         setStatus(null);
         setActionLog([]);
         break;
-        
+
       case 'parseSuccess':
         setError(null);
         setStatus(`Successfully parsed hand: ${data?.hand?.id || 'Unknown'}`);
         setActionLog([]);
         setCurrentActionIndex(-1);
         break;
-        
+
       case 'start':
         setStatus('Replay started');
         break;
-        
+
       case 'pause':
         setStatus('Replay paused');
         break;
-        
+
       case 'end':
         setStatus('Replay finished');
         break;
-        
+
       case 'reset':
         setStatus('Replay reset');
         setCurrentActionIndex(-1);
         break;
-        
+
       default:
         // Handle other events silently
         break;
@@ -119,11 +119,7 @@ function App() {
       <div className="controls">
         <div className="hand-selector">
           <label htmlFor="hand-select">Choose Hand:</label>
-          <select 
-            id="hand-select"
-            value={selectedHand} 
-            onChange={handleHandChange}
-          >
+          <select id="hand-select" value={selectedHand} onChange={handleHandChange}>
             {handOptions.map(option => (
               <option key={option.key} value={option.key}>
                 {option.label}
@@ -134,11 +130,7 @@ function App() {
 
         <div className="theme-selector">
           <label htmlFor="theme-select">Theme:</label>
-          <select 
-            id="theme-select"
-            value={selectedTheme} 
-            onChange={handleThemeChange}
-          >
+          <select id="theme-select" value={selectedTheme} onChange={handleThemeChange}>
             {themes.map(theme => (
               <option key={theme} value={theme}>
                 {theme.charAt(0).toUpperCase() + theme.slice(1)}
@@ -148,17 +140,9 @@ function App() {
         </div>
       </div>
 
-      {error && (
-        <div className="error-message">
-          ❌ {error}
-        </div>
-      )}
+      {error && <div className="error-message">❌ {error}</div>}
 
-      {status && !error && (
-        <div className="status-info">
-          ✅ {status}
-        </div>
-      )}
+      {status && !error && <div className="status-info">✅ {status}</div>}
 
       <main className="replay-container">
         <PokerHandReplay
@@ -178,8 +162,8 @@ function App() {
               enableActionHighlight: true,
               cardDealDuration: 800,
               actionTransitionDuration: 400,
-              easing: 'ease-out'
-            }
+              easing: 'ease-out',
+            },
           }}
           onActionChange={handleActionChange}
           onReplayEvent={handleReplayEvent}
@@ -191,7 +175,7 @@ function App() {
           <div className="action-log">
             <h3>Action Log</h3>
             {actionLog.map((entry, idx) => (
-              <div 
+              <div
                 key={`${entry.index}-${idx}`}
                 className={`action-log-entry ${
                   entry.index === currentActionIndex ? 'current' : ''
@@ -216,14 +200,19 @@ function App() {
           for more features, or browse{' '}
           <a href="../" target="_blank" rel="noopener noreferrer">
             all examples
-          </a>.
+          </a>
+          .
         </p>
         <p>
           <a href="../../README.md" target="_blank" rel="noopener noreferrer">
             📚 Documentation
           </a>{' '}
           |{' '}
-          <a href="https://github.com/junichiro/poker-replayer" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://github.com/junichiro/poker-replayer"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             🔗 GitHub
           </a>
         </p>

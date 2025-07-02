@@ -132,7 +132,7 @@ Board [9h 5c 2d 7s Qh]
 Seat 1: ShortestStack (small blind) showed [As Ah] and won (12000) with a pair of Aces
 Seat 2: ShortStack (button) (big blind) showed [Kc Qc] and lost with a pair of Queens
 Seat 3: MidStack showed [Jc Js] and lost with a pair of Jacks
-Seat 4: ChipLeader showed [Ks Kd] and won (34000) with a pair of Kings`
+Seat 4: ChipLeader showed [Ks Kd] and won (34000) with a pair of Kings`,
 };
 
 console.log('Testing edge case handling...\n');
@@ -147,26 +147,28 @@ const result1 = parser.parse(testHandHistories.multipleSidePots);
 if (result1.success && result1.hand) {
   const pots = result1.hand.pots;
   console.log(`Found ${pots.length} pots:`);
-  
+
   pots.forEach((pot, index) => {
     const type = pot.isSide ? `side pot-${pot.sidePotLevel}` : 'main pot';
     const winners = pot.players.join(', ');
     const eligibility = pot.eligiblePlayers ? `(${pot.eligiblePlayers.length} eligible)` : '';
     console.log(`- ${type}: $${pot.amount} won by ${winners} ${eligibility}`);
   });
-  
+
   // Validate side pot structure
   const mainPot = pots.find(p => !p.isSide);
-  const sidePots = pots.filter(p => p.isSide).sort((a, b) => (a.sidePotLevel || 0) - (b.sidePotLevel || 0));
-  
+  const sidePots = pots
+    .filter(p => p.isSide)
+    .sort((a, b) => (a.sidePotLevel || 0) - (b.sidePotLevel || 0));
+
   totalTests++;
   if (mainPot && sidePots.length === 2 && pots.every(p => p.players.length > 0)) {
     console.log('✅ Multiple side pots test passed');
     passedTests++;
-    
+
     // Additional validation: Check if eligibility makes sense
-    const eligibilityCorrect = sidePots.every(sp => 
-      sp.eligiblePlayers && sp.eligiblePlayers.length <= 4
+    const eligibilityCorrect = sidePots.every(
+      sp => sp.eligiblePlayers && sp.eligiblePlayers.length <= 4
     );
     if (eligibilityCorrect) {
       console.log('✅ Side pot eligibility calculated correctly');
@@ -186,18 +188,18 @@ const result2 = parser.parse(testHandHistories.splitPotWithOddChip);
 if (result2.success && result2.hand) {
   const pots = result2.hand.pots;
   console.log(`Found ${pots.length} pots:`);
-  
+
   pots.forEach(pot => {
     const splitInfo = pot.isSplit ? ' (SPLIT)' : '';
     const oddChip = pot.oddChipWinner ? ` [odd chip: ${pot.oddChipWinner}]` : '';
     console.log(`- Pot: $${pot.amount} won by ${pot.players.join(', ')}${splitInfo}${oddChip}`);
   });
-  
+
   totalTests++;
   if (pots.length === 1 && pots[0].isSplit && pots[0].players.length === 2) {
     console.log('✅ Split pot with odd chip test passed');
     passedTests++;
-    
+
     // Check if odd chip winner is identified
     if (pots[0].oddChipWinner) {
       console.log('✅ Odd chip winner correctly identified');
@@ -215,18 +217,18 @@ if (result2.success && result2.hand) {
 console.log('\n=== Test 3: Incomplete Hand with Timeouts ===');
 const result3 = parser.parse(testHandHistories.incompleteHandTimeout);
 if (result3.success && result3.hand) {
-  const timeoutActions = result3.hand.actions.filter(action => 
-    action.type === 'timeout' || action.type === 'disconnect'
+  const timeoutActions = result3.hand.actions.filter(
+    action => action.type === 'timeout' || action.type === 'disconnect'
   );
-  
+
   console.log(`Found ${timeoutActions.length} player state actions:`);
   timeoutActions.forEach(action => {
     console.log(`- ${action.player}: ${action.type}${action.reason ? ` (${action.reason})` : ''}`);
   });
-  
+
   const pots = result3.hand.pots;
   console.log(`Hand completed with ${pots.length} pot(s) despite player issues`);
-  
+
   totalTests++;
   if (timeoutActions.length >= 2 && pots.length === 1 && pots[0].players.length === 1) {
     console.log('✅ Incomplete hand handling test passed');
@@ -247,29 +249,29 @@ if (result4.success && result4.hand) {
   allInActions.forEach(action => {
     console.log(`- ${action.player}: ${action.type} $${action.amount} (all-in)`);
   });
-  
+
   const pots = result4.hand.pots;
   console.log(`\nPot structure with ${pots.length} pots:`);
   pots.forEach(pot => {
     const type = pot.isSide ? `side pot-${pot.sidePotLevel}` : 'main pot';
     console.log(`- ${type}: $${pot.amount} won by ${pot.players.join(', ')}`);
   });
-  
+
   // Validate complex scenario
   const mainPot = pots.find(p => !p.isSide);
   const sidePots = pots.filter(p => p.isSide);
   const totalPotAmount = pots.reduce((sum, pot) => sum + pot.amount, 0);
-  
+
   totalTests++;
   if (mainPot && sidePots.length === 2 && totalPotAmount === 46000) {
     console.log('✅ Complex all-in scenario test passed');
     passedTests++;
-    
+
     // Check pot assignments
-    const correctAssignments = 
+    const correctAssignments =
       mainPot.players.includes('ShortestStack') &&
       sidePots.some(sp => sp.players.includes('ChipLeader'));
-    
+
     if (correctAssignments) {
       console.log('✅ Pot assignments are correct');
     } else {
@@ -288,14 +290,16 @@ console.log('\n=== Test 5: Player Chip Tracking ===');
 if (result4.success && result4.hand) {
   const players = result4.hand.players;
   console.log('Final player states:');
-  
+
   players.forEach(player => {
     const allInStatus = player.isAllIn ? ' (ALL-IN)' : '';
-    const chipInfo = player.currentChips !== undefined ? 
-      ` [chips: ${player.chips} -> ${player.currentChips}]` : '';
+    const chipInfo =
+      player.currentChips !== undefined
+        ? ` [chips: ${player.chips} -> ${player.currentChips}]`
+        : '';
     console.log(`- ${player.name}: ${chipInfo}${allInStatus}`);
   });
-  
+
   totalTests++;
   const playersWithChipInfo = players.filter(p => p.currentChips !== undefined);
   if (playersWithChipInfo.length === players.length) {
@@ -311,7 +315,9 @@ if (result4.success && result4.hand) {
 
 console.log(`\n=== Final Results ===`);
 console.log(`Tests passed: ${passedTests}/${totalTests}`);
-console.log(passedTests === totalTests ? '🎉 All edge case tests passed!' : '⚠️  Some edge case tests failed');
+console.log(
+  passedTests === totalTests ? '🎉 All edge case tests passed!' : '⚠️  Some edge case tests failed'
+);
 
 // Additional validation
 console.log('\n=== Edge Case Feature Coverage ===');
@@ -321,7 +327,7 @@ const features = {
   sidePots: 0,
   allInTracking: 0,
   playerStateChanges: 0,
-  chipTracking: 0
+  chipTracking: 0,
 };
 
 allResults.forEach(result => {
@@ -330,22 +336,22 @@ allResults.forEach(result => {
     if (result.hand.pots.some(p => p.isSplit)) {
       features.splitPots++;
     }
-    
+
     // Check for side pots
     if (result.hand.pots.some(p => p.isSide)) {
       features.sidePots++;
     }
-    
+
     // Check for all-in tracking
     if (result.hand.actions.some(a => a.isAllIn)) {
       features.allInTracking++;
     }
-    
+
     // Check for player state changes
     if (result.hand.actions.some(a => ['timeout', 'disconnect'].includes(a.type))) {
       features.playerStateChanges++;
     }
-    
+
     // Check for chip tracking
     if (result.hand.players.some(p => p.currentChips !== undefined)) {
       features.chipTracking++;
@@ -357,4 +363,6 @@ Object.entries(features).forEach(([feature, count]) => {
   console.log(`${feature}: ${count} scenarios tested`);
 });
 
-console.log(`\nTotal edge case scenarios covered: ${Object.values(features).reduce((a, b) => a + b, 0)}`);
+console.log(
+  `\nTotal edge case scenarios covered: ${Object.values(features).reduce((a, b) => a + b, 0)}`
+);

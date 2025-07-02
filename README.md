@@ -1,6 +1,7 @@
 # 🃏 Poker Hand Replay
 
-A React component library for parsing and replaying PokerStars hand histories with beautiful visual animations.
+A React component library for parsing and replaying PokerStars hand histories
+with beautiful visual animations.
 
 [![npm version](https://badge.fury.io/js/poker-hand-replay.svg)](https://badge.fury.io/js/poker-hand-replay)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -10,7 +11,7 @@ A React component library for parsing and replaying PokerStars hand histories wi
 ## ✨ Features
 
 - 🎯 **Parse PokerStars hand histories** with comprehensive format support
-- 🎮 **Interactive replay controls** with play, pause, step-by-step navigation  
+- 🎮 **Interactive replay controls** with play, pause, step-by-step navigation
 - 🎨 **5 built-in themes** (dark, light, auto, casino, professional)
 - 📱 **Responsive design** that works on desktop and mobile
 - ⚡ **Performance optimized** with React.memo and smart re-renders
@@ -75,14 +76,14 @@ Seat 3: Player3 folded before Flop (didn't bet)
 
 function App() {
   return (
-    <PokerHandReplay 
+    <PokerHandReplay
       handHistory={handHistory}
       config={{
-        theme: "dark",
+        theme: 'dark',
         autoPlay: false,
         animationSpeed: 1.5,
-        tableShape: "oval",
-        cardDesign: "four-color"
+        tableShape: 'oval',
+        cardDesign: 'four-color',
       }}
       onActionChange={(action, index) => {
         console.log(`Action ${index}: ${action.player} ${action.type}`, action);
@@ -101,39 +102,44 @@ export default App;
 
 ### `PokerHandReplay` Props
 
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `handHistory` | `string` | **required** | Raw PokerStars hand history text |
-| `config` | `ReplayConfig` | `{}` | Configuration options for replay behavior |
-| `onActionChange` | `ActionChangeCallback` | `undefined` | Callback fired when current action changes |
-| `onReplayEvent` | `ReplayEventCallback` | `undefined` | Callback for replay events (start, pause, etc.) |
-| `className` | `string` | `''` | Custom CSS class for styling |
-| `enableLoadingStates` | `boolean` | `true` | Enable loading indicators and progress |
-| `enableErrorRecovery` | `boolean` | `true` | Enable automatic error recovery with retry |
-| `loadingComponent` | `React.ComponentType` | `LoadingSpinner` | Custom loading component |
-| `errorComponent` | `React.ComponentType` | `ErrorBoundary` | Custom error fallback component |
+| Prop                  | Type                   | Default          | Description                                     |
+| --------------------- | ---------------------- | ---------------- | ----------------------------------------------- |
+| `handHistory`         | `string`               | **required**     | Raw PokerStars hand history text                |
+| `config`              | `ReplayConfig`         | `{}`             | Configuration options for replay behavior       |
+| `onActionChange`      | `ActionChangeCallback` | `undefined`      | Callback fired when current action changes      |
+| `onReplayEvent`       | `ReplayEventCallback`  | `undefined`      | Callback for replay events (start, pause, etc.) |
+| `className`           | `string`               | `''`             | Custom CSS class for styling                    |
+| `enableLoadingStates` | `boolean`              | `true`           | Enable loading indicators and progress          |
+| `enableErrorRecovery` | `boolean`              | `true`           | Enable automatic error recovery with retry      |
+| `loadingComponent`    | `React.ComponentType`  | `LoadingSpinner` | Custom loading component                        |
+| `errorComponent`      | `React.ComponentType`  | `ErrorBoundary`  | Custom error fallback component                 |
 
 ### `ReplayConfig` Options
 
 ```typescript
 interface ReplayConfig {
   // Playback Control
-  autoPlay?: boolean;                // Auto-start replay (default: false)
-  animationSpeed?: number;           // Speed multiplier 0.5-3.0 (default: 1.0)
-  
+  autoPlay?: boolean; // Auto-start replay (default: false)
+  animationSpeed?: number; // Speed multiplier 0.5-3.0 (default: 1.0)
+
   // Visual Appearance
-  theme?: "light" | "dark" | "auto" | "casino" | "professional";
-  size?: "extra-small" | "small" | "medium" | "large" | "extra-large";
-  tableShape?: "oval" | "rectangle" | "circle" | "hexagon";
-  cardDesign?: "standard" | "four-color" | "large-indices" | "minimal" | "classic";
-  
+  theme?: 'light' | 'dark' | 'auto' | 'casino' | 'professional';
+  size?: 'extra-small' | 'small' | 'medium' | 'large' | 'extra-large';
+  tableShape?: 'oval' | 'rectangle' | 'circle' | 'hexagon';
+  cardDesign?:
+    | 'standard'
+    | 'four-color'
+    | 'large-indices'
+    | 'minimal'
+    | 'classic';
+
   // Gameplay Options
-  showAllCards?: boolean;            // Reveal all hole cards (default: false)
-  enableSounds?: boolean;            // Enable sound effects (default: false)
-  
+  showAllCards?: boolean; // Reveal all hole cards (default: false)
+  enableSounds?: boolean; // Enable sound effects (default: false)
+
   // Customization
-  customColors?: Partial<ThemeColors>;  // Override theme colors
-  animations?: AnimationConfig;         // Fine-tune animations
+  customColors?: Partial<ThemeColors>; // Override theme colors
+  animations?: AnimationConfig; // Fine-tune animations
 }
 ```
 
@@ -141,12 +147,12 @@ interface ReplayConfig {
 
 ```typescript
 interface AnimationConfig {
-  enableCardAnimations?: boolean;      // Card dealing animations
-  enableChipAnimations?: boolean;      // Chip movement animations  
-  enableActionHighlight?: boolean;     // Highlight current action
-  cardDealDuration?: number;           // Card deal speed (ms)
-  actionTransitionDuration?: number;   // Action transition speed (ms)
-  easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
+  enableCardAnimations?: boolean; // Card dealing animations
+  enableChipAnimations?: boolean; // Chip movement animations
+  enableActionHighlight?: boolean; // Highlight current action
+  cardDealDuration?: number; // Card deal speed (ms)
+  actionTransitionDuration?: number; // Action transition speed (ms)
+  easing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
 }
 ```
 
@@ -174,17 +180,17 @@ interface AnimationConfig {
 ### Custom Colors
 
 ```tsx
-<PokerHandReplay 
+<PokerHandReplay
   config={{
-    theme: "dark",
+    theme: 'dark',
     customColors: {
-      bgPrimary: "#1a1a1a",
-      bgTable: "#0f5132",
-      textPrimary: "#ffffff", 
-      heroHighlight: "#ffd700",
-      actionHighlight: "#ff6b6b",
-      potColor: "#28a745"
-    }
+      bgPrimary: '#1a1a1a',
+      bgTable: '#0f5132',
+      textPrimary: '#ffffff',
+      heroHighlight: '#ffd700',
+      actionHighlight: '#ff6b6b',
+      potColor: '#28a745',
+    },
   }}
   handHistory={handHistory}
 />
@@ -193,11 +199,11 @@ interface AnimationConfig {
 ### Table Shapes & Card Designs
 
 ```tsx
-<PokerHandReplay 
+<PokerHandReplay
   config={{
-    tableShape: "oval",        // oval, rectangle, circle, hexagon
-    cardDesign: "four-color",  // standard, four-color, large-indices, minimal, classic
-    size: "large"              // extra-small, small, medium, large, extra-large
+    tableShape: 'oval', // oval, rectangle, circle, hexagon
+    cardDesign: 'four-color', // standard, four-color, large-indices, minimal, classic
+    size: 'large', // extra-small, small, medium, large, extra-large
   }}
   handHistory={handHistory}
 />
@@ -215,14 +221,14 @@ const result = parser.parse(handHistory);
 
 if (result.success) {
   const { hand } = result;
-  
+
   console.log('Hand ID:', hand.id);
   console.log('Stakes:', hand.stakes);
   console.log('Players:', hand.players.length);
   console.log('Actions:', hand.actions.length);
   console.log('Board cards:', hand.board);
   console.log('Final pots:', hand.pots);
-  
+
   // Access specific player data
   const hero = hand.players.find(p => p.isHero);
   if (hero) {
@@ -244,8 +250,12 @@ function CustomErrorFallback({ error, retry, canRetry, boundaryName }) {
   return (
     <div className="error-container">
       <h3>🚨 Hand Replay Error</h3>
-      <p><strong>Error:</strong> {error.message}</p>
-      <p><strong>Component:</strong> {boundaryName}</p>
+      <p>
+        <strong>Error:</strong> {error.message}
+      </p>
+      <p>
+        <strong>Component:</strong> {boundaryName}
+      </p>
       <details>
         <summary>Technical Details</summary>
         <pre>{error.stack}</pre>
@@ -261,16 +271,13 @@ function CustomErrorFallback({ error, retry, canRetry, boundaryName }) {
 
 function App() {
   return (
-    <ErrorBoundary 
+    <ErrorBoundary
       fallback={CustomErrorFallback}
       name="HandReplayContainer"
       maxRetries={3}
       enableLogging={true}
     >
-      <PokerHandReplay 
-        handHistory={handHistory}
-        enableErrorRecovery={true}
-      />
+      <PokerHandReplay handHistory={handHistory} enableErrorRecovery={true} />
     </ErrorBoundary>
   );
 }
@@ -284,17 +291,14 @@ import { PokerHandReplay, LoadingSpinner, useLoading } from 'poker-hand-replay';
 function CustomLoadingComponent({ message, progress, phase }) {
   return (
     <div className="custom-loading">
-      <LoadingSpinner 
-        variant="card" 
-        size="large" 
-        message={message || "Loading hand..."} 
+      <LoadingSpinner
+        variant="card"
+        size="large"
+        message={message || 'Loading hand...'}
       />
       {progress !== undefined && (
         <div className="progress-bar">
-          <div 
-            className="progress-fill" 
-            style={{ width: `${progress}%` }}
-          />
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
           <span>{Math.round(progress)}%</span>
         </div>
       )}
@@ -305,7 +309,7 @@ function CustomLoadingComponent({ message, progress, phase }) {
 
 function App() {
   return (
-    <PokerHandReplay 
+    <PokerHandReplay
       handHistory={handHistory}
       loadingComponent={CustomLoadingComponent}
       enableLoadingStates={true}
@@ -324,7 +328,7 @@ function App() {
       type: action.type,
       player: action.player,
       amount: action.amount,
-      isAllIn: action.isAllIn
+      isAllIn: action.isAllIn,
     });
   };
 
@@ -352,13 +356,13 @@ function App() {
   };
 
   return (
-    <PokerHandReplay 
+    <PokerHandReplay
       handHistory={handHistory}
       onActionChange={handleActionChange}
       onReplayEvent={handleReplayEvent}
       config={{
         autoPlay: true,
-        animationSpeed: 2.0
+        animationSpeed: 2.0,
       }}
     />
   );
@@ -370,16 +374,16 @@ function App() {
 Full TypeScript definitions with comprehensive interfaces:
 
 ```typescript
-import { 
-  PokerHand, 
-  Player, 
-  Action, 
+import {
+  PokerHand,
+  Player,
+  Action,
   ActionType,
   Street,
   Position,
   ReplayConfig,
   ThemeColors,
-  ParserResult
+  ParserResult,
 } from 'poker-hand-replay';
 
 // Type-safe action handling
@@ -388,7 +392,7 @@ const handleAction = (action: Action, index: number) => {
   if (action.type === 'bet' || action.type === 'raise') {
     console.log(`${action.player} ${action.type} ${action.amount}`);
   }
-  
+
   // Street-specific logic
   switch (action.street) {
     case 'preflop':
@@ -403,11 +407,11 @@ const handleAction = (action: Action, index: number) => {
 
 // Type-safe configuration
 const config: ReplayConfig = {
-  theme: "casino",              // Autocomplete available
-  tableShape: "hexagon",        // Validated options
-  cardDesign: "four-color",     // Type-checked
-  animationSpeed: 1.5,          // Number validation
-  autoPlay: false               // Boolean
+  theme: 'casino', // Autocomplete available
+  tableShape: 'hexagon', // Validated options
+  cardDesign: 'four-color', // Type-checked
+  animationSpeed: 1.5, // Number validation
+  autoPlay: false, // Boolean
 };
 ```
 
@@ -466,7 +470,7 @@ The package includes comprehensive test coverage:
 
 ```bash
 npm test                    # Run all tests
-npm run test:watch         # Watch mode for development  
+npm run test:watch         # Watch mode for development
 npm run test:coverage      # Generate detailed coverage report
 npm run test:unit          # Unit tests (src directory)
 npm run test:integration   # Integration tests (tests directory)
@@ -474,6 +478,7 @@ npm run test:ci            # CI-optimized testing
 ```
 
 Test coverage includes:
+
 - **Parser Tests**: All PokerStars format variations
 - **Component Tests**: React component behavior
 - **Integration Tests**: End-to-end hand replay scenarios
@@ -498,6 +503,7 @@ The parser supports comprehensive PokerStars formats:
 ### Common Issues
 
 **Parse Errors**
+
 ```tsx
 // Check for invalid hand history format
 const result = parser.parse(handHistory);
@@ -509,21 +515,23 @@ if (!result.success) {
 ```
 
 **Performance Issues**
+
 ```tsx
 // Optimize for large hand histories
-<PokerHandReplay 
+<PokerHandReplay
   config={{
-    animationSpeed: 0.5,           // Slower animations
+    animationSpeed: 0.5, // Slower animations
     animations: {
-      enableCardAnimations: false,  // Disable heavy animations
-      enableChipAnimations: false
-    }
+      enableCardAnimations: false, // Disable heavy animations
+      enableChipAnimations: false,
+    },
   }}
   handHistory={handHistory} // For demonstration; use a very large hand history string for actual performance testing
 />
 ```
 
 **Memory Usage**
+
 ```tsx
 // Use error boundaries for memory management
 <ErrorBoundary maxRetries={1}>
@@ -540,7 +548,8 @@ if (!result.success) {
 
 ## 📖 API Documentation
 
-Comprehensive API documentation is auto-generated from TypeScript interfaces and JSDoc comments.
+Comprehensive API documentation is auto-generated from TypeScript interfaces and
+JSDoc comments.
 
 ### Online Documentation
 
@@ -590,7 +599,8 @@ docs/
 
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [contribution guidelines](CONTRIBUTING.md).
+We welcome contributions! Please see our
+[contribution guidelines](CONTRIBUTING.md).
 
 ### Development Setup
 
@@ -616,7 +626,7 @@ npm run ci               # Ensure all checks pass
 3. ✅ Make changes and add tests
 4. ✔️ Run validation: `npm run ci`
 5. 📝 Commit changes: `git commit -m 'feat: add amazing feature'`
-6. 🚀 Push to branch: `git push origin feature/amazing-feature`  
+6. 🚀 Push to branch: `git push origin feature/amazing-feature`
 7. 🔄 Open a pull request
 
 ## 📊 Bundle Analysis
@@ -629,17 +639,20 @@ npm run size-check       # Validate size limits
 ```
 
 Current bundle sizes:
+
 - **ESM Build**: ~23KB gzipped
-- **CJS Build**: ~17KB gzipped  
+- **CJS Build**: ~17KB gzipped
 - **Type Definitions**: ~12KB
 
 ## 📝 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
+for details.
 
 ## 🙏 Acknowledgments
 
-- Built with [React](https://reactjs.org/) and [TypeScript](https://www.typescriptlang.org/)
+- Built with [React](https://reactjs.org/) and
+  [TypeScript](https://www.typescriptlang.org/)
 - Icons by [Lucide React](https://lucide.dev/)
 - Bundled with [Vite](https://vitejs.dev/)
 - Testing with [Jest](https://jestjs.io/)
@@ -668,6 +681,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Made with ❤️ by [Junichiro Tobe](https://github.com/junichiro)**
 
-[⭐ Star this repo](https://github.com/junichiro/poker-replayer) • [🐛 Report Bug](https://github.com/junichiro/poker-replayer/issues) • [✨ Request Feature](https://github.com/junichiro/poker-replayer/issues)
+[⭐ Star this repo](https://github.com/junichiro/poker-replayer) •
+[🐛 Report Bug](https://github.com/junichiro/poker-replayer/issues) •
+[✨ Request Feature](https://github.com/junichiro/poker-replayer/issues)
 
 </div>

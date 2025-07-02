@@ -2,20 +2,17 @@
  * @jest-environment jsdom
  */
 
-import React from 'react';
 import { render, screen } from '@testing-library/react';
+import React from 'react';
+
+import type { Player as PlayerType, PlayingCard as _PlayingCard } from '../../types';
 import { Player } from '../Player';
 import type { PlayerProps } from '../Player';
-import type { Player as PlayerType, PlayingCard } from '../../types';
 
 // Mock the Card component
 jest.mock('../Card', () => ({
   Card: ({ card, isHidden, size, ...props }: any) => (
-    <div 
-      data-testid={`card-${card || 'hidden'}-${size}`}
-      data-hidden={isHidden}
-      {...props}
-    >
+    <div data-testid={`card-${card || 'hidden'}-${size}`} data-hidden={isHidden} {...props}>
       {card && !isHidden ? `Card: ${card}` : 'Hidden Card'}
     </div>
   ),
@@ -40,7 +37,7 @@ describe('Player Component', () => {
   describe('Basic Rendering', () => {
     test('renders player name and chips', () => {
       render(<Player {...defaultProps} />);
-      
+
       expect(screen.getByText('TestPlayer')).toBeInTheDocument();
       expect(screen.getByText('$850')).toBeInTheDocument(); // currentChips takes precedence
     });
@@ -50,7 +47,7 @@ describe('Player Component', () => {
         ...mockPlayer,
         currentChips: undefined,
       };
-      
+
       render(<Player player={playerWithoutCurrentChips} />);
       expect(screen.getByText('$1000')).toBeInTheDocument();
     });
@@ -70,7 +67,7 @@ describe('Player Component', () => {
         ...mockPlayer,
         position: undefined,
       };
-      
+
       render(<Player player={playerWithoutPosition} />);
       expect(screen.queryByText('BB')).not.toBeInTheDocument();
     });
@@ -79,7 +76,7 @@ describe('Player Component', () => {
   describe('Card Display', () => {
     test('shows hidden cards by default', () => {
       render(<Player {...defaultProps} />);
-      
+
       const hiddenCards = screen.getAllByText('Hidden Card');
       expect(hiddenCards).toHaveLength(2);
     });
@@ -89,16 +86,16 @@ describe('Player Component', () => {
         ...mockPlayer,
         isHero: true,
       };
-      
+
       render(<Player player={heroPlayer} />);
-      
+
       expect(screen.getByText('Card: As')).toBeInTheDocument();
       expect(screen.getByText('Card: Kh')).toBeInTheDocument();
     });
 
     test('shows cards when showCards prop is true', () => {
       render(<Player {...defaultProps} showCards />);
-      
+
       expect(screen.getByText('Card: As')).toBeInTheDocument();
       expect(screen.getByText('Card: Kh')).toBeInTheDocument();
     });
@@ -108,16 +105,16 @@ describe('Player Component', () => {
         ...mockPlayer,
         cards: undefined,
       };
-      
+
       render(<Player player={playerWithoutCards} />);
-      
+
       expect(screen.queryByText('Card:')).not.toBeInTheDocument();
       expect(screen.queryByText('Hidden Card')).not.toBeInTheDocument();
     });
 
     test('renders cards with correct size', () => {
       render(<Player {...defaultProps} showCards />);
-      
+
       expect(screen.getByTestId('card-As-small')).toBeInTheDocument();
       expect(screen.getByTestId('card-Kh-small')).toBeInTheDocument();
     });
@@ -129,16 +126,16 @@ describe('Player Component', () => {
         ...mockPlayer,
         isHero: true,
       };
-      
+
       render(<Player player={heroPlayer} />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toHaveClass('hero');
     });
 
     test('applies all-in class when player is all-in', () => {
       render(<Player {...defaultProps} isAllIn />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toHaveClass('all-in');
     });
@@ -155,7 +152,7 @@ describe('Player Component', () => {
 
     test('applies custom className', () => {
       render(<Player {...defaultProps} className="custom-player" />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toHaveClass('custom-player');
     });
@@ -164,7 +161,7 @@ describe('Player Component', () => {
   describe('Positioning and Styling', () => {
     test('applies seat position CSS variables', () => {
       render(<Player {...defaultProps} seatPosition={3} maxSeats={9} />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toHaveStyle({
         '--seat': '3',
@@ -174,7 +171,7 @@ describe('Player Component', () => {
 
     test('does not apply positioning when seatPosition not provided', () => {
       render(<Player {...defaultProps} />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).not.toHaveStyle({
         '--seat': expect.anything(),
@@ -183,7 +180,7 @@ describe('Player Component', () => {
 
     test('uses default maxSeats when not provided', () => {
       render(<Player {...defaultProps} seatPosition={1} />);
-      
+
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toHaveStyle({
         '--seat': '1',
@@ -199,7 +196,7 @@ describe('Player Component', () => {
         chips: 0,
         currentChips: 0,
       };
-      
+
       render(<Player player={brokePlayer} />);
       expect(screen.getByText('$0')).toBeInTheDocument();
     });
@@ -210,7 +207,7 @@ describe('Player Component', () => {
         chips: 1000000,
         currentChips: 1500000,
       };
-      
+
       render(<Player player={richPlayer} />);
       expect(screen.getByText('$1500000')).toBeInTheDocument();
     });
@@ -220,7 +217,7 @@ describe('Player Component', () => {
         ...mockPlayer,
         name: 'Test-Player_123',
       };
-      
+
       render(<Player player={specialPlayer} />);
       expect(screen.getByText('Test-Player_123')).toBeInTheDocument();
     });
@@ -230,7 +227,7 @@ describe('Player Component', () => {
         ...mockPlayer,
         name: '',
       };
-      
+
       render(<Player player={namelessPlayer} />);
       const playerNameElement = document.querySelector('.player-name');
       expect(playerNameElement).toBeInTheDocument();
@@ -245,9 +242,9 @@ describe('Player Component', () => {
         cards: ['2c', 'Ah'],
         isHero: true,
       };
-      
+
       render(<Player player={playerWithMixedCards} />);
-      
+
       expect(screen.getByText('Card: 2c')).toBeInTheDocument();
       expect(screen.getByText('Card: Ah')).toBeInTheDocument();
     });
@@ -258,9 +255,9 @@ describe('Player Component', () => {
         ...mockPlayer,
         cards: ['As'] as any, // Force single card
       };
-      
+
       render(<Player player={playerWithOneCard} showCards />);
-      
+
       // Component should still render without crashing
       expect(screen.getByText('TestPlayer')).toBeInTheDocument();
     });
@@ -269,7 +266,7 @@ describe('Player Component', () => {
   describe('Performance and Memoization', () => {
     test('does not re-render when unrelated props change', () => {
       let renderCount = 0;
-      
+
       const TestPlayer = React.memo((props: PlayerProps & { irrelevant?: string }) => {
         renderCount++;
         const { irrelevant: _irrelevant, ...playerProps } = props;
@@ -280,25 +277,25 @@ describe('Player Component', () => {
       const _initialRenderCount = renderCount;
 
       rerender(<TestPlayer {...defaultProps} irrelevant="value2" />);
-      
+
       // Should not cause unnecessary re-renders
       expect(screen.getByText('TestPlayer')).toBeInTheDocument();
     });
 
     test('re-renders when player chips change', () => {
       const { rerender } = render(<Player {...defaultProps} currentChips={1000} />);
-      
+
       expect(screen.getByText('$1000')).toBeInTheDocument();
 
       rerender(<Player {...defaultProps} currentChips={500} />);
-      
+
       expect(screen.getByText('$500')).toBeInTheDocument();
       expect(screen.queryByText('$1000')).not.toBeInTheDocument();
     });
 
     test('re-renders when player cards change', () => {
       const { rerender } = render(<Player {...defaultProps} showCards />);
-      
+
       expect(screen.getByText('Card: As')).toBeInTheDocument();
       expect(screen.getByText('Card: Kh')).toBeInTheDocument();
 
@@ -308,7 +305,7 @@ describe('Player Component', () => {
       };
 
       rerender(<Player player={updatedPlayer} showCards />);
-      
+
       expect(screen.getByText('Card: Qd')).toBeInTheDocument();
       expect(screen.getByText('Card: Jc')).toBeInTheDocument();
       expect(screen.queryByText('Card: As')).not.toBeInTheDocument();
@@ -319,21 +316,21 @@ describe('Player Component', () => {
   describe('Accessibility', () => {
     test('has proper semantic structure', () => {
       render(<Player {...defaultProps} />);
-      
+
       // Player container
       const playerElement = screen.getByText('TestPlayer').closest('.player');
       expect(playerElement).toBeInTheDocument();
-      
+
       // Player info section
       expect(screen.getByText('TestPlayer').closest('.player-info')).toBeInTheDocument();
-      
-      // Player cards section  
+
+      // Player cards section
       expect(document.querySelector('.player-cards')).toBeInTheDocument();
     });
 
     test('provides clear visual indicators for player states', () => {
       render(<Player {...defaultProps} isAllIn />);
-      
+
       const allInIndicator = screen.getByText('ALL IN');
       expect(allInIndicator).toHaveClass('all-in-indicator');
     });
@@ -341,13 +338,13 @@ describe('Player Component', () => {
 
   describe('Different Position Types', () => {
     const positions = ['BB', 'SB', 'BTN', 'CO', 'MP', 'EP', 'UTG'];
-    
-    test.each(positions)('displays position %s correctly', (position) => {
+
+    test.each(positions)('displays position %s correctly', position => {
       const positionPlayer: PlayerType = {
         ...mockPlayer,
         position: position as any,
       };
-      
+
       render(<Player player={positionPlayer} />);
       expect(screen.getByText(position)).toBeInTheDocument();
     });

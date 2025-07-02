@@ -10,36 +10,36 @@
  * @public
  */
 
-import type { ReactNode, CSSProperties } from "react";
+import type { ReactNode, CSSProperties } from 'react';
 
 /**
  * Represents the different streets/phases of a poker hand
  * @public
  */
-export type Street = "preflop" | "flop" | "turn" | "river" | "showdown";
+export type Street = 'preflop' | 'flop' | 'turn' | 'river' | 'showdown';
 
 /**
  * Comprehensive list of all possible poker actions that can occur in a hand
  * @public
  */
 export type ActionType =
-  | "blind"
-  | "ante"
-  | "deal"
-  | "fold"
-  | "check"
-  | "call"
-  | "bet"
-  | "raise"
-  | "show"
-  | "uncalled"
-  | "collected"
-  | "muck"
-  | "timeout"
-  | "disconnect"
-  | "reconnect"
-  | "sitout"
-  | "return";
+  | 'blind'
+  | 'ante'
+  | 'deal'
+  | 'fold'
+  | 'check'
+  | 'call'
+  | 'bet'
+  | 'raise'
+  | 'show'
+  | 'uncalled'
+  | 'collected'
+  | 'muck'
+  | 'timeout'
+  | 'disconnect'
+  | 'reconnect'
+  | 'sitout'
+  | 'return';
 
 /**
  * Standard poker table positions
@@ -47,7 +47,7 @@ export type ActionType =
  * HJ = Hijack, MP = Middle Position, EP = Early Position, UTG = Under The Gun
  * @public
  */
-export type Position = "BB" | "SB" | "BTN" | "CO" | "HJ" | "MP" | "EP" | "UTG";
+export type Position = 'BB' | 'SB' | 'BTN' | 'CO' | 'HJ' | 'MP' | 'EP' | 'UTG';
 
 /**
  * Information about the poker table configuration
@@ -179,7 +179,7 @@ export interface CollectedAction {
   /** The amount collected by the player */
   amount: number;
   /** The type of pot this collection came from */
-  type: "main" | "side" | "single";
+  type: 'main' | 'side' | 'single';
   /** The level of the side pot (if this is a side pot collection) */
   sidePotLevel?: number;
 }
@@ -199,7 +199,7 @@ export interface PotCalculation {
   distributions: {
     player: string;
     amount: number;
-    from: "main" | `side-${number}`;
+    from: 'main' | `side-${number}`;
   }[];
 }
 
@@ -261,15 +261,15 @@ export type ActionChangeCallback = (action: Action, index: number) => void;
  */
 export type ReplayEventCallback = (
   event:
-    | "start"
-    | "pause"
-    | "resume"
-    | "end"
-    | "reset"
-    | "retry"
-    | "error"
-    | "parseSuccess"
-    | "parseError",
+    | 'start'
+    | 'pause'
+    | 'resume'
+    | 'end'
+    | 'reset'
+    | 'retry'
+    | 'error'
+    | 'parseSuccess'
+    | 'parseError',
   data?: {
     /** Additional event data */
     [key: string]: unknown;
@@ -281,7 +281,7 @@ export type ReplayEventCallback = (
     attempt?: number;
     /** Whether max attempts exceeded */
     maxAttemptsExceeded?: boolean;
-  },
+  }
 ) => void;
 
 // =============================================================================
@@ -298,7 +298,7 @@ export interface BaseComponentProps {
   /** React children elements */
   children?: ReactNode;
   /** Data test ID for testing purposes */
-  "data-testid"?: string;
+  'data-testid'?: string;
   /** Custom inline styles */
   style?: CSSProperties;
 }
@@ -307,29 +307,19 @@ export interface BaseComponentProps {
  * Size variants for components that support different sizes
  * @public
  */
-export type ComponentSize =
-  | "extra-small"
-  | "small"
-  | "medium"
-  | "large"
-  | "extra-large";
+export type ComponentSize = 'extra-small' | 'small' | 'medium' | 'large' | 'extra-large';
 
 /**
  * Visual theme options for components
  * @public
  */
-export type ComponentTheme =
-  | "light"
-  | "dark"
-  | "auto"
-  | "casino"
-  | "professional";
+export type ComponentTheme = 'light' | 'dark' | 'auto' | 'casino' | 'professional';
 
 /**
  * Animation speed variants for components with animations
  * @public
  */
-export type AnimationSpeed = "slow" | "normal" | "fast" | number;
+export type AnimationSpeed = 'slow' | 'normal' | 'fast' | number;
 
 /**
  * Playing card representation with strict validation
@@ -341,26 +331,13 @@ export type PlayingCard = `${CardRank}${CardSuit}`;
  * Valid card ranks in poker
  * @public
  */
-export type CardRank =
-  | "2"
-  | "3"
-  | "4"
-  | "5"
-  | "6"
-  | "7"
-  | "8"
-  | "9"
-  | "T"
-  | "J"
-  | "Q"
-  | "K"
-  | "A";
+export type CardRank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'T' | 'J' | 'Q' | 'K' | 'A';
 
 /**
  * Valid card suits in poker
  * @public
  */
-export type CardSuit = "h" | "d" | "c" | "s";
+export type CardSuit = 'h' | 'd' | 'c' | 's';
 
 /**
  * Regular expression pattern for validating playing card format
@@ -374,30 +351,30 @@ export const PLAYING_CARD_REGEX = /^[2-9TJQKA][hdcs]$/;
  * @public
  */
 export type CardVariant =
-  | { variant: "visible"; card: PlayingCard }
-  | { variant: "hidden" }
-  | { variant: "placeholder" };
+  | { variant: 'visible'; card: PlayingCard }
+  | { variant: 'hidden' }
+  | { variant: 'placeholder' };
 
 /**
  * Player state variants using discriminated union
  * @public
  */
 export type PlayerState =
-  | { state: "active"; chips: number }
-  | { state: "all-in"; chips: 0; allInAmount: number }
-  | { state: "folded"; chips: number }
-  | { state: "disconnected"; chips: number; reason?: string }
-  | { state: "timeout"; chips: number; reason?: string };
+  | { state: 'active'; chips: number }
+  | { state: 'all-in'; chips: 0; allInAmount: number }
+  | { state: 'folded'; chips: number }
+  | { state: 'disconnected'; chips: number; reason?: string }
+  | { state: 'timeout'; chips: number; reason?: string };
 
 /**
  * Control button states and their associated data
  * @public
  */
 export type ControlState =
-  | { type: "play"; enabled: boolean }
-  | { type: "pause"; enabled: boolean }
-  | { type: "step"; direction: "forward" | "backward"; enabled: boolean }
-  | { type: "reset"; enabled: boolean };
+  | { type: 'play'; enabled: boolean }
+  | { type: 'pause'; enabled: boolean }
+  | { type: 'step'; direction: 'forward' | 'backward'; enabled: boolean }
+  | { type: 'reset'; enabled: boolean };
 
 /**
  * Validation constraints for numeric props
@@ -468,18 +445,13 @@ export interface CustomTheme {
  * Table shape options
  * @public
  */
-export type TableShape = "oval" | "rectangle" | "circle" | "hexagon";
+export type TableShape = 'oval' | 'rectangle' | 'circle' | 'hexagon';
 
 /**
  * Card design variants
  * @public
  */
-export type CardDesign =
-  | "standard"
-  | "four-color"
-  | "large-indices"
-  | "minimal"
-  | "classic";
+export type CardDesign = 'standard' | 'four-color' | 'large-indices' | 'minimal' | 'classic';
 
 /**
  * Animation configuration options
@@ -497,7 +469,7 @@ export interface AnimationConfig {
   /** Action transition duration (ms) */
   actionTransitionDuration?: number;
   /** Easing function for animations */
-  easing?: "linear" | "ease" | "ease-in" | "ease-out" | "ease-in-out";
+  easing?: 'linear' | 'ease' | 'ease-in' | 'ease-out' | 'ease-in-out';
 }
 
 /**
@@ -519,8 +491,4 @@ export interface SizeConfig {
  * Extended component size variants with scaling
  * @public
  */
-export type ExtendedComponentSize =
-  | ComponentSize
-  | "extra-small"
-  | "extra-large"
-  | SizeConfig;
+export type ExtendedComponentSize = ComponentSize | 'extra-small' | 'extra-large' | SizeConfig;

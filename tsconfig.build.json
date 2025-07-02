@@ -8,7 +8,7 @@
     "rootDir": "./src",
     "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "composite": false,
-    
+
     // Library-specific settings
     "declaration": true,
     "declarationMap": true,
@@ -16,23 +16,21 @@
     "sourceMap": true,
     "inlineSources": false,
     "preserveValueImports": false,
-    
+
     // Optimizations for library builds
     "removeComments": true,
     "stripInternal": true,
-    
+
     // Ensure compatibility
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    
+
     // Less strict for unused variables in build
     "noUnusedLocals": false,
     "noUnusedParameters": false
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "exclude": [
     "src/**/*.test.*",
     "src/**/*.spec.*",

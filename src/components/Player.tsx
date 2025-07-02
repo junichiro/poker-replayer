@@ -2,9 +2,11 @@
  * Player display component for showing player information and cards
  */
 
-import React, { useMemo } from "react";
-import { Card } from "./Card";
-import { Player as PlayerType } from "../types";
+import React, { useMemo } from 'react';
+
+import { Player as PlayerType } from '../types';
+
+import { Card } from './Card';
 
 export interface PlayerProps {
   /** Player data */
@@ -30,12 +32,12 @@ const PlayerComponent: React.FC<PlayerProps> = ({
   showCards = false,
   seatPosition,
   maxSeats = 6,
-  className = "",
+  className = '',
 }) => {
   // Memoize expensive calculations
   const displayChips = useMemo(
     () => currentChips ?? player.currentChips ?? player.chips,
-    [currentChips, player.currentChips, player.chips],
+    [currentChips, player.currentChips, player.chips]
   );
 
   const isHero = player.isHero;
@@ -44,27 +46,25 @@ const PlayerComponent: React.FC<PlayerProps> = ({
   // Memoize style object to prevent unnecessary re-renders
   const style = useMemo(() => {
     const styleObj = {} as React.CSSProperties & {
-      "--seat"?: number;
-      "--max-seats"?: number;
+      '--seat'?: number;
+      '--max-seats'?: number;
     };
     if (seatPosition !== undefined && maxSeats) {
-      styleObj["--seat"] = seatPosition;
-      styleObj["--max-seats"] = maxSeats;
+      styleObj['--seat'] = seatPosition;
+      styleObj['--max-seats'] = maxSeats;
     }
     return styleObj;
   }, [seatPosition, maxSeats]);
 
   return (
     <div
-      className={`player ${isHero ? "hero" : ""} ${isAllIn ? "all-in" : ""} ${className}`}
+      className={`player ${isHero ? 'hero' : ''} ${isAllIn ? 'all-in' : ''} ${className}`}
       style={style}
     >
       <div className="player-info">
         <div className="player-name">{player.name}</div>
         <div className="player-chips">${displayChips}</div>
-        {player.position && (
-          <div className="player-position">{player.position}</div>
-        )}
+        {player.position && <div className="player-position">{player.position}</div>}
       </div>
 
       <div className="player-cards">
@@ -90,10 +90,7 @@ const PlayerComponent: React.FC<PlayerProps> = ({
  * Custom comparison function for React.memo
  * Only re-render if player-related props have actually changed
  */
-function arePlayerPropsEqual(
-  prevProps: PlayerProps,
-  nextProps: PlayerProps,
-): boolean {
+function arePlayerPropsEqual(prevProps: PlayerProps, nextProps: PlayerProps): boolean {
   // Compare player identity (most important)
   if (
     prevProps.player.name !== nextProps.player.name ||

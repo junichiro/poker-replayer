@@ -1,16 +1,17 @@
 # 🏖️ CodeSandbox Templates
 
-Ready-to-use CodeSandbox templates for quickly experimenting with Poker Hand Replay components.
+Ready-to-use CodeSandbox templates for quickly experimenting with Poker Hand
+Replay components.
 
 ## 🚀 Available Templates
 
-| Template | Description | Status |
-|----------|-------------|--------|
-| **Basic** | Simple setup with essential features | Coming Soon |
-| **Vite** | Modern build tooling with fast HMR | Coming Soon |
-| **Advanced** | Complete feature showcase | Planned |
-| **Theming** | Custom themes and styling | Planned |
-| **Tournament** | Tournament-specific features | Planned |
+| Template       | Description                          | Status      |
+| -------------- | ------------------------------------ | ----------- |
+| **Basic**      | Simple setup with essential features | Coming Soon |
+| **Vite**       | Modern build tooling with fast HMR   | Coming Soon |
+| **Advanced**   | Complete feature showcase            | Planned     |
+| **Theming**    | Custom themes and styling            | Planned     |
+| **Tournament** | Tournament-specific features         | Planned     |
 
 ## 📋 Template Configurations
 
@@ -54,14 +55,17 @@ Ready-to-use CodeSandbox templates for quickly experimenting with Poker Hand Rep
 ## 🔧 Quick Setup
 
 ### 1. Fork Template
+
 Click on any template link above to open it in CodeSandbox.
 
 ### 2. Customize
+
 - Edit the hand history data
 - Modify theme and configuration
 - Add your own components
 
 ### 3. Share
+
 - Save your customized version
 - Share the URL with others
 - Embed in documentation
@@ -80,21 +84,25 @@ Each template includes:
 ## 🎯 Use Cases
 
 ### Learning
+
 - Understand component API
 - Experiment with configurations
 - Test different hand histories
 
 ### Prototyping
+
 - Quick proof of concepts
 - Client demonstrations
 - Feature testing
 
 ### Bug Reports
+
 - Reproduce issues
 - Share minimal examples
 - Collaborate on fixes
 
 ### Integration Testing
+
 - Test with your data
 - Verify compatibility
 - Performance testing
@@ -179,20 +187,20 @@ export default App;
 ```html
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Poker Hand Replay Template</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f1419;
-      color: white;
-    }
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-</body>
+  <head>
+    <title>Poker Hand Replay Template</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #0f1419;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
 ```
 
@@ -237,7 +245,7 @@ const pokerSlice = createSlice({
     setCurrentHand: (state, action) => {
       state.currentHand = action.payload;
     },
-    togglePlay: (state) => {
+    togglePlay: state => {
       state.isPlaying = !state.isPlaying;
     },
   },
@@ -291,4 +299,5 @@ Want to create a new template?
 
 ---
 
-**Ready to experiment?** Pick a template and start building amazing poker applications!
+**Ready to experiment?** Pick a template and start building amazing poker
+applications!

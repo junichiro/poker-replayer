@@ -27,7 +27,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 }));
 
 // Mock requestAnimationFrame for animation tests
-global.requestAnimationFrame = jest.fn((cb) => setTimeout(cb, 0));
+global.requestAnimationFrame = jest.fn(cb => setTimeout(cb, 0));
 global.cancelAnimationFrame = jest.fn();
 
 // Suppress console warnings in tests unless they're being tested

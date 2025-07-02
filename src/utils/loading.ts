@@ -5,7 +5,7 @@
  * and async operation handling with timeout and retry capabilities.
  */
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect } from 'react';
 
 export interface LoadingState {
   /** Whether currently loading */
@@ -78,7 +78,7 @@ export function useLoading(options: LoadingOptions = {}) {
       const startTime = Date.now();
       startTimeRef.current = startTime;
 
-      setState((prev) => ({
+      setState(prev => ({
         ...prev,
         isLoading: true,
         progress: 0,
@@ -90,7 +90,7 @@ export function useLoading(options: LoadingOptions = {}) {
       // Set timeout if specified
       if (options.timeout) {
         timeoutRef.current = setTimeout(() => {
-          setState((prev) => ({
+          setState(prev => ({
             ...prev,
             isLoading: false,
             error: new Error(`Operation timed out after ${options.timeout}ms`),
@@ -98,12 +98,12 @@ export function useLoading(options: LoadingOptions = {}) {
         }, options.timeout);
       }
     },
-    [options.timeout],
+    [options.timeout]
   );
 
   const updateProgress = useCallback(
     (progress: number, message?: string, phase?: string) => {
-      setState((prev) => {
+      setState(prev => {
         const elapsed = Date.now() - (prev.startTime || 0);
         let estimatedTime: number | undefined;
 
@@ -122,7 +122,7 @@ export function useLoading(options: LoadingOptions = {}) {
         };
       });
     },
-    [options.estimateTime],
+    [options.estimateTime]
   );
 
   const finishLoading = useCallback((error?: Error) => {
@@ -130,7 +130,7 @@ export function useLoading(options: LoadingOptions = {}) {
       clearTimeout(timeoutRef.current);
     }
 
-    setState((prev) => ({
+    setState(prev => ({
       ...prev,
       isLoading: false,
       progress: error ? prev.progress : 100,
@@ -181,7 +181,7 @@ export function useAsyncOperation<T>(options: LoadingOptions = {}) {
   const execute = useCallback(
     async (
       operation: () => Promise<T>,
-      loadingMessage?: string,
+      loadingMessage?: string
     ): Promise<AsyncOperationResult<T>> => {
       const startTime = Date.now();
       let retryAttempts = 0;
@@ -216,11 +216,11 @@ export function useAsyncOperation<T>(options: LoadingOptions = {}) {
             loading.updateProgress(
               (retryAttempts / options.retry.maxAttempts) * 50, // 50% max progress during retries
               `Retrying... (${retryAttempts}/${options.retry.maxAttempts})`,
-              "retry",
+              'retry'
             );
 
             // Wait before retrying
-            await new Promise((resolve) => setTimeout(resolve, delay));
+            await new Promise(resolve => setTimeout(resolve, delay));
 
             return executeWithRetry();
           }
@@ -241,7 +241,7 @@ export function useAsyncOperation<T>(options: LoadingOptions = {}) {
       retryCountRef.current = 0;
       return executeWithRetry();
     },
-    [loading, options],
+    [loading, options]
   );
 
   return {
@@ -259,13 +259,13 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
   const executeBatch = useCallback(
     async (
       operations: Array<() => Promise<T>>,
-      loadingMessage?: string,
+      loadingMessage?: string
     ): Promise<AsyncOperationResult<T[]>> => {
       const startTime = Date.now();
       const results: T[] = [];
       const errors: Error[] = [];
 
-      loading.startLoading(loadingMessage || "Processing batch...");
+      loading.startLoading(loadingMessage || 'Processing batch...');
 
       try {
         for (let i = 0; i < operations.length; i++) {
@@ -275,7 +275,7 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
           loading.updateProgress(
             progress,
             `Processing item ${i + 1} of ${operations.length}`,
-            `batch-${i + 1}`,
+            `batch-${i + 1}`
           );
 
           try {
@@ -291,7 +291,7 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
 
         if (hasErrors) {
           const combinedError = new Error(
-            `Batch operation completed with ${errors.length} errors: ${errors.map((e) => e.message).join("; ")}`,
+            `Batch operation completed with ${errors.length} errors: ${errors.map(e => e.message).join('; ')}`
           );
           loading.finishLoading(combinedError);
 
@@ -323,7 +323,7 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
         };
       }
     },
-    [loading],
+    [loading]
   );
 
   return {
@@ -338,13 +338,13 @@ export function useBatchLoading<T>(options: LoadingOptions = {}) {
 export function createMockAsync<T>(
   data: T,
   delay: number = 1000,
-  failureRate: number = 0,
+  failureRate: number = 0
 ): () => Promise<T> {
   return () =>
     new Promise((resolve, reject) => {
       setTimeout(() => {
         if (Math.random() < failureRate) {
-          reject(new Error("Mock operation failed"));
+          reject(new Error('Mock operation failed'));
         } else {
           resolve(data);
         }
@@ -358,7 +358,7 @@ export function createMockAsync<T>(
  */
 export function useAsyncFunction<TArgs extends unknown[], TReturn>(
   asyncFn: (...args: TArgs) => Promise<TReturn>,
-  options: LoadingOptions = {},
+  options: LoadingOptions = {}
 ) {
   const loading = useLoading(options);
 
@@ -374,7 +374,7 @@ export function useAsyncFunction<TArgs extends unknown[], TReturn>(
         throw error;
       }
     },
-    [asyncFn, loading],
+    [asyncFn, loading]
   );
 
   return {
@@ -388,7 +388,7 @@ export function useAsyncFunction<TArgs extends unknown[], TReturn>(
  */
 export function withLoading<TArgs extends unknown[], TReturn>(
   asyncFn: (...args: TArgs) => Promise<TReturn>,
-  _options: LoadingOptions = {},
+  _options: LoadingOptions = {}
 ) {
   // This is a simplified fallback that doesn't use hooks
   return (...args: TArgs) => asyncFn(...args);
@@ -397,10 +397,7 @@ export function withLoading<TArgs extends unknown[], TReturn>(
 /**
  * Debounced loading state for rapid state changes
  */
-export function useDebouncedLoading(
-  delay: number = 300,
-  options: LoadingOptions = {},
-) {
+export function useDebouncedLoading(delay: number = 300, options: LoadingOptions = {}) {
   const loading = useLoading(options);
   const debounceTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
@@ -414,7 +411,7 @@ export function useDebouncedLoading(
         loading.startLoading(message);
       }, delay);
     },
-    [loading, delay],
+    [loading, delay]
   );
 
   const debouncedFinishLoading = useCallback(
@@ -427,7 +424,7 @@ export function useDebouncedLoading(
         loading.finishLoading(error);
       }, delay);
     },
-    [loading, delay],
+    [loading, delay]
   );
 
   useEffect(() => {

@@ -15,9 +15,10 @@
  * ```
  */
 
-import React, { useMemo } from "react";
-import { Play, Pause, SkipBack, SkipForward, RotateCcw } from "lucide-react";
-import { BaseComponentProps, NumericConstraints } from "../types";
+import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
+import React, { useMemo } from 'react';
+
+import { BaseComponentProps, NumericConstraints } from '../types';
 
 /**
  * Callback function signatures for control actions
@@ -136,13 +137,13 @@ const defaultProps = {
   iconSize: 20,
   showCounter: true,
   disabled: false,
-  className: "",
+  className: '',
   labels: {
-    play: "Play",
-    pause: "Pause",
-    previous: "Previous action",
-    next: "Next action",
-    reset: "Reset to beginning",
+    play: 'Play',
+    pause: 'Pause',
+    previous: 'Previous action',
+    next: 'Next action',
+    reset: 'Reset to beginning',
   },
 } satisfies Partial<ControlsProps>;
 
@@ -150,7 +151,7 @@ const defaultProps = {
  * Type guard to check if props use the legacy API
  */
 function isLegacyProps(props: ControlsAllProps): props is ControlsPropsLegacy {
-  return "onPlayPause" in props && typeof props.onPlayPause === "function";
+  return 'onPlayPause' in props && typeof props.onPlayPause === 'function';
 }
 
 /**
@@ -163,7 +164,7 @@ function validateNumericProp(
     min?: number;
     max?: number;
     integer?: boolean;
-  },
+  }
 ): void {
   if (constraints.integer && !Number.isInteger(value)) {
     console.warn(`${propName} must be an integer, got: ${value}`);
@@ -179,14 +180,14 @@ function validateNumericProp(
 /**
  * Enhanced Controls component with improved TypeScript typing and performance optimization
  */
-const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
+const ControlsComponent: React.FC<ControlsAllProps> = props => {
   const {
     isPlaying,
     currentActionIndex,
     totalActions,
     className = defaultProps.className,
     style,
-    "data-testid": testId,
+    'data-testid': testId,
   } = props;
 
   // Memoize callbacks and props based on API version to prevent unnecessary re-renders
@@ -194,7 +195,7 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
     let callbacksResult: ControlCallbacks;
     let iconSizeResult: number;
     let showCounterResult: boolean;
-    let labelsResult: NonNullable<ControlsProps["labels"]>;
+    let labelsResult: NonNullable<ControlsProps['labels']>;
     let disabledResult: boolean;
 
     if (isLegacyProps(props)) {
@@ -228,12 +229,12 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
   }, [props]);
 
   // Runtime validation
-  validateNumericProp(currentActionIndex, "currentActionIndex", {
+  validateNumericProp(currentActionIndex, 'currentActionIndex', {
     min: -1,
     integer: true,
     max: totalActions - 1,
   });
-  validateNumericProp(totalActions, "totalActions", {
+  validateNumericProp(totalActions, 'totalActions', {
     min: 1,
     integer: true,
   });
@@ -244,7 +245,7 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
       isAtStart: currentActionIndex === -1,
       isAtEnd: currentActionIndex >= totalActions - 1,
     }),
-    [currentActionIndex, totalActions],
+    [currentActionIndex, totalActions]
   );
 
   return (
@@ -301,17 +302,14 @@ const ControlsComponent: React.FC<ControlsAllProps> = (props) => {
  * Custom comparison function for React.memo
  * Only re-render if control-related props have actually changed
  */
-function areControlsPropsEqual(
-  prevProps: ControlsAllProps,
-  nextProps: ControlsAllProps,
-): boolean {
+function areControlsPropsEqual(prevProps: ControlsAllProps, nextProps: ControlsAllProps): boolean {
   // Compare basic state
   if (
     prevProps.isPlaying !== nextProps.isPlaying ||
     prevProps.currentActionIndex !== nextProps.currentActionIndex ||
     prevProps.totalActions !== nextProps.totalActions ||
     prevProps.className !== nextProps.className ||
-    prevProps["data-testid"] !== nextProps["data-testid"]
+    prevProps['data-testid'] !== nextProps['data-testid']
   ) {
     return false;
   }

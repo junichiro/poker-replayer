@@ -88,7 +88,7 @@ AntePlayer2: folds
 Uncalled bet (6000) returned to ButtonPlayer
 ButtonPlayer collected 11600 from pot
 *** SUMMARY ***
-Total pot 11600 | Rake 0`
+Total pot 11600 | Rake 0`,
 };
 
 console.log('Testing comprehensive action parsing...\n');
@@ -103,11 +103,11 @@ const result1 = parser.parse(testHandHistories.allInScenarios);
 if (result1.success && result1.hand) {
   const allInActions = result1.hand.actions.filter(action => action.isAllIn);
   console.log(`Found ${allInActions.length} all-in actions:`);
-  
+
   allInActions.forEach(action => {
     console.log(`- ${action.player}: ${action.type} $${action.amount} (all-in)`);
   });
-  
+
   // Check if we found the expected all-in actions
   const expectedAllIns = ['AllInBetter', 'AllInRaiser', 'AllInCaller'];
   let foundAllIns = 0;
@@ -116,7 +116,7 @@ if (result1.success && result1.hand) {
       foundAllIns++;
     }
   });
-  
+
   totalTests++;
   if (foundAllIns === expectedAllIns.length) {
     console.log('✅ All-in parsing test passed');
@@ -132,15 +132,15 @@ if (result1.success && result1.hand) {
 console.log('\n=== Test 2: Player State Changes ===');
 const result2 = parser.parse(testHandHistories.playerStateChanges);
 if (result2.success && result2.hand) {
-  const stateActions = result2.hand.actions.filter(action => 
+  const stateActions = result2.hand.actions.filter(action =>
     ['timeout', 'disconnect', 'reconnect', 'sitout', 'return', 'muck'].includes(action.type)
   );
-  
+
   console.log(`Found ${stateActions.length} player state actions:`);
   stateActions.forEach(action => {
     console.log(`- ${action.player}: ${action.type}${action.reason ? ` (${action.reason})` : ''}`);
   });
-  
+
   // Check for expected state changes
   const expectedStates = ['timeout', 'disconnect', 'reconnect', 'sitout', 'return', 'muck'];
   let foundStates = 0;
@@ -149,13 +149,15 @@ if (result2.success && result2.hand) {
       foundStates++;
     }
   });
-  
+
   totalTests++;
   if (foundStates === expectedStates.length) {
     console.log('✅ Player state changes test passed');
     passedTests++;
   } else {
-    console.log(`❌ Player state changes test failed: found ${foundStates} types, expected ${expectedStates.length}`);
+    console.log(
+      `❌ Player state changes test failed: found ${foundStates} types, expected ${expectedStates.length}`
+    );
   }
 } else {
   console.log('❌ Failed to parse player state changes');
@@ -166,26 +168,28 @@ console.log('\n=== Test 3: Tournament-Specific Actions ===');
 const result3 = parser.parse(testHandHistories.tournamentSpecific);
 if (result3.success && result3.hand) {
   const anteActions = result3.hand.actions.filter(action => action.type === 'ante');
-  const deadBlindActions = result3.hand.actions.filter(action => 
-    action.type === 'blind' && action.player === 'DeadBlindPlayer'
+  const deadBlindActions = result3.hand.actions.filter(
+    action => action.type === 'blind' && action.player === 'DeadBlindPlayer'
   );
-  
+
   console.log(`Found ${anteActions.length} ante actions:`);
   anteActions.forEach(action => {
     console.log(`- ${action.player}: posts ante $${action.amount}`);
   });
-  
+
   console.log(`Found ${deadBlindActions.length} dead blind actions:`);
   deadBlindActions.forEach(action => {
     console.log(`- ${action.player}: posts dead blind $${action.amount}`);
   });
-  
+
   totalTests++;
   if (anteActions.length === 4 && deadBlindActions.length === 1) {
     console.log('✅ Tournament-specific actions test passed');
     passedTests++;
   } else {
-    console.log(`❌ Tournament-specific actions test failed: found ${anteActions.length} antes (expected 4), ${deadBlindActions.length} dead blinds (expected 1)`);
+    console.log(
+      `❌ Tournament-specific actions test failed: found ${anteActions.length} antes (expected 4), ${deadBlindActions.length} dead blinds (expected 1)`
+    );
   }
 } else {
   console.log('❌ Failed to parse tournament-specific actions');
@@ -216,18 +220,22 @@ Total pot 975 | Rake 0`;
 
 const result4 = parser.parse(standardHand);
 if (result4.success && result4.hand) {
-  const standardActions = result4.hand.actions.filter(action => 
-    ['blind', 'raise', 'fold', 'call', 'check', 'bet', 'uncalled', 'collected'].includes(action.type)
+  const standardActions = result4.hand.actions.filter(action =>
+    ['blind', 'raise', 'fold', 'call', 'check', 'bet', 'uncalled', 'collected'].includes(
+      action.type
+    )
   );
-  
+
   console.log(`Found ${standardActions.length} standard actions - all working correctly`);
-  
+
   totalTests++;
   if (standardActions.length === 10) {
     console.log('✅ Standard actions still work');
     passedTests++;
   } else {
-    console.log(`❌ Standard actions broken: found ${standardActions.length} actions (expected 10)`);
+    console.log(
+      `❌ Standard actions broken: found ${standardActions.length} actions (expected 10)`
+    );
   }
 } else {
   console.log('❌ Failed to parse standard actions');

@@ -30,13 +30,7 @@
     "typescript": "^5.0.0",
     "vite": "^4.0.0"
   },
-  "keywords": [
-    "poker",
-    "hand-replay",
-    "react",
-    "vite",
-    "example"
-  ],
+  "keywords": ["poker", "hand-replay", "react", "vite", "example"],
   "author": "Junichiro Tobe",
   "license": "MIT"
 }

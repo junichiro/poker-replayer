@@ -1,10 +1,12 @@
 # 🚀 Migration Guide: From Inline Code to npm Package
 
-This guide helps you migrate from inline poker hand replay code to using the `poker-hand-replay` npm package.
+This guide helps you migrate from inline poker hand replay code to using the
+`poker-hand-replay` npm package.
 
 ## 🎯 Why Migrate?
 
 **Benefits of using the npm package:**
+
 - ✅ Regular updates and bug fixes
 - ✅ TypeScript support with full IntelliSense
 - ✅ Smaller bundle size with tree-shaking
@@ -31,7 +33,7 @@ First, install the package:
 npm install poker-hand-replay
 # or
 yarn add poker-hand-replay
-# or  
+# or
 pnpm add poker-hand-replay
 ```
 
@@ -40,6 +42,7 @@ pnpm add poker-hand-replay
 ### A. Basic Parser Migration
 
 **Before (Inline):**
+
 ```typescript
 // Inline parser code (example of what users might have)
 class CustomPokerParser {
@@ -53,12 +56,12 @@ class CustomPokerParser {
     };
     return hand;
   }
-  
+
   private extractHandId(line: string): string {
     const match = line.match(/Hand #(\d+)/);
     return match ? match[1] : '';
   }
-  
+
   // ... more parsing methods
 }
 
@@ -67,6 +70,7 @@ const hand = parser.parseHand(handHistory);
 ```
 
 **After (npm package):**
+
 ```typescript
 import { PokerStarsParser } from 'poker-hand-replay';
 
@@ -77,14 +81,15 @@ const hand = parser.parse(handHistory);
 ### B. Component Migration
 
 **Before (Inline Components):**
+
 ```typescript
 // Custom card component
 function Card({ card, visible }: { card: string; visible: boolean }) {
   if (!visible) return <div className="card-back" />;
-  
+
   const [rank, suit] = card.split('');
   const isRed = suit === 'h' || suit === 'd';
-  
+
   return (
     <div className={`card ${isRed ? 'red' : 'black'}`}>
       <span className="rank">{rank}</span>
@@ -93,7 +98,7 @@ function Card({ card, visible }: { card: string; visible: boolean }) {
   );
 }
 
-// Custom player component  
+// Custom player component
 function Player({ player, isActive }: PlayerProps) {
   return (
     <div className={`player ${isActive ? 'active' : ''}`}>
@@ -112,14 +117,14 @@ function Player({ player, isActive }: PlayerProps) {
 function PokerReplay({ handHistory }: { handHistory: string }) {
   const [currentAction, setCurrentAction] = useState(0);
   const [hand, setHand] = useState(null);
-  
+
   useEffect(() => {
     const parser = new CustomPokerParser();
     setHand(parser.parseHand(handHistory));
   }, [handHistory]);
-  
+
   if (!hand) return <div>Loading...</div>;
-  
+
   return (
     <div className="poker-table">
       {hand.players.map(player => (
@@ -130,7 +135,7 @@ function PokerReplay({ handHistory }: { handHistory: string }) {
         Previous
       </button>
       <button onClick={() => setCurrentAction(currentAction + 1)}>
-        Next  
+        Next
       </button>
     </div>
   );
@@ -138,6 +143,7 @@ function PokerReplay({ handHistory }: { handHistory: string }) {
 ```
 
 **After (npm package):**
+
 ```typescript
 import { PokerHandReplay, type ComponentTheme } from 'poker-hand-replay';
 
@@ -166,24 +172,25 @@ function PokerReplay({ handHistory }: { handHistory: string }) {
 ### C. Advanced Configuration Migration
 
 **Before (Multiple inline configurations):**
+
 ```typescript
 // Scattered configuration across components
 const TABLE_CONFIG = {
   maxSeats: 9,
   shape: 'oval',
-  theme: 'dark'
+  theme: 'dark',
 };
 
 const CARD_CONFIG = {
   design: 'standard',
   showBack: true,
-  animateDealing: false
+  animateDealing: false,
 };
 
 const ANIMATION_CONFIG = {
   duration: 300,
   easing: 'ease-in-out',
-  enableChipMovement: true
+  enableChipMovement: true,
 };
 
 function MyPokerTable() {
@@ -192,6 +199,7 @@ function MyPokerTable() {
 ```
 
 **After (Centralized configuration):**
+
 ```typescript
 import { PokerHandReplay, type ReplayConfig } from 'poker-hand-replay';
 
@@ -229,6 +237,7 @@ function MyPokerTable({ handHistory }: { handHistory: string }) {
 ## 🔧 Step 3: TypeScript Migration
 
 ### Before (Custom types):
+
 ```typescript
 interface CustomHand {
   id: string;
@@ -252,14 +261,15 @@ interface CustomAction {
 ```
 
 ### After (Package types):
+
 ```typescript
-import type { 
+import type {
   PokerHand,
-  Player, 
+  Player,
   Action,
   ComponentTheme,
   ReplayConfig,
-  ReplayEventCallback
+  ReplayEventCallback,
 } from 'poker-hand-replay';
 
 // Use the comprehensive types provided by the package
@@ -273,7 +283,7 @@ const replayEventHandler: ReplayEventCallback = (event, data) => {
     case 'parseError':
       console.error('Parse failed:', data?.error);
       break;
-    case 'parseSuccess': 
+    case 'parseSuccess':
       console.log('Hand parsed:', data?.hand?.id);
       break;
     // ... other events with full type support
@@ -284,6 +294,7 @@ const replayEventHandler: ReplayEventCallback = (event, data) => {
 ## 🎨 Step 4: Styling Migration
 
 ### Before (Custom CSS):
+
 ```css
 /* Custom styles scattered across files */
 .poker-table {
@@ -306,10 +317,11 @@ const replayEventHandler: ReplayEventCallback = (event, data) => {
 ```
 
 ### After (Theme system):
+
 ```typescript
 // Use built-in themes or customize
 <PokerHandReplay
-  config={{ 
+  config={{
     theme: 'casino',  // or 'dark', 'light', 'professional'
     tableShape: 'oval',
     cardDesign: 'four-color',
@@ -329,6 +341,7 @@ const replayEventHandler: ReplayEventCallback = (event, data) => {
 ## ⚠️ Breaking Changes & Migration Issues
 
 ### 1. Parser API Changes
+
 ```typescript
 // Old inline parsers might have used different method names
 // OLD:
@@ -339,6 +352,7 @@ const hand = parser.parse(handHistory);
 ```
 
 ### 2. Event Handler Changes
+
 ```typescript
 // OLD: Custom event systems
 onActionClick(action) { ... }
@@ -349,6 +363,7 @@ onReplayEvent={(event, data) => { ... }}
 ```
 
 ### 3. Configuration Structure
+
 ```typescript
 // OLD: Flat configuration
 { theme: 'dark', animationDuration: 300, cardStyle: 'modern' }
@@ -419,6 +434,7 @@ function MigrationTest() {
 After verifying everything works:
 
 1. **Remove old files:**
+
    ```bash
    # Remove old inline components
    rm src/components/OldPokerTable.tsx
@@ -427,6 +443,7 @@ After verifying everything works:
    ```
 
 2. **Update imports across your codebase:**
+
    ```bash
    # Find all old imports
    grep -r "from.*OldPokerTable" src/
@@ -434,6 +451,7 @@ After verifying everything works:
    ```
 
 3. **Remove unused dependencies:**
+
    ```bash
    npm uninstall old-poker-library
    ```
@@ -459,7 +477,7 @@ After migration, you gain access to:
 />
 
 // ✨ Loading states
-<PokerHandReplay 
+<PokerHandReplay
   enableLoadingStates={true}
   loadingConfig={{
     showProgressBar: true,
@@ -499,18 +517,21 @@ If you run into issues during migration:
 
 1. **Check the examples:** See `examples/` directory for working implementations
 2. **Read the API docs:** Full TypeScript definitions with JSDoc
-3. **Open an issue:** [GitHub Issues](https://github.com/junichiro/poker-replayer/issues)
+3. **Open an issue:**
+   [GitHub Issues](https://github.com/junichiro/poker-replayer/issues)
 4. **Common issues:** Check the troubleshooting section below
 
 ## 🔧 Troubleshooting
 
 ### Issue: "Module not found: poker-hand-replay"
+
 ```bash
 # Solution: Make sure it's installed
 npm install poker-hand-replay
 ```
 
 ### Issue: TypeScript errors with config object
+
 ```typescript
 // Solution: Import the type
 import type { ReplayConfig } from 'poker-hand-replay';
@@ -521,6 +542,7 @@ const config: ReplayConfig = {
 ```
 
 ### Issue: Styling doesn't match old design
+
 ```css
 /* Solution: Override CSS custom properties */
 :root {
@@ -530,6 +552,7 @@ const config: ReplayConfig = {
 ```
 
 ### Issue: Events not firing
+
 ```typescript
 // Solution: Make sure you're using the correct event names
 <PokerHandReplay
@@ -544,9 +567,11 @@ const config: ReplayConfig = {
 ## 📚 Next Steps
 
 After migration:
+
 - Explore the [examples directory](./examples/) for advanced usage patterns
 - Read the [API documentation](./docs/) for comprehensive reference
-- Check out [Storybook](https://your-storybook-url) for interactive component demos
+- Check out [Storybook](https://your-storybook-url) for interactive component
+  demos
 - Consider contributing improvements back to the package!
 
 Happy migrating! 🚀

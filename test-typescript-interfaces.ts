@@ -18,7 +18,7 @@ import {
   ParserResult,
   ReplayConfig,
   ActionChangeCallback,
-  ReplayEventCallback
+  ReplayEventCallback,
 } from './src/types';
 
 console.log('Testing TypeScript interface definitions...\n');
@@ -34,7 +34,7 @@ console.log('✅ Basic types work correctly');
 const tableInfo: TableInfo = {
   name: 'Test Table',
   maxSeats: 9,
-  buttonSeat: 1
+  buttonSeat: 1,
 };
 
 console.log('✅ TableInfo interface works correctly');
@@ -49,7 +49,7 @@ const player: Player = {
   position: 'BTN',
   currentChips: 950,
   isAllIn: false,
-  allInAmount: undefined
+  allInAmount: undefined,
 };
 
 console.log('✅ Player interface works correctly');
@@ -63,7 +63,7 @@ const action: Action = {
   amount: 50,
   cards: undefined,
   isAllIn: false,
-  reason: undefined
+  reason: undefined,
 };
 
 console.log('✅ Action interface works correctly');
@@ -76,7 +76,7 @@ const pot: Pot = {
   isSplit: false,
   eligiblePlayers: ['Player1', 'Player2', 'Player3'],
   oddChipWinner: undefined,
-  sidePotLevel: 1
+  sidePotLevel: 1,
 };
 
 console.log('✅ Pot interface works correctly');
@@ -91,7 +91,7 @@ const pokerHand: PokerHand = {
   players: [player],
   actions: [action],
   board: ['As', 'Kh', '9c'],
-  pots: [pot]
+  pots: [pot],
 };
 
 console.log('✅ PokerHand interface works correctly');
@@ -100,7 +100,7 @@ console.log('✅ PokerHand interface works correctly');
 const parserError: ParserError = {
   message: 'Test error',
   line: 5,
-  context: 'problematic line content'
+  context: 'problematic line content',
 };
 
 console.log('✅ ParserError interface works correctly');
@@ -108,13 +108,13 @@ console.log('✅ ParserError interface works correctly');
 // Test ParserResult interface - success case
 const successResult: ParserResult = {
   success: true,
-  hand: pokerHand
+  hand: pokerHand,
 };
 
 // Test ParserResult interface - error case
 const errorResult: ParserResult = {
   success: false,
-  error: parserError
+  error: parserError,
 };
 
 console.log('✅ ParserResult interface works correctly');
@@ -124,7 +124,7 @@ const collectedAction: CollectedAction = {
   player: 'TestPlayer',
   amount: 100,
   type: 'main',
-  sidePotLevel: undefined
+  sidePotLevel: undefined,
 };
 
 console.log('✅ CollectedAction interface works correctly');
@@ -133,13 +133,11 @@ console.log('✅ CollectedAction interface works correctly');
 const potCalculation: PotCalculation = {
   totalPot: 500,
   mainPot: 300,
-  sidePots: [
-    { level: 1, amount: 200 }
-  ],
+  sidePots: [{ level: 1, amount: 200 }],
   distributions: [
     { player: 'Player1', amount: 300, from: 'main' },
-    { player: 'Player2', amount: 200, from: 'side-1' }
-  ]
+    { player: 'Player2', amount: 200, from: 'side-1' },
+  ],
 };
 
 console.log('✅ PotCalculation interface works correctly');
@@ -150,7 +148,7 @@ const replayConfig: ReplayConfig = {
   animationSpeed: 1.5,
   theme: 'dark',
   showAllCards: false,
-  enableSounds: true
+  enableSounds: true,
 };
 
 console.log('✅ ReplayConfig interface works correctly');
@@ -160,7 +158,7 @@ const actionChangeCallback: ActionChangeCallback = (action: Action, index: numbe
   console.log(`Action ${index}: ${action.type} by ${action.player}`);
 };
 
-const replayEventCallback: ReplayEventCallback = (event) => {
+const replayEventCallback: ReplayEventCallback = event => {
   console.log(`Replay event: ${event}`);
 };
 
@@ -191,9 +189,23 @@ console.log('✅ Strict typing is enforced');
 
 // Test all ActionType values are valid
 const allActionTypes: ActionType[] = [
-  'blind', 'ante', 'deal', 'fold', 'check', 'call', 'bet', 'raise', 
-  'show', 'uncalled', 'collected', 'muck', 'timeout', 'disconnect', 
-  'reconnect', 'sitout', 'return'
+  'blind',
+  'ante',
+  'deal',
+  'fold',
+  'check',
+  'call',
+  'bet',
+  'raise',
+  'show',
+  'uncalled',
+  'collected',
+  'muck',
+  'timeout',
+  'disconnect',
+  'reconnect',
+  'sitout',
+  'return',
 ];
 
 console.log(`✅ All ${allActionTypes.length} ActionType values are valid`);
