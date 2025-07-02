@@ -54,7 +54,11 @@
       "files": ["**/*.stories.*"],
       "rules": {
         "@typescript-eslint/no-unused-vars": "off",
-        "storybook/no-renderer-packages": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "storybook/no-renderer-packages": "off",
+        "no-console": "off",
+        "import/no-unused-modules": "off",
+        "react/no-unescaped-entities": "off"
       }
     },
     {
