@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Card } from '../components/Card';
+import { Card, type CardPropsTraditional } from '../components/Card';
 
 // Action handlers for demonstration
 const logAction = (actionName: string) => () => console.log(`Action: ${actionName}`);
 
-const meta: Meta<typeof Card> = {
+const meta: Meta<CardPropsTraditional> = {
   title: 'Components/Card',
   component: Card,
   parameters: {
@@ -33,27 +33,6 @@ const meta: Meta<typeof Card> = {
       control: 'boolean',
       description: 'Whether the card is face down',
     },
-    isHighlighted: {
-      control: 'boolean',
-      description: 'Whether the card should be highlighted',
-    },
-    isSelected: {
-      control: 'boolean',
-      description: 'Whether the card is selected',
-    },
-    variant: {
-      control: { type: 'select' },
-      options: ['traditional', 'modern', 'minimal'],
-      description: 'Visual style variant of the card',
-    },
-    onClick: {
-      action: 'clicked',
-      description: 'Called when card is clicked',
-    },
-    onHover: {
-      action: 'hovered',
-      description: 'Called when card is hovered',
-    },
   },
 };
 
@@ -65,9 +44,6 @@ export const AceOfSpades: Story = {
   args: {
     card: 'As',
     size: 'medium',
-    variant: 'traditional',
-    onClick: logAction('card-clicked'),
-    onHover: logAction('card-hovered'),
   },
 };
 
@@ -75,8 +51,6 @@ export const KingOfHearts: Story = {
   args: {
     card: 'Kh',
     size: 'medium',
-    variant: 'traditional',
-    onClick: logAction('card-clicked'),
   },
 };
 
@@ -84,8 +58,6 @@ export const QueenOfDiamonds: Story = {
   args: {
     card: 'Qd',
     size: 'medium',
-    variant: 'traditional',
-    onClick: logAction('card-clicked'),
   },
 };
 
@@ -93,8 +65,6 @@ export const JackOfClubs: Story = {
   args: {
     card: 'Jc',
     size: 'medium',
-    variant: 'traditional',
-    onClick: logAction('card-clicked'),
   },
 };
 
@@ -103,7 +73,6 @@ export const SmallCard: Story = {
   args: {
     card: 'As',
     size: 'small',
-    variant: 'traditional',
   },
 };
 
@@ -111,7 +80,6 @@ export const LargeCard: Story = {
   args: {
     card: 'As',
     size: 'large',
-    variant: 'traditional',
   },
 };
 
@@ -121,53 +89,21 @@ export const HiddenCard: Story = {
     card: 'As',
     size: 'medium',
     isHidden: true,
-    variant: 'traditional',
-  },
-};
-
-export const HighlightedCard: Story = {
-  args: {
-    card: 'As',
-    size: 'medium',
-    isHighlighted: true,
-    variant: 'traditional',
-  },
-};
-
-export const SelectedCard: Story = {
-  args: {
-    card: 'As',
-    size: 'medium',
-    isSelected: true,
-    variant: 'traditional',
-  },
-};
-
-// Visual variants
-export const ModernVariant: Story = {
-  args: {
-    card: 'As',
-    size: 'medium',
-    variant: 'modern',
-  },
-};
-
-export const MinimalVariant: Story = {
-  args: {
-    card: 'As',
-    size: 'medium',
-    variant: 'minimal',
   },
 };
 
 // All suits showcase
 export const AllSuits: Story = {
+  args: {
+    card: 'As',
+    size: 'medium',
+  },
   render: () => (
     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-      <Card card="As" size="medium" variant="traditional" />
-      <Card card="Ah" size="medium" variant="traditional" />
-      <Card card="Ad" size="medium" variant="traditional" />
-      <Card card="Ac" size="medium" variant="traditional" />
+      <Card card="As" size="medium" />
+      <Card card="Ah" size="medium" />
+      <Card card="Ad" size="medium" />
+      <Card card="Ac" size="medium" />
     </div>
   ),
   parameters: {
@@ -181,13 +117,17 @@ export const AllSuits: Story = {
 
 // Poker hand example
 export const PokerHand: Story = {
+  args: {
+    card: 'As',
+    size: 'medium',
+  },
   render: () => (
     <div style={{ display: 'flex', gap: '5px' }}>
-      <Card card="As" size="medium" variant="traditional" />
-      <Card card="Ks" size="medium" variant="traditional" />
-      <Card card="Qh" size="medium" variant="traditional" />
-      <Card card="Jd" size="medium" variant="traditional" />
-      <Card card="Tc" size="medium" variant="traditional" />
+      <Card card="As" size="medium" />
+      <Card card="Ks" size="medium" />
+      <Card card="Qh" size="medium" />
+      <Card card="Jd" size="medium" />
+      <Card card="Tc" size="medium" />
     </div>
   ),
   parameters: {
@@ -201,11 +141,16 @@ export const PokerHand: Story = {
 
 // Card back variations
 export const CardBacks: Story = {
+  args: {
+    card: 'As',
+    isHidden: true,
+    size: 'medium',
+  },
   render: () => (
     <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-      <Card card="As" isHidden size="medium" variant="traditional" />
-      <Card card="Kh" isHidden size="medium" variant="modern" />
-      <Card card="Qd" isHidden size="medium" variant="minimal" />
+      <Card card="As" isHidden size="medium" />
+      <Card card="Kh" isHidden size="medium" />
+      <Card card="Qd" isHidden size="medium" />
     </div>
   ),
   parameters: {
@@ -222,9 +167,6 @@ export const InteractiveCard: Story = {
   args: {
     card: 'As',
     size: 'medium',
-    variant: 'traditional',
-    onClick: logAction('card-clicked'),
-    onHover: logAction('card-hovered'),
   },
   parameters: {
     docs: {

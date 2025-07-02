@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
+import { Controls, type ControlsPropsLegacy } from '../components/Controls';
+
 // Action handlers for demonstration
 const logAction = (actionName: string) => () => console.log(`Action: ${actionName}`);
 
-import { Controls } from '../components/Controls';
-
-const meta: Meta<typeof Controls> = {
+const meta: Meta<ControlsPropsLegacy> = {
   title: 'Components/Controls',
   component: Controls,
   parameters: {
@@ -13,7 +13,7 @@ const meta: Meta<typeof Controls> = {
     docs: {
       description: {
         component:
-          'Playback controls for poker hand replay with play, pause, step, and speed controls.',
+          'Playback controls for poker hand replay with play, pause, previous, next, and reset controls.',
       },
     },
   },
@@ -23,67 +23,29 @@ const meta: Meta<typeof Controls> = {
       control: 'boolean',
       description: 'Whether the replay is currently playing',
     },
-    canPlay: {
-      control: 'boolean',
-      description: 'Whether play/pause is enabled',
+    currentActionIndex: {
+      control: { type: 'number', min: -1, max: 20 },
+      description: 'Current action index in the replay (-1 means before first action)',
     },
-    canStepBack: {
-      control: 'boolean',
-      description: 'Whether stepping backward is enabled',
-    },
-    canStepForward: {
-      control: 'boolean',
-      description: 'Whether stepping forward is enabled',
-    },
-    currentStep: {
-      control: { type: 'number', min: 0, max: 20 },
-      description: 'Current step in the replay',
-    },
-    totalSteps: {
+    totalActions: {
       control: { type: 'number', min: 1, max: 30 },
-      description: 'Total number of steps in the replay',
+      description: 'Total number of actions in the replay',
     },
-    speed: {
-      control: { type: 'select' },
-      options: [0.5, 1, 1.5, 2, 3],
-      description: 'Playback speed multiplier',
+    onPlayPause: {
+      action: 'play-pause',
+      description: 'Called when play/pause button is clicked',
     },
-    showSpeedControl: {
-      control: 'boolean',
-      description: 'Whether to show speed control slider',
+    onPrevious: {
+      action: 'previous',
+      description: 'Called when previous button is clicked',
     },
-    showStepInfo: {
-      control: 'boolean',
-      description: 'Whether to show step counter',
-    },
-    variant: {
-      control: { type: 'select' },
-      options: ['default', 'compact', 'minimal'],
-      description: 'Visual style variant',
-    },
-    onPlay: {
-      action: 'play',
-      description: 'Called when play button is clicked',
-    },
-    onPause: {
-      action: 'pause',
-      description: 'Called when pause button is clicked',
-    },
-    onStepBack: {
-      action: 'step-back',
-      description: 'Called when step back button is clicked',
-    },
-    onStepForward: {
-      action: 'step-forward',
-      description: 'Called when step forward button is clicked',
+    onNext: {
+      action: 'next',
+      description: 'Called when next button is clicked',
     },
     onReset: {
       action: 'reset',
       description: 'Called when reset button is clicked',
-    },
-    onSpeedChange: {
-      action: 'speed-change',
-      description: 'Called when speed is changed',
     },
   },
 };
@@ -95,21 +57,12 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     isPlaying: false,
-    canPlay: true,
-    canStepBack: false,
-    canStepForward: true,
-    currentStep: 0,
-    totalSteps: 15,
-    speed: 1,
-    showSpeedControl: true,
-    showStepInfo: true,
-    variant: 'default',
-    onPlay: logAction('play'),
-    onPause: logAction('pause'),
-    onStepBack: logAction('step-back'),
-    onStepForward: logAction('step-forward'),
+    currentActionIndex: 0,
+    totalActions: 15,
+    onPlayPause: logAction('play-pause'),
+    onPrevious: logAction('previous'),
+    onNext: logAction('next'),
     onReset: logAction('reset'),
-    onSpeedChange: logAction('speed-change'),
   },
 };
 
@@ -118,8 +71,7 @@ export const Playing: Story = {
   args: {
     ...Default.args,
     isPlaying: true,
-    canStepBack: true,
-    currentStep: 5,
+    currentActionIndex: 5,
   },
 };
 
@@ -128,9 +80,7 @@ export const Paused: Story = {
   args: {
     ...Default.args,
     isPlaying: false,
-    canStepBack: true,
-    canStepForward: true,
-    currentStep: 8,
+    currentActionIndex: 8,
   },
 };
 
@@ -139,9 +89,7 @@ export const AtBeginning: Story = {
   args: {
     ...Default.args,
     isPlaying: false,
-    canStepBack: false,
-    canStepForward: true,
-    currentStep: 0,
+    currentActionIndex: -1,
   },
 };
 
@@ -150,11 +98,8 @@ export const AtEnd: Story = {
   args: {
     ...Default.args,
     isPlaying: false,
-    canPlay: false,
-    canStepBack: true,
-    canStepForward: false,
-    currentStep: 15,
-    totalSteps: 15,
+    currentActionIndex: 14,
+    totalActions: 15,
   },
 };
 
@@ -163,81 +108,8 @@ export const MiddleOfReplay: Story = {
   args: {
     ...Default.args,
     isPlaying: true,
-    canStepBack: true,
-    canStepForward: true,
-    currentStep: 7,
-    totalSteps: 15,
-  },
-};
-
-// Speed variations
-export const SlowSpeed: Story = {
-  args: {
-    ...Default.args,
-    speed: 0.5,
-    currentStep: 3,
-  },
-};
-
-export const FastSpeed: Story = {
-  args: {
-    ...Default.args,
-    speed: 2,
-    currentStep: 3,
-  },
-};
-
-export const VeryFastSpeed: Story = {
-  args: {
-    ...Default.args,
-    speed: 3,
-    currentStep: 3,
-  },
-};
-
-// Variant styles
-export const CompactVariant: Story = {
-  args: {
-    ...Default.args,
-    variant: 'compact',
-    showSpeedControl: false,
-    currentStep: 5,
-  },
-};
-
-export const MinimalVariant: Story = {
-  args: {
-    ...Default.args,
-    variant: 'minimal',
-    showSpeedControl: false,
-    showStepInfo: false,
-    currentStep: 5,
-  },
-};
-
-// Without optional controls
-export const WithoutSpeedControl: Story = {
-  args: {
-    ...Default.args,
-    showSpeedControl: false,
-    currentStep: 5,
-  },
-};
-
-export const WithoutStepInfo: Story = {
-  args: {
-    ...Default.args,
-    showStepInfo: false,
-    currentStep: 5,
-  },
-};
-
-export const MinimalControls: Story = {
-  args: {
-    ...Default.args,
-    showSpeedControl: false,
-    showStepInfo: false,
-    currentStep: 5,
+    currentActionIndex: 7,
+    totalActions: 15,
   },
 };
 
@@ -245,11 +117,9 @@ export const MinimalControls: Story = {
 export const LongReplay: Story = {
   args: {
     ...Default.args,
-    currentStep: 25,
-    totalSteps: 50,
+    currentActionIndex: 25,
+    totalActions: 50,
     isPlaying: true,
-    canStepBack: true,
-    canStepForward: true,
   },
 };
 
@@ -257,87 +127,8 @@ export const LongReplay: Story = {
 export const ShortReplay: Story = {
   args: {
     ...Default.args,
-    currentStep: 2,
-    totalSteps: 5,
-    canStepBack: true,
-    canStepForward: true,
-  },
-};
-
-// Different speeds showcase
-export const SpeedShowcase: Story = {
-  render: () => (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', alignItems: 'center' }}>
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>0.5x Speed</h3>
-        <Controls
-          isPlaying={true}
-          canPlay={true}
-          canStepBack={true}
-          canStepForward={true}
-          currentStep={3}
-          totalSteps={10}
-          speed={0.5}
-          showSpeedControl={true}
-          showStepInfo={true}
-          onPlay={logAction('play-slow')}
-          onPause={logAction('pause-slow')}
-          onStepBack={logAction('step-back-slow')}
-          onStepForward={logAction('step-forward-slow')}
-          onReset={logAction('reset-slow')}
-          onSpeedChange={logAction('speed-change-slow')}
-        />
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>1x Speed (Normal)</h3>
-        <Controls
-          isPlaying={true}
-          canPlay={true}
-          canStepBack={true}
-          canStepForward={true}
-          currentStep={3}
-          totalSteps={10}
-          speed={1}
-          showSpeedControl={true}
-          showStepInfo={true}
-          onPlay={logAction('play-normal')}
-          onPause={logAction('pause-normal')}
-          onStepBack={logAction('step-back-normal')}
-          onStepForward={logAction('step-forward-normal')}
-          onReset={logAction('reset-normal')}
-          onSpeedChange={logAction('speed-change-normal')}
-        />
-      </div>
-
-      <div style={{ textAlign: 'center' }}>
-        <h3 style={{ margin: '0 0 10px 0' }}>2x Speed</h3>
-        <Controls
-          isPlaying={true}
-          canPlay={true}
-          canStepBack={true}
-          canStepForward={true}
-          currentStep={3}
-          totalSteps={10}
-          speed={2}
-          showSpeedControl={true}
-          showStepInfo={true}
-          onPlay={logAction('play-fast')}
-          onPause={logAction('pause-fast')}
-          onStepBack={logAction('step-back-fast')}
-          onStepForward={logAction('step-forward-fast')}
-          onReset={logAction('reset-fast')}
-          onSpeedChange={logAction('speed-change-fast')}
-        />
-      </div>
-    </div>
-  ),
-  parameters: {
-    docs: {
-      description: {
-        story: 'Comparison of different playback speeds',
-      },
-    },
+    currentActionIndex: 2,
+    totalActions: 5,
   },
 };
 
@@ -345,14 +136,12 @@ export const SpeedShowcase: Story = {
 export const Interactive: Story = {
   args: {
     ...Default.args,
-    currentStep: 5,
-    canStepBack: true,
-    canStepForward: true,
+    currentActionIndex: 7,
   },
   parameters: {
     docs: {
       description: {
-        story: 'Try clicking the controls to see interaction events in the Actions panel',
+        story: 'Click any control button to see interaction events in the Actions panel',
       },
     },
   },
