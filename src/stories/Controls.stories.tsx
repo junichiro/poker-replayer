@@ -24,11 +24,11 @@ const meta: Meta<ControlsPropsLegacy> = {
       description: 'Whether the replay is currently playing',
     },
     currentActionIndex: {
-      control: { type: 'number', min: -1, max: 20 },
+      control: { type: 'number', min: -1 },
       description: 'Current action index in the replay (-1 means before first action)',
     },
     totalActions: {
-      control: { type: 'number', min: 1, max: 30 },
+      control: { type: 'number', min: 1 },
       description: 'Total number of actions in the replay',
     },
     onPlayPause: {

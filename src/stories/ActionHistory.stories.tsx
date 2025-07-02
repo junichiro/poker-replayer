@@ -25,7 +25,7 @@ const meta: Meta<typeof ActionHistory> = {
       description: 'Array of poker actions to display',
     },
     currentActionIndex: {
-      control: { type: 'number', min: -1, max: 20 },
+      control: { type: 'number', min: -1 },
       description: 'Index of the currently highlighted action (-1 for none)',
     },
     visible: {
@@ -107,9 +107,22 @@ const tournamentActions: Action[] = [
 
 const longActionList: Action[] = Array.from({ length: 100 }, (_, i) => ({
   index: i,
-  street:
-    i < 20 ? 'preflop' : i < 40 ? 'flop' : i < 60 ? 'turn' : i < 80 ? 'river' : ('showdown' as any),
-  type: i % 4 === 0 ? 'bet' : i % 4 === 1 ? 'call' : i % 4 === 2 ? 'raise' : ('fold' as any),
+  street: (i < 20
+    ? 'preflop'
+    : i < 40
+      ? 'flop'
+      : i < 60
+        ? 'turn'
+        : i < 80
+          ? 'river'
+          : 'showdown') as Action['street'],
+  type: (i % 4 === 0
+    ? 'bet'
+    : i % 4 === 1
+      ? 'call'
+      : i % 4 === 2
+        ? 'raise'
+        : 'fold') as Action['type'],
   player: `Player${(i % 6) + 1}`,
   amount: i % 4 !== 3 ? (i + 1) * 10 : undefined,
 }));
