@@ -83,200 +83,174 @@ export const CurrentPlayer: Story = {
 
 export const HeroPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'Hero',
       isHero: true,
     },
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 // Player positions
 export const ButtonPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'BTN',
     },
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const BigBlindPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'BB',
       currentChips: 1480,
     },
-    showCards: true,
     seatPosition: 3,
-    maxSeats: 6,
   },
 };
 
 export const SmallBlindPosition: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       position: 'SB',
       currentChips: 1490,
     },
-    showCards: true,
     seatPosition: 2,
-    maxSeats: 6,
   },
 };
 
 // Player states
 export const AllInPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
-      isAllIn: true,
       chips: 1500,
       allInAmount: 1500,
     },
     isAllIn: true,
     currentChips: 0,
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const FoldedPlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       cards: undefined,
     },
     showCards: false,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const InactivePlayer: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       chips: 0,
     },
     currentChips: 0,
     showCards: false,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 // Card visibility states
 export const HiddenCards: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'Opponent',
     },
     showCards: false,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const ShownCards: Story = {
   args: {
+    ...Default.args,
     player: samplePlayer,
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 // Different chip amounts
 export const ShortStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'ShortStack',
       chips: 250,
     },
     currentChips: 250,
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const BigStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'BigStack',
       chips: 15000,
     },
     currentChips: 15000,
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const MidStack: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'MidStack',
       chips: 3750,
     },
     currentChips: 3750,
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 // Premium hands showcase
 export const PocketAces: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'LuckyPlayer',
       cards: ['As', 'Ah'],
     },
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const PocketKings: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'StrongHand',
       cards: ['Ks', 'Kh'],
     },
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
 export const AceKingSuited: Story = {
   args: {
+    ...Default.args,
     player: {
       ...samplePlayer,
       name: 'BigSlick',
       cards: ['As', 'Ks'],
     },
-    showCards: true,
-    seatPosition: 1,
-    maxSeats: 6,
   },
 };
 
@@ -377,11 +351,9 @@ export const SixPlayerTable: Story = {
 // Interactive player with actions
 export const InteractivePlayer: Story = {
   args: {
+    ...Default.args,
     player: samplePlayer,
-    showCards: true,
     currentChips: 1400,
-    seatPosition: 1,
-    maxSeats: 6,
   },
   parameters: {
     docs: {
