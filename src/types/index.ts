@@ -154,6 +154,8 @@ export interface PokerHand {
   board: PlayingCard[];
   /** All pots created during the hand (main pot and any side pots) */
   pots: Pot[];
+  /** Amount of rake taken from the hand (if any) */
+  rake?: number;
 }
 
 /**

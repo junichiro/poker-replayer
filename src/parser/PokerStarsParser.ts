@@ -132,7 +132,11 @@ export class PokerStarsParser {
     actions.push(...showdownActions);
 
     // Parse summary
-    const pots = this.parseSummary();
+    const summaryResult = this.parseSummary();
+
+    // Add any collected actions that weren't captured during action parsing
+    const collectedActions = this.createCollectedActions(summaryResult.collectedActions);
+    actions.push(...collectedActions);
 
     // Update players with hole cards
     this.updatePlayersWithHoleCards(players, holeCards);
@@ -146,7 +150,8 @@ export class PokerStarsParser {
       players,
       actions,
       board,
-      pots,
+      pots: summaryResult.pots,
+      rake: summaryResult.rake,
     };
   }
 
@@ -362,14 +367,17 @@ export class PokerStarsParser {
           amount = parseFloat(match[2]);
         }
 
-        const action = this.createAction(pattern.type, player, amount, street);
-        action.isAllIn = true;
-
         // Track all-in amount and update chip count
         this.allInPlayers.set(player, amount);
         const currentChips = this.playerChips.get(player) || 0;
         this.playerChips.set(player, Math.max(0, currentChips - amount));
         this.totalPotContributions += amount;
+
+        // Remove from active players since they can't make more betting actions
+        this.activePlayers.delete(player);
+
+        const action = this.createAction(pattern.type, player, amount, street);
+        action.isAllIn = true;
 
         return action;
       }
@@ -523,7 +531,7 @@ export class PokerStarsParser {
     return actions;
   }
 
-  private parseSummary(): Pot[] {
+  private parseSummary(): { pots: Pot[]; rake?: number; collectedActions: CollectedAction[] } {
     // Get all collected actions from the hand history
     const collectedActions = this.extractCollectedActions();
 
@@ -536,7 +544,7 @@ export class PokerStarsParser {
     }
 
     if (!this.hasMoreLines()) {
-      return [];
+      return { pots: [] };
     }
 
     this.nextLine(); // Skip SUMMARY line
@@ -544,10 +552,27 @@ export class PokerStarsParser {
     // Parse pot information from summary
     const pots = this.parsePotLines(collectedActions, potCalculation);
 
-    // Validate and enhance pot information
-    this.validateAndEnhancePots(pots, collectedActions);
+    // Parse rake information
+    let rake: number | undefined;
+    const currentPos = this.currentLineIndex;
+    this.currentLineIndex = 0; // Reset to start
 
-    return pots;
+    while (this.hasMoreLines()) {
+      const line = this.getLine();
+      const rakeMatch = line.match(/Total pot \$?[\d.]+\s*\|\s*Rake \$?([\d.]+)/);
+      if (rakeMatch) {
+        rake = parseFloat(rakeMatch[1]);
+        break;
+      }
+      this.nextLine();
+    }
+
+    this.currentLineIndex = currentPos; // Restore position
+
+    // Validate and enhance pot information with rake awareness
+    this.validateAndEnhancePots(pots, collectedActions, rake);
+
+    return { pots, rake, collectedActions };
   }
 
   private extractCollectedActions(): CollectedAction[] {
@@ -568,6 +593,11 @@ export class PokerStarsParser {
           regex: /([^:]+) collected \$?([\d.]+) from pot/,
           type: 'single' as const,
         },
+        {
+          // Handle summary lines like "Seat 1: Player1 (button) (small blind) collected (8)"
+          regex: /Seat \d+: (.*?) \([^)]*\) (?:\([^)]*\) )?collected \(\$?([\d.]+)\)/,
+          type: 'single' as const,
+        },
       ];
 
       for (const pattern of patterns) {
@@ -584,7 +614,14 @@ export class PokerStarsParser {
             action.sidePotLevel = parseInt(match[3]);
           }
 
-          collectedActions.push(action);
+          // Check if we already have a collection action for this player and amount
+          const existingAction = collectedActions.find(
+            existing => existing.player === action.player && existing.amount === action.amount
+          );
+
+          if (!existingAction) {
+            collectedActions.push(action);
+          }
           break;
         }
       }
@@ -700,24 +737,30 @@ export class PokerStarsParser {
       return Array.from(eligible);
     }
 
-    // For side pots, only players who contributed enough are eligible
+    // For side pots, only players who contributed more than the all-in amount for this level
     const allInAmounts = Array.from(this.allInPlayers.entries()).sort(([_, a], [__, b]) => a - b);
 
     if (sidePotLevel <= allInAmounts.length) {
       const eligible = new Set<string>();
-      // Add remaining all-in players who contributed enough
-      allInAmounts.slice(sidePotLevel - 1).forEach(([player, _]) => eligible.add(player));
-      // Add active players who can contest higher side pots
-      if (this.activePlayers.size > 0) {
-        this.activePlayers.forEach(player => eligible.add(player));
-      }
+
+      // Add all-in players who went all-in for MORE than this level's amount
+      // (i.e., players who can contest this side pot)
+      allInAmounts.slice(sidePotLevel).forEach(([player, _]) => eligible.add(player));
+
+      // Add active players who have not folded (they can contest all side pots)
+      this.activePlayers.forEach(player => eligible.add(player));
+
       return Array.from(eligible);
     }
 
     return [];
   }
 
-  private validateAndEnhancePots(pots: Pot[], collectedActions: CollectedAction[]): void {
+  private validateAndEnhancePots(
+    pots: Pot[],
+    collectedActions: CollectedAction[],
+    rake?: number
+  ): void {
     // Match collected actions to pots
     for (const pot of pots) {
       const relevantActions = collectedActions.filter(action => {
@@ -754,14 +797,20 @@ export class PokerStarsParser {
       // Add all winners to the pot
       pot.players = relevantActions.map(action => action.player);
 
-      // Validate pot math
-      if (Math.abs(totalCollected - pot.amount) > 0.01) {
-        console.warn(`Pot amount mismatch: expected ${pot.amount}, collected ${totalCollected}`);
+      // Validate pot math (account for rake only on main pot or single pot)
+      const isMainOrSinglePot = !pot.isSide || pots.length === 1;
+      const rakeToSubtract = isMainOrSinglePot ? rake || 0 : 0;
+      const expectedCollected = pot.amount - rakeToSubtract;
+
+      if (Math.abs(totalCollected - expectedCollected) > 0.01) {
+        console.warn(
+          `Pot amount mismatch: expected ${expectedCollected} (${pot.amount} - ${rakeToSubtract} rake), collected ${totalCollected}`
+        );
       }
     }
 
     // Also check summary lines for additional winners
-    this.parseSummaryWinners(pots);
+    // Note: We'll need to pass the actions array to this method
   }
 
   private parseSummaryWinners(pots: Pot[]): void {
@@ -779,6 +828,8 @@ export class PokerStarsParser {
         const winner = match[1];
         const amount = parseFloat(match[2]);
 
+        // TODO: Create collected actions (will implement this properly later)
+
         // Find appropriate pot for this winner
         for (const pot of pots) {
           if (Math.abs(pot.amount - amount) < 0.01 && !pot.players.includes(winner)) {
@@ -793,6 +844,23 @@ export class PokerStarsParser {
 
     // Restore line position
     this.currentLineIndex = currentLine;
+  }
+
+  private createCollectedActions(collectedActions: CollectedAction[]): Action[] {
+    const actions: Action[] = [];
+
+    // Create action objects from the extracted collected actions
+    for (const collectedAction of collectedActions) {
+      const action = this.createAction(
+        'collected',
+        collectedAction.player,
+        collectedAction.amount,
+        'showdown'
+      );
+      actions.push(action);
+    }
+
+    return actions;
   }
 
   private updatePlayersWithHoleCards(
