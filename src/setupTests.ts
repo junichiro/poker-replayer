@@ -1,5 +1,6 @@
 /**
  * Test setup configuration for React Testing Library
+ * Enhanced with performance monitoring for test optimization
  */
 
 import '@testing-library/jest-dom';
@@ -35,7 +36,7 @@ const originalError = console.error;
 const originalWarn = console.warn;
 
 beforeAll(() => {
-  console.error = (...args: any[]) => {
+  console.error = (...args: unknown[]) => {
     if (
       args[0]?.includes?.('Warning: ReactDOM.render is deprecated') ||
       args[0]?.includes?.('Warning: React.createFactory is deprecated')
@@ -45,7 +46,7 @@ beforeAll(() => {
     originalError.call(console, ...args);
   };
 
-  console.warn = (...args: any[]) => {
+  console.warn = (...args: unknown[]) => {
     if (args[0]?.includes?.('componentWillReceiveProps has been renamed')) {
       return;
     }
@@ -56,4 +57,28 @@ beforeAll(() => {
 afterAll(() => {
   console.error = originalError;
   console.warn = originalWarn;
+});
+
+// Performance monitoring setup
+const testStartTimes = new Map<string, number>();
+
+// Track slow tests for optimization
+beforeEach(() => {
+  const testName = expect.getState().currentTestName || 'unknown';
+  testStartTimes.set(testName, Date.now());
+});
+
+afterEach(() => {
+  const testName = expect.getState().currentTestName || 'unknown';
+  const startTime = testStartTimes.get(testName);
+
+  if (startTime) {
+    const duration = Date.now() - startTime;
+    testStartTimes.delete(testName);
+
+    // Log tests that take longer than 500ms
+    if (duration > 500 && process.env.NODE_ENV !== 'production') {
+      console.log(`⚠️  Slow test: ${testName} took ${duration}ms`);
+    }
+  }
 });
