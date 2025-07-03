@@ -2,7 +2,7 @@
  * Pot display component for showing pot amounts and types
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 
 import { Pot as PotType } from '../types';
 
@@ -106,6 +106,4 @@ function arePotPropsEqual(prevProps: PotProps, nextProps: PotProps): boolean {
  * Memoized Pot component for optimal performance
  * Prevents unnecessary re-renders when pot props haven't changed
  */
-export const Pot = React.memo(PotComponent, arePotPropsEqual);
-
-export default Pot;
+export const Pot = memo(PotComponent, arePotPropsEqual);

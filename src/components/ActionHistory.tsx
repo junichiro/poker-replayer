@@ -2,7 +2,7 @@
  * Action history component for displaying the sequence of actions in the hand
  */
 
-import React, { useMemo, useCallback, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useCallback, useState, useEffect, useRef, memo } from 'react';
 
 import { Action } from '../types';
 
@@ -34,13 +34,23 @@ interface ActionItemProps {
   isClickable: boolean;
 }
 
-const ActionItem = React.memo<ActionItemProps>(
+const ActionItem = memo<ActionItemProps>(
   ({ action, index, currentActionIndex, onActionClick, isClickable }) => {
     const handleClick = useCallback(() => {
       if (onActionClick && isClickable) {
         onActionClick(index);
       }
     }, [onActionClick, isClickable, index]);
+
+    const handleKeyDown = useCallback(
+      (event: React.KeyboardEvent) => {
+        if (onActionClick && isClickable && (event.key === 'Enter' || event.key === ' ')) {
+          event.preventDefault();
+          onActionClick(index);
+        }
+      },
+      [onActionClick, isClickable, index]
+    );
 
     const className = useMemo(() => {
       const classes = ['action'];
@@ -53,7 +63,11 @@ const ActionItem = React.memo<ActionItemProps>(
     return (
       <div
         className={className}
-        onClick={handleClick}
+        onClick={isClickable ? handleClick : undefined}
+        onKeyDown={isClickable ? handleKeyDown : undefined}
+        role={isClickable ? 'button' : undefined}
+        tabIndex={isClickable ? 0 : undefined}
+        aria-label={isClickable ? `Jump to action ${index + 1}: ${action.type}` : undefined}
         style={{ minHeight: '24px' }} // Consistent height for virtualization
       >
         <span className="street">{action.street}</span>
@@ -279,6 +293,4 @@ function areActionHistoryPropsEqual(
  * Memoized ActionHistory component for optimal performance
  * Includes virtualization for large action lists and optimized re-rendering
  */
-export const ActionHistory = React.memo(ActionHistoryComponent, areActionHistoryPropsEqual);
-
-export default ActionHistory;
+export const ActionHistory = memo(ActionHistoryComponent, areActionHistoryPropsEqual);

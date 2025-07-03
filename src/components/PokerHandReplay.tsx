@@ -163,7 +163,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
       });
 
       if (result.success && result.data) {
-        setHand(result.data!);
+        setHand(result.data);
         setError(null);
         setIsInitialLoad(false);
 
@@ -171,7 +171,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
           setIsPlaying(true);
           onReplayEvent?.('start');
         }
-        onReplayEvent?.('parseSuccess', { hand: result.data! });
+        onReplayEvent?.('parseSuccess', { hand: result.data });
       } else {
         const errorMessage = result.error?.message || 'Unknown parsing error';
         setError(errorMessage);
@@ -594,11 +594,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   );
 };
 
-// Enhanced component with error boundary wrapper
-const PokerHandReplayWithErrorBoundary = withErrorBoundary(PokerHandReplay, {
+// Enhanced component with error boundary wrapper (for internal use)
+const _PokerHandReplayWithErrorBoundary = withErrorBoundary(PokerHandReplay, {
   name: 'PokerHandReplayRoot',
   enableRetry: true,
   maxRetries: 2,
 });
-
-export default PokerHandReplayWithErrorBoundary;

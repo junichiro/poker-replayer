@@ -15,7 +15,7 @@
  * ```
  */
 
-import React from 'react';
+import React, { memo } from 'react';
 
 import {
   BaseComponentProps,
@@ -54,7 +54,7 @@ export interface CardPropsTraditional extends BaseComponentProps {
  * Props for the Card component using discriminated union (recommended)
  * @public
  */
-export interface CardPropsVariant extends BaseComponentProps {
+interface CardPropsVariant extends BaseComponentProps {
   /**
    * Card variant using discriminated union for better type safety
    * @example
@@ -227,6 +227,4 @@ function areCardPropsEqual(prevProps: CardProps, nextProps: CardProps): boolean 
  * Memoized Card component for optimal performance
  * Prevents unnecessary re-renders when card props haven't changed
  */
-export const Card = React.memo(CardComponent, areCardPropsEqual);
-
-export default Card;
+export const Card = memo(CardComponent, areCardPropsEqual);

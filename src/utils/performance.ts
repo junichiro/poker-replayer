@@ -5,7 +5,7 @@
  * tracking re-renders, and identifying performance bottlenecks.
  */
 
-import React from 'react';
+import React, { useMemo, memo, useRef, useEffect, createElement } from 'react';
 
 export interface PerformanceMetrics {
   /** Component name being measured */
@@ -92,7 +92,7 @@ export function useCalculationTracker<T>(
   calculation: () => T,
   dependencies: React.DependencyList
 ): T {
-  const result = React.useMemo(() => {
+  const result = useMemo(() => {
     if (typeof window === 'undefined' || !window.performance) {
       // Fallback for environments without performance API
       return calculation();
@@ -108,7 +108,8 @@ export function useCalculationTracker<T>(
     }
 
     return result;
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculation, calculationName, ...dependencies]);
 
   return result;
 }
@@ -122,9 +123,9 @@ export function withPerformanceTracking<P extends object>(
 ): React.ComponentType<P> {
   const displayName = componentName || Component.displayName || Component.name || 'Component';
 
-  const WrappedComponent = React.memo((props: P) => {
+  const WrappedComponent = memo((props: P) => {
     const { startRender, endRender } = useRenderTracker(displayName);
-    const renderInfoRef = React.useRef<RenderInfo>();
+    const renderInfoRef = useRef<RenderInfo>();
 
     // This must run on every render to capture the correct start time.
     renderInfoRef.current = startRender() || {
@@ -133,13 +134,13 @@ export function withPerformanceTracking<P extends object>(
     };
 
     // Track render end
-    React.useEffect(() => {
+    useEffect(() => {
       if (renderInfoRef.current) {
         endRender(renderInfoRef.current);
       }
     });
 
-    return React.createElement(Component, props);
+    return createElement(Component, props);
   });
 
   WrappedComponent.displayName = `withPerformanceTracking(${displayName})`;
@@ -249,7 +250,7 @@ export function performanceMemo<P extends object>(
 ): React.ComponentType<P> {
   const displayName = componentName || Component.displayName || Component.name || 'Component';
 
-  const MemoComponent = React.memo(Component, areEqual);
+  const MemoComponent = memo(Component, areEqual);
 
   // Add performance tracking in development
   if (process.env.NODE_ENV === 'development') {
@@ -267,10 +268,10 @@ export function useDevPerformanceLogger(
   componentName: string,
   props?: Record<string, unknown>
 ): void {
-  const renderCount = React.useRef(0);
-  const lastProps = React.useRef(props);
+  const renderCount = useRef(0);
+  const lastProps = useRef(props);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (process.env.NODE_ENV !== 'development') {
       return;
     }
@@ -283,7 +284,7 @@ export function useDevPerformanceLogger(
       // Try to identify what changed
       if (props && lastProps.current) {
         const changedProps = Object.keys(props).filter(
-          key => props[key] !== lastProps.current[key]
+          key => props[key] !== lastProps.current?.[key]
         );
 
         if (changedProps.length > 0) {

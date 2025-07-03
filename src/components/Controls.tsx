@@ -16,7 +16,7 @@
  */
 
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 
 import { BaseComponentProps, NumericConstraints } from '../types';
 
@@ -128,7 +128,7 @@ export interface ControlsPropsLegacy extends BaseComponentProps {
 /**
  * Combined props type supporting both new and legacy APIs
  */
-export type ControlsAllProps = ControlsProps | ControlsPropsLegacy;
+type ControlsAllProps = ControlsProps | ControlsPropsLegacy;
 
 /**
  * Default props for the Controls component
@@ -343,6 +343,4 @@ function areControlsPropsEqual(prevProps: ControlsAllProps, nextProps: ControlsA
  * Memoized Controls component for optimal performance
  * Prevents unnecessary re-renders when control props haven't changed
  */
-export const Controls = React.memo(ControlsComponent, areControlsPropsEqual);
-
-export default Controls;
+export const Controls = memo(ControlsComponent, areControlsPropsEqual);
