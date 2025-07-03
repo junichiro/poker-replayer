@@ -1,5 +1,6 @@
-import { PotCalculator } from './PotCalculator';
 import { Pot, CollectedAction } from '../types';
+
+import { PotCalculator } from './PotCalculator';
 
 describe('PotCalculator', () => {
   let potCalculator: PotCalculator;
@@ -55,14 +56,17 @@ describe('PotCalculator', () => {
       expect(result.totalPot).toBe(300);
       expect(result.mainPot).toBe(120); // 30 * 4 players
       expect(result.sidePots).toHaveLength(2);
-      expect(result.sidePots[0].amount).toBe(90); // (60-30) * 3 players  
+      expect(result.sidePots[0].amount).toBe(90); // (60-30) * 3 players
       expect(result.sidePots[1].amount).toBe(90); // remaining for active players
     });
   });
 
   describe('対象プレイヤー計算', () => {
     test('メインポット(レベル0)では全てのプレイヤーが対象となる', () => {
-      const allInPlayers = new Map([['Player1', 50], ['Player2', 100]]);
+      const allInPlayers = new Map([
+        ['Player1', 50],
+        ['Player2', 100],
+      ]);
       const activePlayers = new Set(['Player3', 'Player4']);
 
       const result = potCalculator.getEligiblePlayers(0, allInPlayers, activePlayers);
@@ -75,7 +79,10 @@ describe('PotCalculator', () => {
     });
 
     test('サイドポットではより高額でオールインしたプレイヤーのみが対象となる', () => {
-      const allInPlayers = new Map([['Player1', 50], ['Player2', 100]]);
+      const allInPlayers = new Map([
+        ['Player1', 50],
+        ['Player2', 100],
+      ]);
       const activePlayers = new Set(['Player3']);
 
       const result = potCalculator.getEligiblePlayers(1, allInPlayers, activePlayers);
@@ -93,15 +100,15 @@ describe('PotCalculator', () => {
         {
           amount: 100,
           players: ['Player1'],
-          eligiblePlayers: ['Player1', 'Player2']
-        }
+          eligiblePlayers: ['Player1', 'Player2'],
+        },
       ];
       const collectedActions: CollectedAction[] = [
         {
           player: 'Player1',
           amount: 95,
-          type: 'single'
-        }
+          type: 'single',
+        },
       ];
       const rake = 5;
 
@@ -115,15 +122,15 @@ describe('PotCalculator', () => {
         {
           amount: 100,
           players: ['Player1'],
-          eligiblePlayers: ['Player1']
-        }
+          eligiblePlayers: ['Player1'],
+        },
       ];
       const collectedActions: CollectedAction[] = [
         {
           player: 'Player1',
           amount: 80,
-          type: 'single'
-        }
+          type: 'single',
+        },
       ];
 
       expect(() => {
@@ -137,20 +144,20 @@ describe('PotCalculator', () => {
           amount: 101,
           players: ['Player1', 'Player2'],
           eligiblePlayers: ['Player1', 'Player2'],
-          isSplit: true
-        }
+          isSplit: true,
+        },
       ];
       const collectedActions: CollectedAction[] = [
         {
           player: 'Player1',
           amount: 51,
-          type: 'single'
+          type: 'single',
         },
         {
           player: 'Player2',
           amount: 50,
-          type: 'single'
-        }
+          type: 'single',
+        },
       ];
 
       potCalculator.enhancePots(pots, collectedActions);

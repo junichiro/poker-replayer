@@ -1,5 +1,6 @@
-import { IActionParser } from './interfaces';
 import { Action, ActionType, Street, CollectedAction } from '../types';
+
+import { IActionParser } from './interfaces';
 
 /**
  * Service responsible for parsing action lines from poker hand histories

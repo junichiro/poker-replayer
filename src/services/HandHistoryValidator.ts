@@ -1,5 +1,6 @@
-import { IHandHistoryValidator } from './interfaces';
 import { PokerHand, Player, Action, Pot } from '../types';
+
+import { IHandHistoryValidator } from './interfaces';
 
 interface ValidationResult {
   isValid: boolean;
@@ -63,7 +64,7 @@ export class HandHistoryValidator implements IHandHistoryValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -113,7 +114,7 @@ export class HandHistoryValidator implements IHandHistoryValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -132,14 +133,14 @@ export class HandHistoryValidator implements IHandHistoryValidator {
     const totalPotAmount = pots.reduce((sum, pot) => sum + pot.amount, 0);
 
     // Calculate total contributions from actions (excluding collection and uncalled bets)
-    const contributionActions = actions.filter(action => 
-      action.amount && 
-      action.amount > 0 && 
-      !['collected', 'uncalled'].includes(action.type)
+    const contributionActions = actions.filter(
+      action =>
+        action.amount && action.amount > 0 && !['collected', 'uncalled'].includes(action.type)
     );
 
-    const totalContributions = contributionActions.reduce((sum, action) => 
-      sum + (action.amount || 0), 0
+    const totalContributions = contributionActions.reduce(
+      (sum, action) => sum + (action.amount || 0),
+      0
     );
 
     // Allow for small floating point differences
@@ -170,7 +171,7 @@ export class HandHistoryValidator implements IHandHistoryValidator {
 
     return {
       isValid: errors.length === 0,
-      errors
+      errors,
     };
   }
 
@@ -182,15 +183,11 @@ export class HandHistoryValidator implements IHandHistoryValidator {
     const playerResult = this.validatePlayerConsistency(hand.players, hand.actions);
     const potResult = this.validatePotTotals(hand.pots, hand.actions);
 
-    const allErrors = [
-      ...structureResult.errors,
-      ...playerResult.errors,
-      ...potResult.errors
-    ];
+    const allErrors = [...structureResult.errors, ...playerResult.errors, ...potResult.errors];
 
     return {
       isValid: allErrors.length === 0,
-      errors: allErrors
+      errors: allErrors,
     };
   }
 }

@@ -1,5 +1,11 @@
+import {
+  IPotCalculator,
+  IPlayerStateTracker,
+  IActionParser,
+  IHandHistoryValidator,
+} from '../services';
+
 import { RefactoredPokerStarsParser } from './RefactoredPokerStarsParser';
-import { IPotCalculator, IPlayerStateTracker, IActionParser, IHandHistoryValidator } from '../services';
 
 // Mock services for testing
 const mockPotCalculator: IPotCalculator = {
@@ -41,7 +47,7 @@ describe('RefactoredPokerStarsParser', () => {
   beforeEach(() => {
     // Reset mocks
     jest.clearAllMocks();
-    
+
     parser = new RefactoredPokerStarsParser(
       mockPotCalculator,
       mockPlayerStateTracker,
@@ -64,14 +70,14 @@ describe('RefactoredPokerStarsParser', () => {
   describe('空入力処理', () => {
     test('空のハンドヒストリーでエラーが返される', () => {
       const result = parser.parse('');
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Empty hand history');
     });
 
     test('空白のみのハンドヒストリーでエラーが返される', () => {
       const result = parser.parse('   \n  \t  \n   ');
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Empty hand history');
     });
@@ -95,31 +101,35 @@ Seat 1: Player1 collected ($3.80)`;
 
       // Setup mocks
       (mockActionParser.extractCollectedActions as jest.Mock).mockReturnValue([
-        { player: 'Player1', amount: 3.80, type: 'single' }
+        { player: 'Player1', amount: 3.8, type: 'single' },
       ]);
-      
+
       (mockPotCalculator.calculatePotStructure as jest.Mock).mockReturnValue({
         totalPot: 4,
         sidePots: [],
-        distributions: []
+        distributions: [],
       });
 
       (mockPlayerStateTracker.getAllInPlayers as jest.Mock).mockReturnValue(new Map());
-      (mockPlayerStateTracker.getActivePlayers as jest.Mock).mockReturnValue(new Set(['Player1', 'Player2']));
+      (mockPlayerStateTracker.getActivePlayers as jest.Mock).mockReturnValue(
+        new Set(['Player1', 'Player2'])
+      );
 
-      (mockActionParser.createAction as jest.Mock).mockImplementation((type, player, amount, street) => ({
-        index: 0,
-        street: street || 'preflop',
-        type,
-        player,
-        amount
-      }));
+      (mockActionParser.createAction as jest.Mock).mockImplementation(
+        (type, player, amount, street) => ({
+          index: 0,
+          street: street || 'preflop',
+          type,
+          player,
+          amount,
+        })
+      );
 
       const result = parser.parse(handHistory);
-      
+
       expect(result.success).toBe(true);
       expect(result.hand).toBeDefined();
-      
+
       if (result.success) {
         expect(result.hand.id).toBe('123456789');
         expect(result.hand.stakes).toBe('$1/$2');
@@ -210,7 +220,7 @@ Total pot $0 | Rake $0`;
     test('元のPokerStarsParserと同じインターフェースを提供する', () => {
       // パブリックメソッドが存在することを確認
       expect(typeof parser.parse).toBe('function');
-      
+
       // parseメソッドがParserResultを返すことを確認
       const result = parser.parse('');
       expect(result).toHaveProperty('success');

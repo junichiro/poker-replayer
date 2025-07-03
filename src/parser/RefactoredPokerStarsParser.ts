@@ -1,14 +1,4 @@
 import {
-  PokerHand,
-  Player,
-  Action,
-  TableInfo,
-  Street,
-  ParserResult,
-  PlayingCard,
-  PLAYING_CARD_REGEX,
-} from '../types';
-import {
   IPotCalculator,
   IPlayerStateTracker,
   IActionParser,
@@ -18,6 +8,16 @@ import {
   ActionParser,
   HandHistoryValidator,
 } from '../services';
+import {
+  PokerHand,
+  Player,
+  Action,
+  TableInfo,
+  Street,
+  ParserResult,
+  PlayingCard,
+  PLAYING_CARD_REGEX,
+} from '../types';
 
 /**
  * Validates if a string is a valid playing card and returns it as PlayingCard type
@@ -274,7 +274,9 @@ export class RefactoredPokerStarsParser {
         this.totalPotContributions += amount;
       } else if (combinedBlindMatch) {
         const amount = parseFloat(combinedBlindMatch[2]);
-        blinds.push(this.actionParser.createAction('blind', combinedBlindMatch[1], amount, 'preflop'));
+        blinds.push(
+          this.actionParser.createAction('blind', combinedBlindMatch[1], amount, 'preflop')
+        );
         this.totalPotContributions += amount;
       } else if (deadBlindMatch) {
         const amount = parseFloat(deadBlindMatch[2]);
@@ -354,7 +356,10 @@ export class RefactoredPokerStarsParser {
       this.totalPotContributions += action.amount;
     } else if (action.amount && ['call', 'bet', 'raise', 'blind', 'ante'].includes(action.type)) {
       const currentChips = this.playerStateTracker.getPlayerChips(action.player);
-      this.playerStateTracker.trackPlayerChips(action.player, Math.max(0, currentChips - action.amount));
+      this.playerStateTracker.trackPlayerChips(
+        action.player,
+        Math.max(0, currentChips - action.amount)
+      );
       this.totalPotContributions += action.amount;
     } else if (action.amount && action.type === 'collected') {
       const currentChips = this.playerStateTracker.getPlayerChips(action.player);
@@ -404,7 +409,12 @@ export class RefactoredPokerStarsParser {
         const showMatch = line.match(/([^:]+): shows \[([^\]]+)\]/);
 
         if (showMatch) {
-          const action = this.actionParser.createAction('show', showMatch[1], undefined, 'showdown');
+          const action = this.actionParser.createAction(
+            'show',
+            showMatch[1],
+            undefined,
+            'showdown'
+          );
           action.cards = showMatch[2].split(' ');
           actions.push(action);
         }
@@ -424,7 +434,7 @@ export class RefactoredPokerStarsParser {
     const allInPlayers = this.playerStateTracker.getAllInPlayers();
     const activePlayers = this.playerStateTracker.getActivePlayers();
     const allInAmounts = Array.from(allInPlayers.values());
-    
+
     const potCalculation = this.potCalculator.calculatePotStructure(
       allInAmounts,
       this.totalPotContributions,
@@ -487,7 +497,7 @@ export class RefactoredPokerStarsParser {
           // Create main pot
           const allInPlayers = this.playerStateTracker.getAllInPlayers();
           const activePlayers = this.playerStateTracker.getActivePlayers();
-          
+
           const mainPot: any = {
             amount: parseFloat(mainPotMatch[1]),
             players: [],
@@ -505,7 +515,11 @@ export class RefactoredPokerStarsParser {
               players: [],
               isSide: true,
               sidePotLevel: level,
-              eligiblePlayers: this.potCalculator.getEligiblePlayers(level, allInPlayers, activePlayers),
+              eligiblePlayers: this.potCalculator.getEligiblePlayers(
+                level,
+                allInPlayers,
+                activePlayers
+              ),
             };
             pots.push(sidePot);
           });
