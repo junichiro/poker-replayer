@@ -97,6 +97,33 @@ export {
 export { PokerStarsParser } from './parser/PokerStarsParser';
 
 /**
+ * ## Refactored Parser (SOLID Architecture)
+ *
+ * New SOLID-compliant parser with separated concerns.
+ *
+ * @group Parser
+ */
+export { RefactoredPokerStarsParser } from './parser/RefactoredPokerStarsParser';
+
+/**
+ * ## Parser Services
+ *
+ * Individual service classes following Single Responsibility Principle.
+ *
+ * @group Services
+ */
+export {
+  PotCalculator,
+  PlayerStateTracker,
+  ActionParser,
+  HandHistoryValidator,
+  type IPotCalculator,
+  type IPlayerStateTracker,
+  type IActionParser,
+  type IHandHistoryValidator,
+} from './services';
+
+/**
  * ## Loading Utilities
  *
  * React hooks for managing loading states and async operations.
