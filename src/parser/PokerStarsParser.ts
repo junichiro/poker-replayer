@@ -544,7 +544,7 @@ export class PokerStarsParser {
     }
 
     if (!this.hasMoreLines()) {
-      return { pots: [] };
+      return { pots: [], collectedActions: [] };
     }
 
     this.nextLine(); // Skip SUMMARY line
