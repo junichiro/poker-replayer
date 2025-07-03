@@ -38,8 +38,10 @@ const originalWarn = console.warn;
 beforeAll(() => {
   console.error = (...args: unknown[]) => {
     if (
-      args[0]?.includes?.('Warning: ReactDOM.render is deprecated') ||
-      args[0]?.includes?.('Warning: React.createFactory is deprecated')
+      typeof args[0] === 'string' && (
+        args[0].includes('Warning: ReactDOM.render is deprecated') ||
+        args[0].includes('Warning: React.createFactory is deprecated')
+      )
     ) {
       return;
     }
@@ -47,7 +49,7 @@ beforeAll(() => {
   };
 
   console.warn = (...args: unknown[]) => {
-    if (args[0]?.includes?.('componentWillReceiveProps has been renamed')) {
+    if (typeof args[0] === 'string' && args[0].includes('componentWillReceiveProps has been renamed')) {
       return;
     }
     originalWarn.call(console, ...args);
