@@ -1,5 +1,6 @@
-import { IGameController, GameState } from './interfaces';
 import { PokerHand, Action } from '../types';
+
+import { IGameController, GameState } from './interfaces';
 
 /**
  * Service responsible for managing game flow control and replay state.

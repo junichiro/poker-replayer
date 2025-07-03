@@ -1,5 +1,6 @@
-import { ActionParser } from './ActionParser';
 import { ActionType, Street } from '../types';
+
+import { ActionParser } from './ActionParser';
 
 describe('ActionParser', () => {
   let actionParser: ActionParser;
@@ -43,7 +44,7 @@ describe('ActionParser', () => {
 
       expect(action?.type).toBe('bet');
       expect(action?.player).toBe('Player4');
-      expect(action?.amount).toBe(100.50);
+      expect(action?.amount).toBe(100.5);
     });
 
     test('レイズアクションを正しく解析できる', () => {
@@ -180,29 +181,27 @@ describe('ActionParser', () => {
       expect(collectedActions[0]).toEqual({
         player: 'Player1',
         amount: 100,
-        type: 'main'
+        type: 'main',
       });
       expect(collectedActions[1]).toEqual({
         player: 'Player2',
         amount: 50,
-        type: 'side'
+        type: 'side',
       });
       expect(collectedActions[2]).toEqual({
         player: 'Player3',
         amount: 75,
-        type: 'single'
+        type: 'single',
       });
       expect(collectedActions[3]).toEqual({
         player: 'Player4',
         amount: 25,
-        type: 'single'
+        type: 'single',
       });
     });
 
     test('サイドポットレベルを正しく抽出できる', () => {
-      const lines = [
-        'Player1 collected $100 from side pot-2'
-      ];
+      const lines = ['Player1 collected $100 from side pot-2'];
 
       const collectedActions = actionParser.extractCollectedActions(lines);
 

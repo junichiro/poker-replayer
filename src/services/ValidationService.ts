@@ -1,3 +1,5 @@
+import { PokerHand, NumericConstraints } from '../types';
+
 import {
   IValidationService,
   ActionIndexValidationResult,
@@ -10,7 +12,6 @@ import {
   HandStructureValidationResult,
   ValidationServiceConfig,
 } from './interfaces';
-import { PokerHand, NumericConstraints } from '../types';
 
 /**
  * Service responsible for validating game state, user interactions, and data integrity.
@@ -33,7 +34,7 @@ export class ValidationService implements IValidationService {
    */
   validateActionIndex(index: number, totalActions: number): ActionIndexValidationResult {
     const errors: string[] = [];
-    
+
     // Handle invalid numbers
     if (!Number.isFinite(index)) {
       errors.push(`Action index ${index} is not a valid number`);
@@ -291,7 +292,7 @@ export class ValidationService implements IValidationService {
       // Check action index continuity
       for (let i = 0; i < hand.actions.length; i++) {
         const action = hand.actions[i];
-        
+
         if (action.index !== i) {
           errors.push(`Action index gap detected: expected ${i}, found ${action.index}`);
         }

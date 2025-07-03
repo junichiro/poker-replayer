@@ -1,5 +1,6 @@
-import { IPotCalculator } from './interfaces';
 import { Pot, CollectedAction, PotCalculation } from '../types';
+
+import { IPotCalculator } from './interfaces';
 
 /**
  * Service responsible for calculating poker pot structures, including side pots
@@ -28,7 +29,7 @@ export class PotCalculator implements IPotCalculator {
 
     // Sort all-in amounts from smallest to largest
     const sortedAmounts = [...allInAmounts].sort((a, b) => a - b);
-    
+
     let prevAmount = 0;
     const totalPlayers = sortedAmounts.length + activePlayers.size;
 
@@ -163,7 +164,10 @@ export class PotCalculator implements IPotCalculator {
   /**
    * Get collected actions relevant to a specific pot
    */
-  private getRelevantCollectedActions(pot: Pot, collectedActions: CollectedAction[]): CollectedAction[] {
+  private getRelevantCollectedActions(
+    pot: Pot,
+    collectedActions: CollectedAction[]
+  ): CollectedAction[] {
     return collectedActions.filter(action => {
       if (pot.isSide && action.type === 'side') {
         return !action.sidePotLevel || action.sidePotLevel === pot.sidePotLevel;

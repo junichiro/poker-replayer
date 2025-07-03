@@ -1,8 +1,9 @@
-import { AnimationService } from './AnimationService';
 import { Action, AnimationConfig } from '../types';
 
+import { AnimationService } from './AnimationService';
+
 // Mock requestAnimationFrame and setTimeout
-global.requestAnimationFrame = jest.fn((cb) => {
+global.requestAnimationFrame = jest.fn(cb => {
   setTimeout(cb, 16);
   return 1;
 });
@@ -67,14 +68,14 @@ describe('AnimationService', () => {
     });
 
     test('一時停止でアニメーションが停止される', () => {
-      const onProgressCallback = jest.fn();
-      animationService.subscribe('progress', onProgressCallback);
+      const onPauseCallback = jest.fn();
+      animationService.subscribe('pause', onPauseCallback);
 
       animationService.play();
       animationService.pause();
 
       expect(animationService.isPlaying()).toBe(false);
-      expect(onProgressCallback).toHaveBeenCalledWith({
+      expect(onPauseCallback).toHaveBeenCalledWith({
         type: 'pause',
         currentIndex: -1,
         totalActions: 5,
@@ -160,10 +161,10 @@ describe('AnimationService', () => {
       animationService.subscribe('cardAnimation', onCardAnimationCallback);
 
       const animationPromise = animationService.playCardAnimation(cardAction);
-      
+
       // Fast-forward through the animation duration
       jest.advanceTimersByTime(300);
-      
+
       await animationPromise;
 
       expect(onCardAnimationCallback).toHaveBeenCalledWith({
@@ -174,15 +175,21 @@ describe('AnimationService', () => {
     });
 
     test('チップアニメーションを個別に制御できる', async () => {
-      const chipAction = { index: 0, street: 'preflop', type: 'bet', player: 'Player1', amount: 50 };
+      const chipAction = {
+        index: 0,
+        street: 'preflop',
+        type: 'bet',
+        player: 'Player1',
+        amount: 50,
+      };
       const onChipAnimationCallback = jest.fn();
       animationService.subscribe('chipAnimation', onChipAnimationCallback);
 
       const animationPromise = animationService.playChipAnimation(chipAction);
-      
+
       // Fast-forward through the animation duration
       jest.advanceTimersByTime(200);
-      
+
       await animationPromise;
 
       expect(onChipAnimationCallback).toHaveBeenCalledWith({
@@ -199,10 +206,10 @@ describe('AnimationService', () => {
       animationService.subscribe('highlight', onHighlightCallback);
 
       const animationPromise = animationService.playActionHighlight(action);
-      
+
       // Fast-forward through the animation duration
       jest.advanceTimersByTime(200);
-      
+
       await animationPromise;
 
       expect(onHighlightCallback).toHaveBeenCalledWith({

@@ -1,4 +1,12 @@
-import { Pot, CollectedAction, PotCalculation } from '../types';
+import {
+  Pot,
+  CollectedAction,
+  PotCalculation,
+  Action,
+  AnimationConfig,
+  PokerHand,
+  NumericConstraints,
+} from '../types';
 
 /**
  * Interface for pot calculation functionality
@@ -182,7 +190,7 @@ export interface IGameController {
   /**
    * Get the current action being displayed
    */
-  getCurrentAction(): any | null;
+  getCurrentAction(): Action | null;
 
   /**
    * Check if can step forward
@@ -221,7 +229,15 @@ export interface AnimationState {
  * Animation event data
  */
 export interface AnimationEvent {
-  type: 'start' | 'progress' | 'complete' | 'pause' | 'stop' | 'cardDeal' | 'chipMovement' | 'actionHighlight';
+  type:
+    | 'start'
+    | 'progress'
+    | 'complete'
+    | 'pause'
+    | 'stop'
+    | 'cardDeal'
+    | 'chipMovement'
+    | 'actionHighlight';
   currentIndex?: number;
   totalActions?: number;
   cards?: string[];
@@ -293,17 +309,17 @@ export interface IAnimationService {
   /**
    * Play card animation for specific action
    */
-  playCardAnimation(action: any): Promise<void>;
+  playCardAnimation(action: Action): Promise<void>;
 
   /**
    * Play chip animation for specific action
    */
-  playChipAnimation(action: any): Promise<void>;
+  playChipAnimation(action: Action): Promise<void>;
 
   /**
    * Play action highlight animation
    */
-  playActionHighlight(action: any): Promise<void>;
+  playActionHighlight(action: Action): Promise<void>;
 
   /**
    * Check if card animations are enabled
@@ -333,7 +349,7 @@ export interface IAnimationService {
   /**
    * Update animation configuration
    */
-  updateConfig(config: any): void;
+  updateConfig(config: Partial<AnimationConfig>): void;
 
   /**
    * Subscribe to animation events
@@ -437,27 +453,27 @@ export interface IActionAnalyzer {
   /**
    * Categorize an action by type
    */
-  categorizeAction(action: any): ActionCategory;
+  categorizeAction(action: Action): ActionCategory;
 
   /**
    * Get action priority/importance
    */
-  getActionPriority(action: any, hand: any): ActionPriority;
+  getActionPriority(action: Action, hand: PokerHand): ActionPriority;
 
   /**
    * Check if action is significant
    */
-  isSignificantAction(action: any, hand: any): boolean;
+  isSignificantAction(action: Action, hand: PokerHand): boolean;
 
   /**
    * Format action for display
    */
-  formatAction(action: any, options?: FormatOptions): string;
+  formatAction(action: Action, options?: FormatOptions): string;
 
   /**
    * Get detailed action description
    */
-  getActionDescription(action: any, hand: any, verbose?: boolean): string;
+  getActionDescription(action: Action, hand: PokerHand, verbose?: boolean): string;
 
   /**
    * Format amount with context
@@ -467,27 +483,27 @@ export interface IActionAnalyzer {
   /**
    * Filter actions by criteria
    */
-  filterActions(actions: any[], criteria: FilterCriteria): any[];
+  filterActions(actions: Action[], criteria: FilterCriteria): Action[];
 
   /**
    * Search actions by query
    */
-  searchActions(actions: any[], query: string): any[];
+  searchActions(actions: Action[], query: string): Action[];
 
   /**
    * Get action statistics
    */
-  getActionStats(actions: any[]): ActionStatistics;
+  getActionStats(actions: Action[]): ActionStatistics;
 
   /**
    * Get player-specific statistics
    */
-  getPlayerStats(actions: any[], player: string): PlayerStatistics;
+  getPlayerStats(actions: Action[], player: string): PlayerStatistics;
 
   /**
    * Identify key moments in hand
    */
-  identifyKeyMoments(hand: any): KeyMoment[];
+  identifyKeyMoments(hand: PokerHand): KeyMoment[];
 
   /**
    * Update analyzer configuration
@@ -621,7 +637,10 @@ export interface IValidationService {
   /**
    * Validate numeric constraints
    */
-  validateNumericConstraints(value: number, constraints: any): NumericValidationResult;
+  validateNumericConstraints(
+    value: number,
+    constraints: NumericConstraints
+  ): NumericValidationResult;
 
   /**
    * Validate game state consistency
@@ -631,7 +650,7 @@ export interface IValidationService {
   /**
    * Validate hand structure and data integrity
    */
-  validateHandStructure(hand: any): HandStructureValidationResult;
+  validateHandStructure(hand: PokerHand): HandStructureValidationResult;
 
   /**
    * Update validation configuration

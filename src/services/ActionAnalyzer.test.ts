@@ -1,5 +1,6 @@
-import { ActionAnalyzer } from './ActionAnalyzer';
 import { Action, PokerHand } from '../types';
+
+import { ActionAnalyzer } from './ActionAnalyzer';
 
 // Mock hand data for testing
 const createMockHand = (): PokerHand => ({
@@ -116,9 +117,9 @@ describe('ActionAnalyzer', () => {
       });
 
       expect(bettingActions).toHaveLength(4);
-      expect(bettingActions.every(action => 
-        ['raise', 'bet', 'call'].includes(action.type)
-      )).toBe(true);
+      expect(bettingActions.every(action => ['raise', 'bet', 'call'].includes(action.type))).toBe(
+        true
+      );
     });
 
     test('ストリート別にフィルタリングできる', () => {
@@ -136,9 +137,9 @@ describe('ActionAnalyzer', () => {
       });
 
       expect(bigActions).toHaveLength(1); // Only bet $12 (raise $60 is > 50)
-      expect(bigActions.every(action => 
-        action.amount && action.amount >= 10 && action.amount <= 50
-      )).toBe(true);
+      expect(
+        bigActions.every(action => action.amount && action.amount >= 10 && action.amount <= 50)
+      ).toBe(true);
     });
   });
 
@@ -168,9 +169,7 @@ describe('ActionAnalyzer', () => {
       const results = actionAnalyzer.searchActions(mockHand.actions, 'ill'); // Matches Villain1, Villain2
 
       expect(results.length).toBeGreaterThan(0);
-      expect(results.every(action => 
-        action.player && action.player.includes('ill')
-      )).toBe(true);
+      expect(results.every(action => action.player && action.player.includes('ill'))).toBe(true);
     });
   });
 

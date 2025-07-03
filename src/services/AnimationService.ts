@@ -1,5 +1,6 @@
-import { IAnimationService, AnimationState, AnimationEvent } from './interfaces';
 import { Action, AnimationConfig } from '../types';
+
+import { IAnimationService, AnimationState, AnimationEvent } from './interfaces';
 
 /**
  * Service responsible for managing animation timing, sequencing, and control.
@@ -52,7 +53,7 @@ export class AnimationService implements IAnimationService {
 
     this.isPlayingState = false;
     this.clearTimer();
-    this.emit('progress', {
+    this.emit('pause', {
       type: 'pause',
       currentIndex: this.currentActionIndex,
       totalActions: this.actions.length,
@@ -66,7 +67,7 @@ export class AnimationService implements IAnimationService {
     this.isPlayingState = false;
     this.clearTimer();
     this.currentActionIndex = -1;
-    this.emit('progress', {
+    this.emit('stop', {
       type: 'stop',
       currentIndex: this.currentActionIndex,
       totalActions: this.actions.length,
@@ -134,7 +135,7 @@ export class AnimationService implements IAnimationService {
     }
 
     this.speed = speed;
-    
+
     // If playing, restart timer with new speed
     if (this.isPlayingState) {
       this.clearTimer();
@@ -194,7 +195,7 @@ export class AnimationService implements IAnimationService {
     this.emit('cardAnimation', event);
 
     // Return promise that resolves after animation duration
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(resolve, this.getCardDealDuration());
     });
   }
@@ -217,7 +218,7 @@ export class AnimationService implements IAnimationService {
     this.emit('chipAnimation', event);
 
     // Return promise that resolves after animation duration
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(resolve, this.getActionTransitionDuration());
     });
   }
@@ -240,7 +241,7 @@ export class AnimationService implements IAnimationService {
     this.emit('highlight', event);
 
     // Return promise that resolves after animation duration
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       setTimeout(resolve, this.getActionTransitionDuration());
     });
   }

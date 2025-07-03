@@ -1,3 +1,5 @@
+import { Action, PokerHand } from '../types';
+
 import {
   IActionAnalyzer,
   ActionCategory,
@@ -10,7 +12,6 @@ import {
   KeyMoment,
   ActionAnalyzerConfig,
 } from './interfaces';
-import { Action, PokerHand } from '../types';
 
 /**
  * Service responsible for analyzing, categorizing, and processing poker actions.
@@ -126,7 +127,10 @@ export class ActionAnalyzer implements IActionAnalyzer {
     // Add action verb
     switch (action.type) {
       case 'blind':
-        result += action.amount === this.config.bigBlindSize / 2 ? ' posts small blind' : ' posts big blind';
+        result +=
+          action.amount === this.config.bigBlindSize / 2
+            ? ' posts small blind'
+            : ' posts big blind';
         break;
       case 'raise':
         result += ' raises';
@@ -169,7 +173,7 @@ export class ActionAnalyzer implements IActionAnalyzer {
 
     if (verbose) {
       description += ` on ${action.street}`;
-      
+
       if (action.isAllIn) {
         description += ' (ALL-IN)';
       }
@@ -343,7 +347,12 @@ export class ActionAnalyzer implements IActionAnalyzer {
         }
       } else if (category === 'passive') {
         passiveActions++;
-        if (action.street === 'preflop' && action.type === 'call' && action.amount && action.amount > 0) {
+        if (
+          action.street === 'preflop' &&
+          action.type === 'call' &&
+          action.amount &&
+          action.amount > 0
+        ) {
           vpip = true;
         }
       }
@@ -436,7 +445,14 @@ export class ActionAnalyzer implements IActionAnalyzer {
         break;
       }
 
-      if (action.amount && (action.type === 'bet' || action.type === 'raise' || action.type === 'call' || action.type === 'blind' || action.type === 'ante')) {
+      if (
+        action.amount &&
+        (action.type === 'bet' ||
+          action.type === 'raise' ||
+          action.type === 'call' ||
+          action.type === 'blind' ||
+          action.type === 'ante')
+      ) {
         potSize += action.amount;
       }
     }

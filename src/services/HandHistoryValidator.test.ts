@@ -1,5 +1,6 @@
-import { HandHistoryValidator } from './HandHistoryValidator';
 import { PokerHand, Player, Action, Pot } from '../types';
+
+import { HandHistoryValidator } from './HandHistoryValidator';
 
 describe('HandHistoryValidator', () => {
   let validator: HandHistoryValidator;
@@ -17,20 +18,18 @@ describe('HandHistoryValidator', () => {
         table: {
           name: 'Test Table',
           maxSeats: 6,
-          buttonSeat: 1
+          buttonSeat: 1,
         },
         players: [
           { seat: 1, name: 'Player1', chips: 100 },
-          { seat: 2, name: 'Player2', chips: 200 }
+          { seat: 2, name: 'Player2', chips: 200 },
         ],
         actions: [
           { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 1 },
-          { index: 1, street: 'preflop', type: 'blind', player: 'Player2', amount: 2 }
+          { index: 1, street: 'preflop', type: 'blind', player: 'Player2', amount: 2 },
         ],
         board: [],
-        pots: [
-          { amount: 3, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] }
-        ]
+        pots: [{ amount: 3, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] }],
       };
 
       const result = validator.validateHandStructure(hand);
@@ -48,7 +47,7 @@ describe('HandHistoryValidator', () => {
         players: [],
         actions: [],
         board: [],
-        pots: []
+        pots: [],
       } as any;
 
       const result = validator.validateHandStructure(hand);
@@ -66,7 +65,7 @@ describe('HandHistoryValidator', () => {
         players: [], // プレイヤーなし
         actions: [],
         board: [],
-        pots: []
+        pots: [],
       };
 
       const result = validator.validateHandStructure(hand);
@@ -80,12 +79,12 @@ describe('HandHistoryValidator', () => {
     test('アクションのプレイヤーがプレイヤーリストに存在する場合、検証を通過する', () => {
       const players: Player[] = [
         { seat: 1, name: 'Player1', chips: 100 },
-        { seat: 2, name: 'Player2', chips: 200 }
+        { seat: 2, name: 'Player2', chips: 200 },
       ];
 
       const actions: Action[] = [
         { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 1 },
-        { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 1 }
+        { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 1 },
       ];
 
       const result = validator.validatePlayerConsistency(players, actions);
@@ -95,12 +94,10 @@ describe('HandHistoryValidator', () => {
     });
 
     test('存在しないプレイヤーのアクションがある場合、エラーが返される', () => {
-      const players: Player[] = [
-        { seat: 1, name: 'Player1', chips: 100 }
-      ];
+      const players: Player[] = [{ seat: 1, name: 'Player1', chips: 100 }];
 
       const actions: Action[] = [
-        { index: 0, street: 'preflop', type: 'call', player: 'NonExistentPlayer', amount: 10 }
+        { index: 0, street: 'preflop', type: 'call', player: 'NonExistentPlayer', amount: 10 },
       ];
 
       const result = validator.validatePlayerConsistency(players, actions);
@@ -112,7 +109,7 @@ describe('HandHistoryValidator', () => {
     test('重複するシート番号がある場合、エラーが返される', () => {
       const players: Player[] = [
         { seat: 1, name: 'Player1', chips: 100 },
-        { seat: 1, name: 'Player2', chips: 200 } // 重複シート
+        { seat: 1, name: 'Player2', chips: 200 }, // 重複シート
       ];
 
       const result = validator.validatePlayerConsistency(players, []);
@@ -124,7 +121,7 @@ describe('HandHistoryValidator', () => {
     test('重複するプレイヤー名がある場合、エラーが返される', () => {
       const players: Player[] = [
         { seat: 1, name: 'Player1', chips: 100 },
-        { seat: 2, name: 'Player1', chips: 200 } // 重複名前
+        { seat: 2, name: 'Player1', chips: 200 }, // 重複名前
       ];
 
       const result = validator.validatePlayerConsistency(players, []);
@@ -137,14 +134,14 @@ describe('HandHistoryValidator', () => {
   describe('ポット合計検証', () => {
     test('ポット合計とアクション金額が一致する場合、検証を通過する', () => {
       const pots: Pot[] = [
-        { amount: 100, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] }
+        { amount: 100, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] },
       ];
 
       const actions: Action[] = [
         { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 10 },
         { index: 1, street: 'preflop', type: 'blind', player: 'Player2', amount: 20 },
         { index: 2, street: 'preflop', type: 'call', player: 'Player1', amount: 30 },
-        { index: 3, street: 'preflop', type: 'call', player: 'Player2', amount: 40 }
+        { index: 3, street: 'preflop', type: 'call', player: 'Player2', amount: 40 },
       ];
 
       const result = validator.validatePotTotals(pots, actions);
@@ -155,12 +152,12 @@ describe('HandHistoryValidator', () => {
 
     test('ポット合計とアクション金額が一致しない場合、エラーが返される', () => {
       const pots: Pot[] = [
-        { amount: 200, players: ['Player1'], eligiblePlayers: ['Player1'] } // 合計が合わない
+        { amount: 200, players: ['Player1'], eligiblePlayers: ['Player1'] }, // 合計が合わない
       ];
 
       const actions: Action[] = [
         { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 10 },
-        { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 20 }
+        { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 20 },
       ];
 
       const result = validator.validatePotTotals(pots, actions);
@@ -170,14 +167,12 @@ describe('HandHistoryValidator', () => {
     });
 
     test('回収アクションは計算から除外される', () => {
-      const pots: Pot[] = [
-        { amount: 30, players: ['Player1'], eligiblePlayers: ['Player1'] }
-      ];
+      const pots: Pot[] = [{ amount: 30, players: ['Player1'], eligiblePlayers: ['Player1'] }];
 
       const actions: Action[] = [
         { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 10 },
         { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 20 },
-        { index: 2, street: 'showdown', type: 'collected', player: 'Player1', amount: 30 } // 除外されるべき
+        { index: 2, street: 'showdown', type: 'collected', player: 'Player1', amount: 30 }, // 除外されるべき
       ];
 
       const result = validator.validatePotTotals(pots, actions);
@@ -186,14 +181,12 @@ describe('HandHistoryValidator', () => {
     });
 
     test('アンコールベットは計算から除外される', () => {
-      const pots: Pot[] = [
-        { amount: 30, players: ['Player1'], eligiblePlayers: ['Player1'] }
-      ];
+      const pots: Pot[] = [{ amount: 30, players: ['Player1'], eligiblePlayers: ['Player1'] }];
 
       const actions: Action[] = [
         { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 10 },
         { index: 1, street: 'preflop', type: 'call', player: 'Player2', amount: 20 },
-        { index: 2, street: 'preflop', type: 'uncalled', player: 'Player2', amount: 10 } // これは除外されるべき
+        { index: 2, street: 'preflop', type: 'uncalled', player: 'Player2', amount: 10 }, // これは除外されるべき
       ];
 
       const result = validator.validatePotTotals(pots, actions);
@@ -211,15 +204,15 @@ describe('HandHistoryValidator', () => {
         table: { name: 'Test Table', maxSeats: 6, buttonSeat: 1 },
         players: [
           { seat: 1, name: 'Player1', chips: 100 },
-          { seat: 1, name: 'Player2', chips: 200 } // 重複シート
+          { seat: 1, name: 'Player2', chips: 200 }, // 重複シート
         ],
         actions: [
-          { index: 0, street: 'preflop', type: 'call', player: 'UnknownPlayer', amount: 10 } // 不明プレイヤー
+          { index: 0, street: 'preflop', type: 'call', player: 'UnknownPlayer', amount: 10 }, // 不明プレイヤー
         ],
         board: [],
         pots: [
-          { amount: 1000, players: ['Player1'], eligiblePlayers: ['Player1'] } // 金額不一致
-        ]
+          { amount: 1000, players: ['Player1'], eligiblePlayers: ['Player1'] }, // 金額不一致
+        ],
       };
 
       const handResult = validator.validateHandStructure(hand);

@@ -1,5 +1,6 @@
-import { GameController } from './GameController';
 import { PokerHand, Action } from '../types';
+
+import { GameController } from './GameController';
 
 // Mock hand data for testing
 const createMockHand = (): PokerHand => ({
@@ -9,22 +10,20 @@ const createMockHand = (): PokerHand => ({
   table: {
     name: 'Test Table',
     maxSeats: 6,
-    buttonSeat: 1
+    buttonSeat: 1,
   },
   players: [
     { seat: 1, name: 'Player1', chips: 100 },
-    { seat: 2, name: 'Player2', chips: 200 }
+    { seat: 2, name: 'Player2', chips: 200 },
   ],
   actions: [
     { index: 0, street: 'preflop', type: 'blind', player: 'Player1', amount: 1 },
     { index: 1, street: 'preflop', type: 'blind', player: 'Player2', amount: 2 },
     { index: 2, street: 'preflop', type: 'call', player: 'Player1', amount: 1 },
-    { index: 3, street: 'preflop', type: 'check', player: 'Player2' }
+    { index: 3, street: 'preflop', type: 'check', player: 'Player2' },
   ],
   board: [],
-  pots: [
-    { amount: 4, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] }
-  ]
+  pots: [{ amount: 4, players: ['Player1'], eligiblePlayers: ['Player1', 'Player2'] }],
 });
 
 describe('GameController', () => {
@@ -39,7 +38,7 @@ describe('GameController', () => {
   describe('ゲーム制御の基本機能', () => {
     test('初期状態では停止している', () => {
       const state = gameController.getGameState();
-      
+
       expect(state.isPlaying).toBe(false);
       expect(state.currentActionIndex).toBe(-1);
       expect(state.canStepForward).toBe(true);
@@ -49,7 +48,7 @@ describe('GameController', () => {
     test('プレイ開始で状態が変更される', () => {
       gameController.play();
       const state = gameController.getGameState();
-      
+
       expect(state.isPlaying).toBe(true);
     });
 
@@ -57,7 +56,7 @@ describe('GameController', () => {
       gameController.play();
       gameController.pause();
       const state = gameController.getGameState();
-      
+
       expect(state.isPlaying).toBe(false);
     });
 
@@ -65,7 +64,7 @@ describe('GameController', () => {
       gameController.stepForward();
       gameController.stepForward();
       gameController.stop();
-      
+
       const state = gameController.getGameState();
       expect(state.currentActionIndex).toBe(-1);
       expect(state.isPlaying).toBe(false);
@@ -75,7 +74,7 @@ describe('GameController', () => {
   describe('アクション進行制御', () => {
     test('前進できる場合はtrueを返し、インデックスが増加する', () => {
       const result = gameController.stepForward();
-      
+
       expect(result).toBe(true);
       expect(gameController.getGameState().currentActionIndex).toBe(0);
     });
@@ -85,7 +84,7 @@ describe('GameController', () => {
       for (let i = 0; i < mockHand.actions.length; i++) {
         gameController.stepForward();
       }
-      
+
       const result = gameController.stepForward();
       expect(result).toBe(false);
       expect(gameController.getGameState().currentActionIndex).toBe(mockHand.actions.length - 1);
@@ -94,16 +93,16 @@ describe('GameController', () => {
     test('後退できる場合はtrueを返し、インデックスが減少する', () => {
       gameController.stepForward();
       gameController.stepForward();
-      
+
       const result = gameController.stepBackward();
-      
+
       expect(result).toBe(true);
       expect(gameController.getGameState().currentActionIndex).toBe(0);
     });
 
     test('最初のアクションから後退できない', () => {
       const result = gameController.stepBackward();
-      
+
       expect(result).toBe(false);
       expect(gameController.getGameState().currentActionIndex).toBe(-1);
     });
@@ -112,16 +111,16 @@ describe('GameController', () => {
   describe('特定アクションへの移動', () => {
     test('有効なインデックスに移動できる', () => {
       gameController.goToAction(2);
-      
+
       expect(gameController.getGameState().currentActionIndex).toBe(2);
     });
 
     test('無効なインデックスは無視される', () => {
       const originalIndex = gameController.getGameState().currentActionIndex;
-      
+
       gameController.goToAction(-1);
       expect(gameController.getGameState().currentActionIndex).toBe(originalIndex);
-      
+
       gameController.goToAction(999);
       expect(gameController.getGameState().currentActionIndex).toBe(originalIndex);
     });
@@ -131,7 +130,7 @@ describe('GameController', () => {
       let state = gameController.getGameState();
       expect(state.canStepBackward).toBe(true); // Can go back to -1
       expect(state.canStepForward).toBe(true);
-      
+
       gameController.goToAction(mockHand.actions.length - 1);
       state = gameController.getGameState();
       expect(state.canStepBackward).toBe(true);
@@ -146,14 +145,14 @@ describe('GameController', () => {
 
     test('有効なアクションインデックスで正しいアクションを返す', () => {
       gameController.stepForward();
-      
+
       const currentAction = gameController.getCurrentAction();
       expect(currentAction).toEqual(mockHand.actions[0]);
     });
 
     test('最後のアクションでも正しく取得できる', () => {
       gameController.goToAction(mockHand.actions.length - 1);
-      
+
       const currentAction = gameController.getCurrentAction();
       expect(currentAction).toEqual(mockHand.actions[mockHand.actions.length - 1]);
     });
@@ -163,21 +162,21 @@ describe('GameController', () => {
     test('状態変更時にリスナーが呼び出される', () => {
       const listener = jest.fn();
       gameController.subscribe(listener);
-      
+
       gameController.play();
-      
+
       expect(listener).toHaveBeenCalledWith(gameController.getGameState());
     });
 
     test('複数リスナーが登録・通知される', () => {
       const listener1 = jest.fn();
       const listener2 = jest.fn();
-      
+
       gameController.subscribe(listener1);
       gameController.subscribe(listener2);
-      
+
       gameController.stepForward();
-      
+
       expect(listener1).toHaveBeenCalled();
       expect(listener2).toHaveBeenCalled();
     });
@@ -185,10 +184,10 @@ describe('GameController', () => {
     test('購読解除により通知が停止する', () => {
       const listener = jest.fn();
       const unsubscribe = gameController.subscribe(listener);
-      
+
       unsubscribe();
       gameController.play();
-      
+
       expect(listener).not.toHaveBeenCalled();
     });
   });
@@ -196,14 +195,14 @@ describe('GameController', () => {
   describe('移動可能性判定', () => {
     test('canStepForwardが正しく計算される', () => {
       expect(gameController.canStepForward()).toBe(true);
-      
+
       gameController.goToAction(mockHand.actions.length - 1);
       expect(gameController.canStepForward()).toBe(false);
     });
 
     test('canStepBackwardが正しく計算される', () => {
       expect(gameController.canStepBackward()).toBe(false);
-      
+
       gameController.stepForward();
       expect(gameController.canStepBackward()).toBe(true);
     });
@@ -213,19 +212,19 @@ describe('GameController', () => {
     test('空のアクション配列でも正常に動作する', () => {
       const emptyHand = { ...mockHand, actions: [] };
       const controller = new GameController(emptyHand);
-      
+
       expect(controller.canStepForward()).toBe(false);
       expect(controller.canStepBackward()).toBe(false);
       expect(controller.getCurrentAction()).toBeNull();
     });
 
     test('単一アクションのハンドで正常に動作する', () => {
-      const singleActionHand = { 
-        ...mockHand, 
-        actions: [mockHand.actions[0]] 
+      const singleActionHand = {
+        ...mockHand,
+        actions: [mockHand.actions[0]],
       };
       const controller = new GameController(singleActionHand);
-      
+
       expect(controller.canStepForward()).toBe(true);
       controller.stepForward();
       expect(controller.canStepForward()).toBe(false);

@@ -1,5 +1,6 @@
-import { ValidationService } from './ValidationService';
 import { PokerHand } from '../types';
+
+import { ValidationService } from './ValidationService';
 
 // Mock hand data for testing
 const createMockHand = (): PokerHand => ({
