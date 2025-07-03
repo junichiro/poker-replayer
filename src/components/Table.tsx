@@ -2,7 +2,7 @@
  * Table layout component for positioning players and showing community cards
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 
 import { Player as PlayerType, Pot as PotType, TableInfo, PlayingCard } from '../types';
 
@@ -129,6 +129,4 @@ function areTablePropsEqual(prevProps: TableProps, nextProps: TableProps): boole
  * Memoized Table component for optimal performance
  * Prevents unnecessary re-renders when table props haven't changed
  */
-export const Table = React.memo(TableComponent, areTablePropsEqual);
-
-export default Table;
+export const Table = memo(TableComponent, areTablePropsEqual);

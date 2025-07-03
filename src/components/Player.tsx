@@ -2,7 +2,7 @@
  * Player display component for showing player information and cards
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, memo } from 'react';
 
 import { Player as PlayerType } from '../types';
 
@@ -144,6 +144,4 @@ function arePlayerPropsEqual(prevProps: PlayerProps, nextProps: PlayerProps): bo
  * Memoized Player component for optimal performance
  * Prevents unnecessary re-renders when player props haven't changed
  */
-export const Player = React.memo(PlayerComponent, arePlayerPropsEqual);
-
-export default Player;
+export const Player = memo(PlayerComponent, arePlayerPropsEqual);

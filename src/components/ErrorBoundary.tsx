@@ -25,7 +25,7 @@ export interface ErrorInfoData {
   severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-export interface ErrorBoundaryState {
+interface ErrorBoundaryState {
   /** Whether an error has occurred */
   hasError: boolean;
   /** Error information */
@@ -397,5 +397,3 @@ export function withErrorBoundary<P extends object>(
 
   return WrappedComponent;
 }
-
-export default ErrorBoundary;

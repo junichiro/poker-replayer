@@ -64,6 +64,7 @@ export {
   ErrorBoundary,
   withErrorBoundary,
   type ErrorBoundaryProps,
+  type ErrorInfoData,
 } from './components/ErrorBoundary';
 export {
   ParserErrorBoundary,
@@ -125,4 +126,24 @@ export { useRetry, retry, CircuitBreaker, withRetry, retryPredicates } from './u
  *
  * @group Types
  */
-export * from './types';
+export type {
+  // Core types (avoid conflicts with component names)
+  Player as PlayerType,
+  Pot as PotType,
+  Action,
+  PokerHand,
+  TableInfo,
+  PlayingCard,
+  CardRank,
+  CardSuit,
+  ComponentSize,
+  BaseComponentProps,
+  Position,
+  Street,
+  ActionType,
+  CardVariant,
+  NumericConstraints,
+  PLAYING_CARD_REGEX,
+  PlayerState,
+  PotCalculation,
+} from './types';

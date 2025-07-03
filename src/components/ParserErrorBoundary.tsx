@@ -5,10 +5,10 @@
  * with detailed error context and recovery options.
  */
 
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { ErrorBoundary, ErrorFallbackProps } from './ErrorBoundary';
-export interface ParserErrorDetails {
+interface ParserErrorDetails {
   line?: number;
   context?: string;
   column?: number;
@@ -16,7 +16,7 @@ export interface ParserErrorDetails {
   actual?: string;
 }
 
-export interface ParserErrorFallbackProps extends ErrorFallbackProps {
+interface ParserErrorFallbackProps extends ErrorFallbackProps {
   /** Original hand history text for retry */
   handHistory?: string;
   /** Parser-specific error details */
@@ -431,12 +431,12 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
   onRetry,
   className,
 }) => {
-  const customFallback = React.useCallback(
-    (props: any) => (
+  const customFallback = useCallback(
+    (props: ErrorFallbackProps) => (
       <ParserErrorFallback
         {...props}
         handHistory={handHistory}
-        parserError={props.error?.parserError}
+        parserError={(props.error as any)?.parserError}
       />
     ),
     [handHistory]
@@ -455,5 +455,3 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
     </ErrorBoundary>
   );
 };
-
-export default ParserErrorBoundary;

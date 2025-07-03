@@ -5,7 +5,7 @@
  * circuit breaker patterns, and comprehensive error handling.
  */
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 
 export interface RetryConfig {
   /** Maximum number of retry attempts */
@@ -98,7 +98,7 @@ function calculateDelay(attempt: number, config: Required<RetryConfig>): number 
  * Hook for retry functionality with state management
  */
 export function useRetry(config: Partial<RetryConfig> = {}) {
-  const fullConfig = { ...defaultRetryConfig, ...config };
+  const fullConfig = useMemo(() => ({ ...defaultRetryConfig, ...config }), [config]);
 
   const [state, setState] = useState<RetryState>({
     attempt: 0,
@@ -218,7 +218,7 @@ export function useRetry(config: Partial<RetryConfig> = {}) {
 
       return {
         success: false,
-        error: lastError!,
+        error: lastError || new Error('Unknown error occurred'),
         totalAttempts: currentAttempt,
         totalTime,
         maxAttemptsExceeded: true,
@@ -303,7 +303,7 @@ export async function retry<T>(
 
   return {
     success: false,
-    error: lastError!,
+    error: lastError || new Error('Unknown error occurred'),
     totalAttempts: currentAttempt,
     totalTime: Date.now() - startTime,
     maxAttemptsExceeded: true,
