@@ -1,12 +1,19 @@
-import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
+
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
-import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
+  const aliasDirs = ['components', 'utils', 'types', 'parser'];
 
   return {
+    optimizeDeps: {
+      // Stabilized in Vite 7.0 - skip automatic dependency discovery for faster builds
+      noDiscovery: true,
+      include: ['react', 'react-dom', 'lucide-react'],
+    },
     plugins: [
       react({
         // Optimize React for production builds
@@ -28,11 +35,13 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: {
-        '@': resolve(__dirname, './src'),
-        '@/components': resolve(__dirname, './src/components'),
-        '@/utils': resolve(__dirname, './src/utils'),
-        '@/types': resolve(__dirname, './src/types'),
-        '@/parser': resolve(__dirname, './src/parser'),
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        ...Object.fromEntries(
+          aliasDirs.map(dir => [
+            `@/${dir}`,
+            fileURLToPath(new URL(`./src/${dir}`, import.meta.url)),
+          ])
+        ),
       },
     },
     css: {
@@ -40,10 +49,12 @@ export default defineConfig(({ mode }) => {
       postcss: {},
       // CSS code splitting - inline for library builds
       modules: false,
+      // Enable parallel CSS preprocessing (Vite 7.0 feature)
+      preprocessorMaxWorkers: true,
     },
     build: {
       lib: {
-        entry: resolve(__dirname, 'src/index.ts'),
+        entry: fileURLToPath(new URL('src/index.ts', import.meta.url)),
         name: 'PokerHandReplay',
       },
       rollupOptions: {
@@ -81,7 +92,7 @@ export default defineConfig(({ mode }) => {
       sourcemap: true,
       emptyOutDir: true,
       minify: isProduction ? 'terser' : false,
-      target: 'es2020',
+      target: 'baseline-widely-available',
       // Optimize bundle size in production
       ...(isProduction && {
         terserOptions: {
@@ -106,7 +117,7 @@ export default defineConfig(({ mode }) => {
     },
     // Development optimizations
     esbuild: {
-      target: 'es2020',
+      target: 'es2022',
       keepNames: false,
       minifyIdentifiers: true,
       minifySyntax: true,
