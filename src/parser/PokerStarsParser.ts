@@ -135,7 +135,7 @@ export class PokerStarsParser {
     const summaryResult = this.parseSummary();
 
     // Add any collected actions that weren't captured during action parsing
-    const collectedActions = this.createCollectedActions(summaryResult.pots);
+    const collectedActions = this.createCollectedActions(summaryResult.collectedActions);
     actions.push(...collectedActions);
 
     // Update players with hole cards
@@ -367,9 +367,6 @@ export class PokerStarsParser {
           amount = parseFloat(match[2]);
         }
 
-        const action = this.createAction(pattern.type, player, amount, street);
-        action.isAllIn = true;
-
         // Track all-in amount and update chip count
         this.allInPlayers.set(player, amount);
         const currentChips = this.playerChips.get(player) || 0;
@@ -378,6 +375,9 @@ export class PokerStarsParser {
 
         // Remove from active players since they can't make more betting actions
         this.activePlayers.delete(player);
+
+        const action = this.createAction(pattern.type, player, amount, street);
+        action.isAllIn = true;
 
         return action;
       }
@@ -531,7 +531,7 @@ export class PokerStarsParser {
     return actions;
   }
 
-  private parseSummary(): { pots: Pot[]; rake?: number } {
+  private parseSummary(): { pots: Pot[]; rake?: number; collectedActions: CollectedAction[] } {
     // Get all collected actions from the hand history
     const collectedActions = this.extractCollectedActions();
 
@@ -572,7 +572,7 @@ export class PokerStarsParser {
     // Validate and enhance pot information with rake awareness
     this.validateAndEnhancePots(pots, collectedActions, rake);
 
-    return { pots, rake };
+    return { pots, rake, collectedActions };
   }
 
   private extractCollectedActions(): CollectedAction[] {
@@ -595,7 +595,7 @@ export class PokerStarsParser {
         },
         {
           // Handle summary lines like "Seat 1: Player1 (button) (small blind) collected (8)"
-          regex: /Seat \d+: ([^(]+) \([^)]*\) (?:\([^)]*\) )?collected \(\$?([\d.]+)\)/,
+          regex: /Seat \d+: (.*?) \([^)]*\) (?:\([^)]*\) )?collected \(\$?([\d.]+)\)/,
           type: 'single' as const,
         },
       ];
@@ -797,11 +797,14 @@ export class PokerStarsParser {
       // Add all winners to the pot
       pot.players = relevantActions.map(action => action.player);
 
-      // Validate pot math (account for rake)
-      const expectedCollected = pot.amount - (rake || 0);
+      // Validate pot math (account for rake only on main pot or single pot)
+      const isMainOrSinglePot = !pot.isSide || pots.length === 1;
+      const rakeToSubtract = isMainOrSinglePot ? rake || 0 : 0;
+      const expectedCollected = pot.amount - rakeToSubtract;
+
       if (Math.abs(totalCollected - expectedCollected) > 0.01) {
         console.warn(
-          `Pot amount mismatch: expected ${expectedCollected} (${pot.amount} - ${rake || 0} rake), collected ${totalCollected}`
+          `Pot amount mismatch: expected ${expectedCollected} (${pot.amount} - ${rakeToSubtract} rake), collected ${totalCollected}`
         );
       }
     }
@@ -843,11 +846,8 @@ export class PokerStarsParser {
     this.currentLineIndex = currentLine;
   }
 
-  private createCollectedActions(_pots: Pot[]): Action[] {
+  private createCollectedActions(collectedActions: CollectedAction[]): Action[] {
     const actions: Action[] = [];
-
-    // Extract collected actions from hand history lines instead of using pot amounts
-    const collectedActions = this.extractCollectedActions();
 
     // Create action objects from the extracted collected actions
     for (const collectedAction of collectedActions) {
