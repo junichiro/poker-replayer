@@ -90,14 +90,13 @@ export function useRenderTracker(componentName: string) {
 export function useCalculationTracker<T>(
   calculationName: string,
   calculation: () => T,
-  dependencies: any[]
+  dependencies: React.DependencyList
 ): T {
-  if (typeof window === 'undefined' || !window.performance) {
-    // Fallback for environments without performance API
-    return React.useMemo(calculation, dependencies);
-  }
-
-  return React.useMemo(() => {
+  const result = React.useMemo(() => {
+    if (typeof window === 'undefined' || !window.performance) {
+      // Fallback for environments without performance API
+      return calculation();
+    }
     const startTime = performance.now();
     const result = calculation();
     const endTime = performance.now();
@@ -110,6 +109,8 @@ export function useCalculationTracker<T>(
 
     return result;
   }, dependencies);
+
+  return result;
 }
 
 /**
@@ -262,15 +263,17 @@ export function performanceMemo<P extends object>(
  * Development-only performance logger
  * Logs component re-render information to console
  */
-export function useDevPerformanceLogger(componentName: string, props?: any): void {
-  if (process.env.NODE_ENV !== 'development') {
-    return;
-  }
-
+export function useDevPerformanceLogger(
+  componentName: string,
+  props?: Record<string, unknown>
+): void {
   const renderCount = React.useRef(0);
   const lastProps = React.useRef(props);
 
   React.useEffect(() => {
+    if (process.env.NODE_ENV !== 'development') {
+      return;
+    }
     renderCount.current += 1;
 
     if (renderCount.current > 1) {

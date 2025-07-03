@@ -27,9 +27,13 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:unit": "jest --testPathPattern=src",
-    "test:integration": "jest --testPathPattern=tests",
+    "test:ci": "jest --ci --coverage --watchAll=false --maxWorkers=2",
+    "test:unit": "jest --selectProjects=unit",
+    "test:unit:fast": "jest --selectProjects=unit --maxWorkers=4 --silent",
+    "test:integration": "jest --selectProjects=integration",
+    "test:components": "jest --selectProjects=components",
+    "test:fast": "jest --selectProjects=unit --bail --maxWorkers=4 --silent",
+    "test:performance": "jest --selectProjects=unit --testNamePattern='performance' --verbose",
     "lint": "eslint src --ext .ts,.tsx",
     "lint:fix": "eslint src --ext .ts,.tsx --fix",
     "lint:ci": "eslint src --ext .ts,.tsx --max-warnings 0",
@@ -164,44 +168,6 @@
     "typescript": "^5.0.0",
     "vite": "^7.0.0",
     "vite-plugin-dts": "^4.5.4"
-  },
-  "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "jsdom",
-    "setupFilesAfterEnv": ["<rootDir>/src/setupTests.ts"],
-    "transform": {
-      "^.+\\.tsx?$": [
-        "ts-jest",
-        {
-          "tsconfig": "tsconfig.test.json"
-        }
-      ]
-    },
-    "roots": ["<rootDir>/src", "<rootDir>/tests"],
-    "testMatch": [
-      "**/__tests__/**/*.ts",
-      "**/__tests__/**/*.tsx",
-      "**/?(*.)+(spec|test).ts",
-      "**/?(*.)+(spec|test).tsx"
-    ],
-    "collectCoverageFrom": ["src/**/*.ts", "src/**/*.tsx", "!src/**/*.d.ts", "!src/**/index.ts"],
-    "moduleNameMapper": {
-      "^@/(.*)$": "<rootDir>/src/$1",
-      "^@/components/(.*)$": "<rootDir>/src/components/$1",
-      "^@/utils/(.*)$": "<rootDir>/src/utils/$1",
-      "^@/types/(.*)$": "<rootDir>/src/types/$1",
-      "^@/parser/(.*)$": "<rootDir>/src/parser/$1"
-    },
-    "coverageDirectory": "coverage",
-    "coverageReporters": ["text", "lcov", "html"],
-    "coverageThreshold": {
-      "global": {
-        "branches": 88,
-        "functions": 90,
-        "lines": 90,
-        "statements": 90
-      }
-    }
   },
   "size-limit": [
     {
