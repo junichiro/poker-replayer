@@ -25,7 +25,7 @@ export interface IAccessibilityService {
   getActionDescription(action: Action, verbose?: boolean): string;
   getKeyboardShortcuts(): KeyboardShortcut[];
   handleKeyboardNavigation(event: KeyboardEvent): boolean;
-  setKeyboardHandler(action: string, handler: () => void): void;
+  setKeyboardHandler(action: string, handler: () => void): () => void;
   formatCardsForAnnouncement(cards: string[]): string;
   formatAmountForAnnouncement(amount: number): string;
   isAnnouncementEnabled(): boolean;
@@ -161,8 +161,9 @@ export class AccessibilityService implements IAccessibilityService {
   /**
    * キーボードハンドラを設定する
    */
-  setKeyboardHandler(action: string, handler: () => void): void {
+  setKeyboardHandler(action: string, handler: () => void): () => void {
     this.keyboardHandlers.set(action, handler);
+    return () => this.keyboardHandlers.delete(action);
   }
 
   /**

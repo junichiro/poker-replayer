@@ -7,8 +7,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 
 import { PokerStarsParser } from '../parser/PokerStarsParser';
 import { AccessibilityService } from '../services/AccessibilityService';
-import { ActionAnalyzer } from '../services/ActionAnalyzer';
-import { AnimationService } from '../services/AnimationService';
 import { GameController } from '../services/GameController';
 import { PokerHand, ReplayConfig, ActionChangeCallback, ReplayEventCallback } from '../types';
 import {
@@ -86,8 +84,6 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Services
   const [gameController, setGameController] = useState<GameController | null>(null);
-  const [_animationService, setAnimationService] = useState<AnimationService | null>(null);
-  const [_actionAnalyzer] = useState(() => new ActionAnalyzer());
   const [accessibilityService] = useState(() => new AccessibilityService());
 
   // Game state from controller
@@ -207,17 +203,12 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   useEffect(() => {
     if (!hand) {
       setGameController(null);
-      setAnimationService(null);
       return;
     }
 
     // Initialize GameController
     const controller = new GameController(hand);
     setGameController(controller);
-
-    // Initialize AnimationService
-    const animation = new AnimationService(hand.actions, animations || {});
-    setAnimationService(animation);
 
     // Subscribe to game state changes
     const unsubscribe = controller.subscribe(state => {
@@ -229,22 +220,29 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     });
 
     // Setup keyboard handlers
-    accessibilityService.setKeyboardHandler('playPause', () => {
+    const cleanupPlayPause = accessibilityService.setKeyboardHandler('playPause', () => {
       if (controller.getGameState().isPlaying) {
         controller.pause();
       } else {
         controller.play();
       }
     });
-    accessibilityService.setKeyboardHandler('previous', () => controller.stepBackward());
-    accessibilityService.setKeyboardHandler('next', () => controller.stepForward());
-    accessibilityService.setKeyboardHandler('reset', () => controller.stop());
+    const cleanupPrevious = accessibilityService.setKeyboardHandler('previous', () =>
+      controller.stepBackward()
+    );
+    const cleanupNext = accessibilityService.setKeyboardHandler('next', () =>
+      controller.stepForward()
+    );
+    const cleanupReset = accessibilityService.setKeyboardHandler('reset', () => controller.stop());
 
     return () => {
       unsubscribe();
-      animation.destroy();
+      cleanupPlayPause();
+      cleanupPrevious();
+      cleanupNext();
+      cleanupReset();
     };
-  }, [hand, animations, accessibilityService]);
+  }, [hand, accessibilityService]);
 
   // Auto-advance actions when playing
   useEffect(() => {

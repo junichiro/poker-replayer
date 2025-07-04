@@ -103,14 +103,7 @@ export class GameController implements IGameController {
 
     this.currentActionIndex++;
     this.isPlaying = false;
-
-    // 最後のアクションに達したかチェック
-    if (!this.canStepForward()) {
-      this.status = 'ended';
-    } else if (this.status === 'playing') {
-      this.status = 'paused';
-    }
-
+    this.updateStatusAfterStep();
     this.notifyStateChange();
     return true;
   }
@@ -125,13 +118,7 @@ export class GameController implements IGameController {
 
     this.currentActionIndex--;
     this.isPlaying = false;
-
-    if (this.status === 'playing') {
-      this.status = 'paused';
-    } else if (this.status === 'ended') {
-      this.status = 'ready';
-    }
-
+    this.updateStatusAfterStep();
     this.notifyStateChange();
     return true;
   }
@@ -146,16 +133,7 @@ export class GameController implements IGameController {
 
     this.currentActionIndex = index;
     this.isPlaying = false;
-
-    // 状態を更新
-    if (index === -1) {
-      this.status = 'ready';
-    } else if (index === this.hand.actions.length - 1) {
-      this.status = 'ended';
-    } else if (this.status === 'playing') {
-      this.status = 'paused';
-    }
-
+    this.updateStatusAfterStep();
     this.notifyStateChange();
   }
 
@@ -214,5 +192,20 @@ export class GameController implements IGameController {
   private notifyStateChange(): void {
     const state = this.getGameState();
     this.listeners.forEach(listener => listener(state));
+  }
+
+  /**
+   * Update game status after step operations
+   */
+  private updateStatusAfterStep(): void {
+    if (!this.canStepForward()) {
+      this.status = 'ended';
+    } else if (!this.canStepBackward()) {
+      this.status = 'ready';
+    } else if (this.status === 'playing') {
+      this.status = 'paused';
+    } else if (this.status === 'ended') {
+      this.status = 'ready';
+    }
   }
 }
