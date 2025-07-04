@@ -1,4 +1,4 @@
-import { PokerHand, Action } from '../types';
+import { PokerHand } from '../types';
 
 import { GameController } from './GameController';
 

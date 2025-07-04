@@ -173,7 +173,7 @@ export interface ParserError {
 
 /**
  * Represents a pot collection action parsed from hand history
- * @internal
+ * @public
  */
 export interface CollectedAction {
   /** The name of the player who collected from this pot */
@@ -187,8 +187,8 @@ export interface CollectedAction {
 }
 
 /**
- * Internal interface for calculating pot distributions in complex scenarios
- * @internal
+ * Interface for calculating pot distributions in complex scenarios
+ * @public
  */
 export interface PotCalculation {
   /** The total amount of money in all pots combined */

@@ -14,7 +14,7 @@ export class PotCalculator implements IPotCalculator {
     allInAmounts: number[],
     totalContributions: number,
     activePlayers: Set<string>,
-    allInPlayers?: Map<string, number>
+    _allInPlayers?: Map<string, number>
   ): PotCalculation {
     const calculation: PotCalculation = {
       totalPot: totalContributions,

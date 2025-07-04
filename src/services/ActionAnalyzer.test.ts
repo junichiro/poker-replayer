@@ -1,4 +1,4 @@
-import { Action, PokerHand } from '../types';
+import { PokerHand } from '../types';
 
 import { ActionAnalyzer } from './ActionAnalyzer';
 

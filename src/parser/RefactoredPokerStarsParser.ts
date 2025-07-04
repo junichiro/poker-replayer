@@ -479,7 +479,7 @@ export class RefactoredPokerStarsParser {
     return { pots, rake, collectedActions };
   }
 
-  private parsePotLines(collectedActions: any[], potCalculation: any): any[] {
+  private parsePotLines(_collectedActions: any[], _potCalculation: any): any[] {
     const pots: any[] = [];
 
     while (this.hasMoreLines()) {

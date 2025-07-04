@@ -168,9 +168,8 @@ const InteractivePokerReplay = ({
     <div
       data-testid="interactive-poker-replay"
       className="poker-replay"
-      tabIndex={0}
-      onFocus={() => handleFocus('main')}
-      onBlur={handleBlur}
+      role="application"
+      aria-label="Interactive Poker Hand Replay"
     >
       {/* Status indicators */}
       <div data-testid="interaction-status">
@@ -259,11 +258,17 @@ const InteractivePokerReplay = ({
                   className={`card ${hoveredCard === `${player.id}-${index}` ? 'hovered' : ''}`}
                   onMouseEnter={() => handleCardHover(`${player.id}-${index}`)}
                   onMouseLeave={handleCardLeave}
+                  role="button"
                   tabIndex={0}
                   onFocus={() => handleFocus(`card-${player.id}-${index}`)}
                   onBlur={handleBlur}
-                  role="img"
                   aria-label={`Card ${card}`}
+                  onClick={() => {}}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                    }
+                  }}
                 >
                   {card}
                 </div>

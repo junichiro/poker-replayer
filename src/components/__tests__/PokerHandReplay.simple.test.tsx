@@ -141,7 +141,7 @@ Board [Ah 7c 2d]
 Seat 1: HeroPlayer (button) (small blind) collected (140)
 Seat 2: Villain1 (big blind) folded on the Flop`;
 
-  const { PokerHandReplay } = require('../PokerHandReplay');
+  import { PokerHandReplay } from '../PokerHandReplay';
 
   describe('Basic Rendering', () => {
     test('renders main replay components', async () => {

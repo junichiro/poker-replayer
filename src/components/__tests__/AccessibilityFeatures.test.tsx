@@ -240,6 +240,12 @@ const AccessiblePokerReplay = ({
               aria-labelledby={`player-${player.id}-name`}
               aria-describedby={`player-${player.id}-info`}
               tabIndex={0}
+              onClick={() => {}}
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                }
+              }}
             >
               <div id={`player-${player.id}-name`} className="player-name">
                 {player.name}

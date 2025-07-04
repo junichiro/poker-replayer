@@ -436,7 +436,7 @@ export const ParserErrorBoundary: React.FC<ParserErrorBoundaryProps> = ({
       <ParserErrorFallback
         {...props}
         handHistory={handHistory}
-        parserError={(props.error as any)?.parserError}
+        parserError={(props.error as unknown as { parserError?: ParserErrorDetails })?.parserError}
       />
     ),
     [handHistory]
