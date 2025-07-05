@@ -1,6 +1,36 @@
 import { PokerHand, Action } from '../types';
 
-import { IGameController, GameState } from './interfaces';
+/**
+ * ゲームの状態を表す型
+ */
+export type GameStatus = 'ready' | 'playing' | 'paused' | 'ended';
+
+/**
+ * ゲームの状態
+ */
+export interface GameState {
+  hand: PokerHand;
+  currentActionIndex: number;
+  isPlaying: boolean;
+  status: GameStatus;
+}
+
+/**
+ * GameControllerのインターフェース
+ */
+export interface IGameController {
+  play(): void;
+  pause(): void;
+  stop(): void;
+  stepForward(): boolean;
+  stepBackward(): boolean;
+  goToAction(index: number): void;
+  getCurrentAction(): Action | null;
+  canStepForward(): boolean;
+  canStepBackward(): boolean;
+  getGameState(): GameState;
+  subscribe(listener: (state: GameState) => void): () => void;
+}
 
 /**
  * Service responsible for managing game flow control and replay state.
@@ -10,12 +40,14 @@ export class GameController implements IGameController {
   private hand: PokerHand;
   private currentActionIndex: number;
   private isPlaying: boolean;
+  private status: GameStatus;
   private listeners: Set<(state: GameState) => void>;
 
   constructor(hand: PokerHand) {
     this.hand = hand;
     this.currentActionIndex = -1;
     this.isPlaying = false;
+    this.status = hand.actions.length === 0 ? 'ended' : 'ready';
     this.listeners = new Set();
   }
 
@@ -23,7 +55,18 @@ export class GameController implements IGameController {
    * Start automatic playback
    */
   play(): void {
+    // 最後のアクションに達している場合は再生しない
+    if (!this.canStepForward()) {
+      return;
+    }
+
+    // 既に再生中の場合は何もしない
+    if (this.isPlaying) {
+      return;
+    }
+
     this.isPlaying = true;
+    this.status = 'playing';
     this.notifyStateChange();
   }
 
@@ -31,7 +74,12 @@ export class GameController implements IGameController {
    * Pause automatic playback
    */
   pause(): void {
+    if (!this.isPlaying) {
+      return;
+    }
+
     this.isPlaying = false;
+    this.status = 'paused';
     this.notifyStateChange();
   }
 
@@ -41,6 +89,7 @@ export class GameController implements IGameController {
   stop(): void {
     this.isPlaying = false;
     this.currentActionIndex = -1;
+    this.status = this.hand.actions.length === 0 ? 'ended' : 'ready';
     this.notifyStateChange();
   }
 
@@ -53,6 +102,8 @@ export class GameController implements IGameController {
     }
 
     this.currentActionIndex++;
+    this.isPlaying = false;
+    this.updateStatusAfterStep();
     this.notifyStateChange();
     return true;
   }
@@ -66,6 +117,8 @@ export class GameController implements IGameController {
     }
 
     this.currentActionIndex--;
+    this.isPlaying = false;
+    this.updateStatusAfterStep();
     this.notifyStateChange();
     return true;
   }
@@ -79,6 +132,8 @@ export class GameController implements IGameController {
     }
 
     this.currentActionIndex = index;
+    this.isPlaying = false;
+    this.updateStatusAfterStep();
     this.notifyStateChange();
   }
 
@@ -104,7 +159,7 @@ export class GameController implements IGameController {
    * Check if can step backward
    */
   canStepBackward(): boolean {
-    return this.currentActionIndex >= 0;
+    return this.currentActionIndex > -1;
   }
 
   /**
@@ -112,11 +167,10 @@ export class GameController implements IGameController {
    */
   getGameState(): GameState {
     return {
-      isPlaying: this.isPlaying,
+      hand: this.hand,
       currentActionIndex: this.currentActionIndex,
-      canStepForward: this.canStepForward(),
-      canStepBackward: this.canStepBackward(),
-      totalActions: this.hand.actions.length,
+      isPlaying: this.isPlaying,
+      status: this.status,
     };
   }
 
@@ -138,5 +192,20 @@ export class GameController implements IGameController {
   private notifyStateChange(): void {
     const state = this.getGameState();
     this.listeners.forEach(listener => listener(state));
+  }
+
+  /**
+   * Update game status after step operations
+   */
+  private updateStatusAfterStep(): void {
+    if (!this.canStepForward()) {
+      this.status = 'ended';
+    } else if (!this.canStepBackward()) {
+      this.status = 'ready';
+    } else if (this.status === 'playing') {
+      this.status = 'paused';
+    } else if (this.status === 'ended') {
+      this.status = 'ready';
+    }
   }
 }

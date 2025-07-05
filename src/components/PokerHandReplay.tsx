@@ -6,6 +6,8 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
 import { PokerStarsParser } from '../parser/PokerStarsParser';
+import { AccessibilityService } from '../services/AccessibilityService';
+import { GameController } from '../services/GameController';
 import { PokerHand, ReplayConfig, ActionChangeCallback, ReplayEventCallback } from '../types';
 import {
   applyTheme,
@@ -78,9 +80,15 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   // State management
   const [hand, setHand] = useState<PokerHand | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Services
+  const [gameController, setGameController] = useState<GameController | null>(null);
+  const [accessibilityService] = useState(() => new AccessibilityService());
+
+  // Game state from controller
   const [currentActionIndex, setCurrentActionIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Loading and retry state management
   const loading = useLoading({
@@ -191,6 +199,51 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     }
   }, [handHistory, parseHandHistory]);
 
+  // Initialize services when hand is available
+  useEffect(() => {
+    if (!hand) {
+      setGameController(null);
+      return;
+    }
+
+    // Initialize GameController
+    const controller = new GameController(hand);
+    setGameController(controller);
+
+    // Subscribe to game state changes
+    const unsubscribe = controller.subscribe(state => {
+      setCurrentActionIndex(state.currentActionIndex);
+      setIsPlaying(state.isPlaying);
+
+      // Announce state changes for accessibility
+      accessibilityService.announceGameState(state);
+    });
+
+    // Setup keyboard handlers
+    const cleanupPlayPause = accessibilityService.setKeyboardHandler('playPause', () => {
+      if (controller.getGameState().isPlaying) {
+        controller.pause();
+      } else {
+        controller.play();
+      }
+    });
+    const cleanupPrevious = accessibilityService.setKeyboardHandler('previous', () =>
+      controller.stepBackward()
+    );
+    const cleanupNext = accessibilityService.setKeyboardHandler('next', () =>
+      controller.stepForward()
+    );
+    const cleanupReset = accessibilityService.setKeyboardHandler('reset', () => controller.stop());
+
+    return () => {
+      unsubscribe();
+      cleanupPlayPause();
+      cleanupPrevious();
+      cleanupNext();
+      cleanupReset();
+    };
+  }, [hand, accessibilityService]);
+
   // Auto-advance actions when playing
   useEffect(() => {
     if (!isPlaying || !hand) return;
@@ -290,33 +343,34 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
     return undefined;
   }, [theme, customColors]);
 
-  // Control functions
+  // Control functions using GameController
   const playPause = useCallback(() => {
+    if (!gameController) return;
+
     if (isPlaying) {
-      setIsPlaying(false);
+      gameController.pause();
       onReplayEvent?.('pause');
     } else {
-      setIsPlaying(true);
+      gameController.play();
       onReplayEvent?.(currentActionIndex === -1 ? 'start' : 'resume');
     }
-  }, [isPlaying, currentActionIndex, onReplayEvent]);
+  }, [gameController, isPlaying, currentActionIndex, onReplayEvent]);
 
   const previousAction = useCallback(() => {
-    setCurrentActionIndex(prev => Math.max(-1, prev - 1));
-    setIsPlaying(false);
-  }, []);
+    if (!gameController) return;
+    gameController.stepBackward();
+  }, [gameController]);
 
   const nextAction = useCallback(() => {
-    if (!hand) return;
-    setCurrentActionIndex(prev => Math.min(hand.actions.length - 1, prev + 1));
-    setIsPlaying(false);
-  }, [hand]);
+    if (!gameController) return;
+    gameController.stepForward();
+  }, [gameController]);
 
   const reset = useCallback(() => {
-    setCurrentActionIndex(-1);
-    setIsPlaying(false);
+    if (!gameController) return;
+    gameController.stop();
     onReplayEvent?.('reset');
-  }, [onReplayEvent]);
+  }, [gameController, onReplayEvent]);
 
   // Get current board cards based on action index
   const currentBoard = useMemo(() => {
@@ -341,10 +395,13 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   }, [hand, currentActionIndex]);
 
   // Jump to specific action (for action history clicks)
-  const goToAction = useCallback((index: number) => {
-    setCurrentActionIndex(index);
-    setIsPlaying(false);
-  }, []);
+  const goToAction = useCallback(
+    (index: number) => {
+      if (!gameController) return;
+      gameController.goToAction(index);
+    },
+    [gameController]
+  );
 
   // Enhanced error handling with retry capabilities
   const handleRetry = useCallback(() => {
