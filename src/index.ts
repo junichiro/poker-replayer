@@ -106,6 +106,18 @@ export { PokerStarsParser } from './parser/PokerStarsParser';
 export { RefactoredPokerStarsParser } from './parser/RefactoredPokerStarsParser';
 
 /**
+ * ## Extensible Parser Architecture (Open/Closed Principle)
+ *
+ * Open/Closed Principle compliant parser architecture that allows
+ * adding support for new poker sites without modifying existing code.
+ *
+ * @group Parser
+ */
+export { HandHistoryParserFactory } from './parser/HandHistoryParserFactory';
+export { ExtensiblePokerStarsParser } from './parser/ExtensiblePokerStarsParser';
+export { BaseHandHistoryParser } from './parser/BaseHandHistoryParser';
+
+/**
  * ## Parser Services
  *
  * Individual service classes following Single Responsibility Principle.
@@ -173,4 +185,12 @@ export type {
   PLAYING_CARD_REGEX,
   PlayerState,
   PotCalculation,
+  // Parser architecture types
+  PokerSiteFormat,
+  PokerFeature,
+  ParserInfo,
+  IHandHistoryParser,
+  IHandHistoryParserFactory,
+  ParserConfiguration,
+  IConfigurableParser,
 } from './types';

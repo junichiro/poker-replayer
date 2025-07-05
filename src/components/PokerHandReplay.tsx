@@ -5,10 +5,17 @@
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 
-import { PokerStarsParser } from '../parser/PokerStarsParser';
+import { ExtensiblePokerStarsParser } from '../parser/ExtensiblePokerStarsParser';
+import { HandHistoryParserFactory } from '../parser/HandHistoryParserFactory';
 import { AccessibilityService } from '../services/AccessibilityService';
 import { GameController } from '../services/GameController';
-import { PokerHand, ReplayConfig, ActionChangeCallback, ReplayEventCallback } from '../types';
+import {
+  PokerHand,
+  ReplayConfig,
+  ActionChangeCallback,
+  ReplayEventCallback,
+  PokerSiteFormat,
+} from '../types';
 import {
   applyTheme,
   applySize,
@@ -119,22 +126,33 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
   // Enhanced parsing with loading states and error recovery
   const parseHandHistory = useCallback(
     async (handHistoryText: string) => {
+      // Initialize parser factory with supported parsers
+      const factory = new HandHistoryParserFactory();
+      factory.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
+
       if (!enableLoadingStates) {
         // Fallback to synchronous parsing for backward compatibility
-        const parser = new PokerStarsParser();
-        const result = parser.parse(handHistoryText);
+        try {
+          const format = factory.detectFormat(handHistoryText);
+          const parser = factory.createParser(format);
+          const result = parser.parse(handHistoryText);
 
-        if (result.success) {
-          setHand(result.hand);
-          setError(null);
-          setIsInitialLoad(false);
+          if (result.success) {
+            setHand(result.hand);
+            setError(null);
+            setIsInitialLoad(false);
 
-          if (autoPlay) {
-            setIsPlaying(true);
-            onReplayEvent?.('start');
+            if (autoPlay) {
+              setIsPlaying(true);
+              onReplayEvent?.('start');
+            }
+          } else {
+            setError(result.error.message);
+            setHand(null);
+            setIsInitialLoad(false);
           }
-        } else {
-          setError(result.error.message);
+        } catch (error) {
+          setError(error instanceof Error ? error.message : 'Parser initialization failed');
           setHand(null);
           setIsInitialLoad(false);
         }
@@ -146,7 +164,9 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
         loading.startLoading('Parsing hand history...');
         loading.updateProgress(10, 'Initializing parser...');
 
-        const parser = new PokerStarsParser();
+        // Detect format and create appropriate parser
+        const format = factory.detectFormat(handHistoryText);
+        const parser = factory.createParser(format);
 
         loading.updateProgress(30, 'Parsing hand history...');
         const parseResult = parser.parse(handHistoryText);
