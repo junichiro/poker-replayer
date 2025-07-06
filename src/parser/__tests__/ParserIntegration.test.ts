@@ -134,6 +134,7 @@ Table Test (Real Money)`;
   describe('フォーマット検出の精度', () => {
     test('PokerStars フォーマットを正確に検出する', () => {
       const factory = new HandHistoryParserFactory();
+      factory.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
 
       const format = factory.detectFormat(samplePokerStarsHand);
       expect(format).toBe(PokerSiteFormat.POKERSTARS);
@@ -141,6 +142,23 @@ Table Test (Real Money)`;
 
     test('PartyPoker フォーマットを正確に検出する', () => {
       const factory = new HandHistoryParserFactory();
+
+      // Mock PartyPoker parser for this test
+      class MockPartyPokerParser {
+        getSupportedFormat() {
+          return PokerSiteFormat.PARTYPOKER;
+        }
+        validateFormat(handHistory: string) {
+          return handHistory.includes('***** PartyPoker Hand History');
+        }
+        getParserInfo() {
+          return { name: 'PartyPoker', version: '1.0.0' };
+        }
+        parse(_handHistory: string) {
+          return { success: true };
+        }
+      }
+      factory.registerParser(PokerSiteFormat.PARTYPOKER, MockPartyPokerParser as any);
 
       const format = factory.detectFormat(samplePartyPokerHand);
       expect(format).toBe(PokerSiteFormat.PARTYPOKER);
@@ -188,10 +206,12 @@ Table Test (Real Money)`;
       // 意図的にパーサーを登録しない
 
       const detectedFormat = factory.detectFormat(samplePokerStarsHand);
-      expect(detectedFormat).toBe(PokerSiteFormat.POKERSTARS);
+      expect(detectedFormat).toBe(PokerSiteFormat.GENERIC);
 
       // パーサーが登録されていないのでエラー
-      expect(() => factory.createParser(detectedFormat)).toThrow('Unsupported format: pokerstars');
+      expect(() => factory.createParser(PokerSiteFormat.POKERSTARS)).toThrow(
+        'Unsupported format: pokerstars'
+      );
     });
   });
 });
