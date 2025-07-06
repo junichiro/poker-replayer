@@ -1,4 +1,6 @@
-import { Action, AnimationConfig } from '../types';
+import { CardDealStrategy, ChipMoveStrategy, PlayerActionStrategy } from '../animation';
+import { AnimationManager } from '../animation/AnimationManager';
+import { Action, AnimationConfig, AnimationType, IAnimationManager } from '../types';
 
 import { IAnimationService, AnimationState, AnimationEvent } from './interfaces';
 
@@ -14,6 +16,8 @@ export class AnimationService implements IAnimationService {
   private speed: number;
   private animationTimer: number | null;
   private listeners: Map<string, Set<(data: AnimationEvent) => void>>;
+  private animationManager: IAnimationManager;
+  private elementCache: Map<string, HTMLElement>;
 
   constructor(actions: Action[], config: AnimationConfig) {
     this.actions = actions;
@@ -23,6 +27,11 @@ export class AnimationService implements IAnimationService {
     this.speed = 1.0;
     this.animationTimer = null;
     this.listeners = new Map();
+    this.elementCache = new Map();
+
+    // Initialize OCP animation system
+    this.animationManager = new AnimationManager();
+    this.setupAnimationStrategies();
   }
 
   /**
@@ -194,10 +203,23 @@ export class AnimationService implements IAnimationService {
 
     this.emit('cardAnimation', event);
 
-    // Return promise that resolves after animation duration
-    return new Promise(resolve => {
-      setTimeout(resolve, this.getCardDealDuration());
-    });
+    // Use OCP animation system
+    const tableElement = this.getTableElement();
+    if (tableElement) {
+      const config = {
+        duration: this.getCardDealDuration(),
+        easing: 'ease-in-out' as const,
+        delay: 0,
+        fillMode: 'forwards' as const,
+      };
+
+      await this.animationManager.executeAnimation(
+        AnimationType.CARD_DEAL,
+        tableElement,
+        action,
+        config
+      );
+    }
   }
 
   /**
@@ -217,10 +239,23 @@ export class AnimationService implements IAnimationService {
 
     this.emit('chipAnimation', event);
 
-    // Return promise that resolves after animation duration
-    return new Promise(resolve => {
-      setTimeout(resolve, this.getActionTransitionDuration());
-    });
+    // Use OCP animation system
+    const playerElement = this.getPlayerElement(action.player);
+    if (playerElement) {
+      const config = {
+        duration: this.getActionTransitionDuration(),
+        easing: 'ease-in-out' as const,
+        delay: 0,
+        fillMode: 'forwards' as const,
+      };
+
+      await this.animationManager.executeAnimation(
+        AnimationType.CHIP_MOVE,
+        playerElement,
+        action,
+        config
+      );
+    }
   }
 
   /**
@@ -240,10 +275,23 @@ export class AnimationService implements IAnimationService {
 
     this.emit('highlight', event);
 
-    // Return promise that resolves after animation duration
-    return new Promise(resolve => {
-      setTimeout(resolve, this.getActionTransitionDuration());
-    });
+    // Use OCP animation system
+    const playerElement = this.getPlayerElement(action.player);
+    if (playerElement) {
+      const config = {
+        duration: this.getActionTransitionDuration(),
+        easing: 'ease-in-out' as const,
+        delay: 0,
+        fillMode: 'forwards' as const,
+      };
+
+      await this.animationManager.executeAnimation(
+        AnimationType.PLAYER_ACTION,
+        playerElement,
+        action,
+        config
+      );
+    }
   }
 
   /**
@@ -296,7 +344,7 @@ export class AnimationService implements IAnimationService {
       this.listeners.set(event, new Set());
     }
 
-    const eventListeners = this.listeners.get(event)!;
+    const eventListeners = this.listeners.get(event) as Set<(data: AnimationEvent) => void>;
     eventListeners.add(listener);
 
     // Return unsubscribe function
@@ -312,6 +360,9 @@ export class AnimationService implements IAnimationService {
     this.clearTimer();
     this.isPlayingState = false;
     this.listeners.clear();
+    this.elementCache.clear();
+    // Clean up animation strategies
+    this.animationManager.stopAllAnimations();
   }
 
   /**
@@ -364,6 +415,72 @@ export class AnimationService implements IAnimationService {
       clearTimeout(this.animationTimer);
       this.animationTimer = null;
     }
+  }
+
+  /**
+   * Setup animation strategies for OCP system
+   */
+  private setupAnimationStrategies(): void {
+    // Register animation strategies
+    this.animationManager.registerStrategy(AnimationType.CARD_DEAL, new CardDealStrategy());
+    this.animationManager.registerStrategy(AnimationType.CHIP_MOVE, new ChipMoveStrategy());
+    this.animationManager.registerStrategy(AnimationType.PLAYER_ACTION, new PlayerActionStrategy());
+
+    // Set global animation configuration
+    this.animationManager.setGlobalConfig({
+      duration: 300,
+      easing: 'ease-in-out',
+      fillMode: 'forwards',
+    });
+  }
+
+  /**
+   * Get table element for animations
+   */
+  private getTableElement(): HTMLElement | null {
+    const cached = this.elementCache.get('table');
+    if (cached) {
+      return cached;
+    }
+
+    const element = document.querySelector(
+      '.poker-table, .table-container, [data-testid="table"]'
+    ) as HTMLElement;
+    if (element) {
+      this.elementCache.set('table', element);
+    }
+    return element;
+  }
+
+  /**
+   * Get player element for animations
+   */
+  private getPlayerElement(playerName?: string): HTMLElement | null {
+    if (!playerName) {
+      return this.getTableElement();
+    }
+
+    const cacheKey = `player-${playerName}`;
+    const cached = this.elementCache.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+
+    const element = document.querySelector(
+      `[data-player="${playerName}"], .player[data-name="${playerName}"], .player-${playerName}`
+    ) as HTMLElement;
+
+    if (element) {
+      this.elementCache.set(cacheKey, element);
+    }
+    return element || this.getTableElement();
+  }
+
+  /**
+   * Get animation manager instance (for external access)
+   */
+  public getAnimationManager(): IAnimationManager {
+    return this.animationManager;
   }
 
   /**

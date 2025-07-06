@@ -475,6 +475,161 @@ export interface AnimationConfig {
 }
 
 /**
+ * Extended animation configuration for OCP animation system
+ * @public
+ */
+export interface ExtendedAnimationConfig {
+  /** Animation duration in milliseconds */
+  duration: number;
+  /** CSS easing function */
+  easing: string;
+  /** Animation delay in milliseconds */
+  delay?: number;
+  /** Number of iterations (1 = once, Infinity = infinite) */
+  iterations?: number;
+  /** Fill mode for animation */
+  fillMode?: 'forwards' | 'backwards' | 'both' | 'none';
+  /** Custom properties for specific strategies */
+  customProperties?: Record<string, any>;
+}
+
+/**
+ * Animation strategy types
+ * @public
+ */
+export enum AnimationType {
+  CARD_DEAL = 'card-deal',
+  CHIP_MOVE = 'chip-move',
+  PLAYER_ACTION = 'player-action',
+  POT_COLLECTION = 'pot-collection',
+  FOLD_ANIMATION = 'fold-animation',
+  ALL_IN_ANIMATION = 'all-in-animation',
+  CUSTOM = 'custom',
+}
+
+/**
+ * 2D Point interface for animation paths
+ * @public
+ */
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/**
+ * Animation strategy interface
+ * @public
+ */
+export interface IAnimationStrategy {
+  /** Strategy name */
+  readonly name: string;
+  /** Strategy version */
+  readonly version: string;
+
+  /**
+   * Execute animation for given element and action
+   */
+  animate(element: HTMLElement, action: Action, config: ExtendedAnimationConfig): Promise<void>;
+
+  /**
+   * Check if strategy can animate the given action
+   */
+  canAnimate(action: Action): boolean;
+
+  /**
+   * Get default configuration for this strategy
+   */
+  getDefaultConfig(): ExtendedAnimationConfig;
+
+  /**
+   * Cleanup resources used by strategy
+   */
+  cleanup(): void;
+}
+
+/**
+ * Animation manager interface
+ * @public
+ */
+export interface IAnimationManager {
+  /**
+   * Register animation strategy for a type
+   */
+  registerStrategy(type: AnimationType, strategy: IAnimationStrategy): void;
+
+  /**
+   * Unregister animation strategy for a type
+   */
+  unregisterStrategy(type: AnimationType): void;
+
+  /**
+   * Execute animation for given type
+   */
+  executeAnimation(
+    type: AnimationType,
+    element: HTMLElement,
+    action: Action,
+    config?: Partial<ExtendedAnimationConfig>
+  ): Promise<void>;
+
+  /**
+   * Get map of available strategies
+   */
+  getAvailableStrategies(): Map<AnimationType, IAnimationStrategy>;
+
+  /**
+   * Set global configuration that applies to all animations
+   */
+  setGlobalConfig(config: Partial<ExtendedAnimationConfig>): void;
+
+  /**
+   * Check if any animations are currently running
+   */
+  isAnimating(): boolean;
+
+  /**
+   * Stop all running animations
+   */
+  stopAllAnimations(): void;
+}
+
+/**
+ * Animation step for composition
+ * @public
+ */
+export interface AnimationStep {
+  type: AnimationType;
+  element: HTMLElement;
+  action: Action;
+  config?: Partial<ExtendedAnimationConfig>;
+  delay?: number;
+}
+
+/**
+ * Animation composer interface
+ * @public
+ */
+export interface IAnimationComposer {
+  /**
+   * Execute animations sequentially
+   */
+  composeSequential(animations: AnimationStep[]): Promise<void>;
+
+  /**
+   * Execute animations in parallel
+   */
+  composeParallel(animations: AnimationStep[]): Promise<void>;
+
+  /**
+   * Execute animations with custom composition logic
+   */
+  composeCustom(
+    animations: AnimationStep[],
+    composer: (animations: AnimationStep[]) => Promise<void>
+  ): Promise<void>;
+}
+
+/**
  * Size scaling configuration
  * @public
  */
