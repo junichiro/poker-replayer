@@ -3,43 +3,14 @@
  * TDD approach - RED phase: インターフェースのテストを先に書く
  */
 
-import { PokerSiteFormat, PokerFeature } from '../../types';
-
-// これから実装するインターフェースの型定義
-interface IHandHistoryParser {
-  parse(handHistory: string): ParserResult;
-  getSupportedFormat(): PokerSiteFormat;
-  validateFormat(handHistory: string): boolean;
-  getParserInfo(): ParserInfo;
-}
-
-interface ParserInfo {
-  name: string;
-  version: string;
-  supportedFeatures: PokerFeature[];
-  siteFormat: PokerSiteFormat;
-}
-
-interface ParserResult {
-  success: boolean;
-  hand?: any;
-  error?: {
-    message: string;
-    type: string;
-  };
-}
+import { PokerSiteFormat, PokerFeature, ParserInfo, ParserResult } from '../../types';
 
 describe('IHandHistoryParser Interface', () => {
   describe('interface contract', () => {
     test('parserは必要なメソッドを実装している必要がある', () => {
       // これは TypeScript でコンパイル時にチェックされるが、
       // テストとして明示的に記述
-      const requiredMethods = [
-        'parse',
-        'getSupportedFormat',
-        'validateFormat',
-        'getParserInfo',
-      ];
+      const requiredMethods = ['parse', 'getSupportedFormat', 'validateFormat', 'getParserInfo'];
 
       // インターフェースが存在することを確認するためのダミーテスト
       expect(requiredMethods).toContain('parse');

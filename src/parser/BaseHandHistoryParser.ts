@@ -29,7 +29,7 @@ export abstract class BaseHandHistoryParser implements IHandHistoryParser {
     try {
       this.reset();
       this.lines = this.preprocessHandHistory(handHistory);
-      
+
       const hand = this.parseHandInternal();
       return { success: true, hand };
     } catch (error) {

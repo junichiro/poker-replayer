@@ -5,6 +5,8 @@
 
 import { PokerSiteFormat, IHandHistoryParser, IHandHistoryParserFactory } from '../types';
 
+import { ExtensiblePokerStarsParser } from './ExtensiblePokerStarsParser';
+
 /**
  * ハンド履歴パーサーのファクトリークラス
  * パーサーの作成、フォーマット検出、動的登録を管理
@@ -14,7 +16,7 @@ export class HandHistoryParserFactory implements IHandHistoryParserFactory {
 
   constructor() {
     // デフォルトパーサーの登録は後で実装
-    // this.registerParser(PokerSiteFormat.POKERSTARS, PokerStarsParser);
+    // this.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
   }
 
   /**
@@ -32,24 +34,12 @@ export class HandHistoryParserFactory implements IHandHistoryParserFactory {
    * ハンド履歴からフォーマットを自動検出
    */
   detectFormat(handHistory: string): PokerSiteFormat {
-    // PokerStars の検出
-    if (handHistory.includes('PokerStars Hand #')) {
-      return PokerSiteFormat.POKERSTARS;
-    }
-
-    // PartyPoker の検出
-    if (handHistory.includes('***** PartyPoker Hand History')) {
-      return PokerSiteFormat.PARTYPOKER;
-    }
-
-    // 888poker の検出
-    if (handHistory.includes('Game #') && handHistory.includes('888poker')) {
-      return PokerSiteFormat.EIGHT88POKER;
-    }
-
-    // Winamax の検出
-    if (handHistory.includes('Winamax Poker')) {
-      return PokerSiteFormat.WINAMAX;
+    // 登録されているパーサーを使用してフォーマットを検出
+    for (const [format, ParserClass] of this.parsers.entries()) {
+      const parser = new ParserClass();
+      if (parser.validateFormat(handHistory)) {
+        return format;
+      }
     }
 
     // 不明なフォーマットの場合は GENERIC を返す
@@ -68,5 +58,14 @@ export class HandHistoryParserFactory implements IHandHistoryParserFactory {
    */
   getSupportedFormats(): PokerSiteFormat[] {
     return Array.from(this.parsers.keys());
+  }
+
+  /**
+   * デフォルトパーサーが登録されたファクトリーを作成
+   */
+  static createWithDefaultParsers(): HandHistoryParserFactory {
+    const factory = new HandHistoryParserFactory();
+    factory.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
+    return factory;
   }
 }

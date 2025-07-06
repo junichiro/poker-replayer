@@ -18,6 +18,7 @@ import {
   ParserInfo,
   PokerFeature,
 } from '../types';
+
 import { BaseHandHistoryParser } from './BaseHandHistoryParser';
 
 /**
@@ -70,8 +71,7 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
    * PokerStars フォーマットかどうかを検証
    */
   validateFormat(handHistory: string): boolean {
-    return handHistory.includes('PokerStars Hand #') && 
-           handHistory.includes('Table \'');
+    return handHistory.includes('PokerStars Hand #') && handHistory.includes("Table '");
   }
 
   /**
@@ -81,12 +81,7 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     return {
       name: 'PokerStars Parser',
       version: '2.0.0',
-      supportedFeatures: [
-        PokerFeature.SIDE_POTS,
-        PokerFeature.RAKE_TRACKING,
-        PokerFeature.TOURNAMENT_SUPPORT,
-        PokerFeature.ANTES,
-      ],
+      supportedFeatures: [PokerFeature.TOURNAMENT_SUPPORT, PokerFeature.ANTES],
       siteFormat: PokerSiteFormat.POKERSTARS,
     };
   }
@@ -116,22 +111,26 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
   }
 
   /**
-   * 内部パースロジック - PokerStars 専用実装
+   * パーサー状態をリセット
    */
-  protected parseHandInternal(): PokerHand {
-    // パーサー状態をリセット
+  protected reset(): void {
+    super.reset(); // 基底クラスのリセット処理
     this.actionIndex = 0;
     this.playerChips.clear();
     this.allInPlayers.clear();
     this.activePlayers.clear();
     this.totalPotContributions = 0;
-    this.currentLineIndex = 0;
+  }
 
+  /**
+   * 内部パースロジック - PokerStars 専用実装
+   */
+  protected parseHandInternal(): PokerHand {
     // ハンド情報をパース
     const handInfo = this.parseHandInfo();
     const tableInfo = this.parseTableInfo();
     const players = this.parsePlayers();
-    
+
     // プレイヤーの初期チップを記録
     players.forEach(player => {
       this.playerChips.set(player.name, player.chips);
@@ -140,10 +139,10 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
 
     // アクションをパース
     const actions = this.parseActions();
-    
+
     // ボードカードをパース
     const board = this.parseBoardCards(actions);
-    
+
     // ポットをパース
     const pots = this.parsePots();
 
@@ -171,14 +170,14 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     // PokerStars Hand #123456789: Tournament #987654321, $10+$1 USD Hold'em No Limit - Level II (15/30) - 2023/01/01 12:00:00 ET
     // または
     // PokerStars Hand #123456789: Hold'em No Limit ($1/$2 USD) - 2023/01/01 12:00:00 ET
-    
+
     const handMatch = handLine.match(/PokerStars Hand #(\d+):/);
     if (!handMatch) {
       throw new Error(`Invalid hand header format: ${handLine}`);
     }
 
     const handId = handMatch[1];
-    
+
     // トーナメントかキャッシュゲームかを判定
     const tournamentMatch = handLine.match(/Tournament #(\d+)/);
     const tournamentId = tournamentMatch ? tournamentMatch[1] : undefined;
@@ -195,10 +194,42 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
 
     // 日付をパース
     const dateMatch = handLine.match(/(\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}:\d{2}) ET/);
-    let date = new Date();
-    if (dateMatch) {
-      date = new Date(dateMatch[1] + ' GMT-0500'); // ET timezone
+    if (!dateMatch) {
+      throw new Error(`Could not parse date from hand header: ${handLine}`);
     }
+
+    // ET (Eastern Time) は DST に応じて UTC-5 (EST) または UTC-4 (EDT)
+    // PokerStars は常に "ET" と表記し、DST を考慮した時刻を使用
+    const dateStr = dateMatch[1];
+    const tempDate = new Date(dateStr);
+
+    // 指定された日付がDST期間内かどうかを判定
+    const year = tempDate.getFullYear();
+    const month = tempDate.getMonth();
+    const dayOfMonth = tempDate.getDate();
+
+    // US DST: 3月第2日曜日から11月第1日曜日まで
+    const getDSTStart = (year: number) => {
+      const march = new Date(year, 2, 1); // 3月1日
+      const firstSunday = march.getDay() === 0 ? 1 : 7 - march.getDay() + 1;
+      return new Date(year, 2, firstSunday + 7); // 第2日曜日
+    };
+
+    const getDSTEnd = (year: number) => {
+      const november = new Date(year, 10, 1); // 11月1日
+      const firstSunday = november.getDay() === 0 ? 1 : 7 - november.getDay() + 1;
+      return new Date(year, 10, firstSunday); // 第1日曜日
+    };
+
+    const dstStart = getDSTStart(year);
+    const dstEnd = getDSTEnd(year);
+    const currentDate = new Date(year, month, dayOfMonth);
+
+    // DST期間内なら EDT (UTC-4)、そうでなければ EST (UTC-5)
+    const isDST = currentDate >= dstStart && currentDate < dstEnd;
+    const offset = isDST ? ' GMT-0400' : ' GMT-0500';
+
+    const date = new Date(dateStr + offset);
 
     return {
       id: handId,
@@ -237,7 +268,7 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
 
     while (this.hasMoreLines()) {
       const line = this.getLine();
-      
+
       // Seat 1: PlayerName ($100 in chips)
       const seatMatch = line.match(/^Seat (\d+): ([^(]+) \(\$?([0-9.]+) in chips\)/);
       if (!seatMatch) {
@@ -273,7 +304,7 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
 
     while (this.hasMoreLines()) {
       const line = this.getLine();
-      
+
       // ストリートの変更をチェック
       if (line.startsWith('*** FLOP ***')) {
         currentStreet = 'flop';
@@ -359,9 +390,9 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
       const player = blindMatch[1].trim();
       const amount = parseFloat(blindMatch[3]);
       const type = blindMatch[2].includes('ante') ? 'ante' : 'blind';
-      
+
       this.updatePlayerChips(player, amount);
-      
+
       return {
         index: this.actionIndex++,
         street,
@@ -376,7 +407,7 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     if (foldMatch) {
       const player = foldMatch[1].trim();
       this.activePlayers.delete(player);
-      
+
       return {
         index: this.actionIndex++,
         street,
@@ -401,9 +432,9 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     if (callMatch) {
       const player = callMatch[1].trim();
       const amount = parseFloat(callMatch[2]);
-      
+
       const isAllIn = this.updatePlayerChips(player, amount);
-      
+
       return {
         index: this.actionIndex++,
         street,
@@ -419,9 +450,9 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     if (betMatch) {
       const player = betMatch[1].trim();
       const amount = parseFloat(betMatch[2]);
-      
+
       const isAllIn = this.updatePlayerChips(player, amount);
-      
+
       return {
         index: this.actionIndex++,
         street,
@@ -437,9 +468,9 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     if (raiseMatch) {
       const player = raiseMatch[1].trim();
       const totalAmount = parseFloat(raiseMatch[3]);
-      
+
       const isAllIn = this.updatePlayerChips(player, totalAmount);
-      
+
       return {
         index: this.actionIndex++,
         street,
@@ -493,9 +524,11 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
   private parsePots(): Pot[] {
     // 簡略版：単一のポットを返す
     // 実際の実装では、サマリーセクションから詳細なポット情報をパースする
-    return [{
-      amount: this.totalPotContributions,
-      players: Array.from(this.activePlayers),
-    }];
+    return [
+      {
+        amount: this.totalPotContributions,
+        players: Array.from(this.activePlayers),
+      },
+    ];
   }
 }

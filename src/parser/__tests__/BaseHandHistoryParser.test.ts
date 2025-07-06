@@ -1,5 +1,5 @@
 /**
- * BaseHandHistoryParser Abstract Class テスト  
+ * BaseHandHistoryParser Abstract Class テスト
  * TDD approach - GREEN phase: 実装をテストする
  */
 
@@ -126,7 +126,7 @@ Player2: posts big blind $2`;
     test('parse() メソッドが定義されたテンプレートに従って実行される', () => {
       const parser = new TestConcreteParser();
       const result = parser.parse(sampleHandHistory);
-      
+
       expect(result.success).toBe(true);
       expect(result.hand).toBeDefined();
       expect(result.hand?.id).toBe('test-hand');
@@ -135,7 +135,7 @@ Player2: posts big blind $2`;
     test('preprocessHandHistory() は具象クラスで実装される', () => {
       const parser = new TestConcreteParser();
       const lines = parser.testPreprocessHandHistory(sampleHandHistory);
-      
+
       expect(Array.isArray(lines)).toBe(true);
       expect(lines.length).toBeGreaterThan(0);
       expect(lines).not.toContain(''); // 空行は除去される
@@ -144,7 +144,7 @@ Player2: posts big blind $2`;
     test('parseHandInternal() は具象クラスで実装される', () => {
       const parser = new TestConcreteParser();
       const hand = parser.testParseHandInternal();
-      
+
       expect(hand).toBeDefined();
       expect(hand.id).toBe('test-hand');
       expect(hand.stakes).toBe('$1/$2');
@@ -153,7 +153,7 @@ Player2: posts big blind $2`;
     test('createError() は具象クラスで実装される', () => {
       const parser = new TestConcreteParser();
       const errorResult = parser.testCreateError('Test error message');
-      
+
       expect(errorResult.success).toBe(false);
       expect(errorResult.error?.message).toBe('Test error message');
     });
@@ -164,7 +164,7 @@ Player2: posts big blind $2`;
       const parser = new TestConcreteParser();
       // まず parse を実行して lines を設定
       parser.parse(sampleHandHistory);
-      
+
       // カレント行を取得
       const line = parser.testGetLine();
       expect(typeof line).toBe('string');
@@ -174,7 +174,7 @@ Player2: posts big blind $2`;
     test('nextLine() で次の行に進める', () => {
       const parser = new TestConcreteParser();
       parser.parse(sampleHandHistory);
-      
+
       const initialIndex = parser.testCurrentLineIndex;
       parser.testNextLine();
       expect(parser.testCurrentLineIndex).toBe(initialIndex + 1);
@@ -183,7 +183,7 @@ Player2: posts big blind $2`;
     test('hasMoreLines() で行の残りがあるかチェックできる', () => {
       const parser = new TestConcreteParser();
       parser.parse(sampleHandHistory);
-      
+
       // パース後、通常は最後まで読んでいるはず
       const hasMore = parser.testHasMoreLines();
       expect(typeof hasMore).toBe('boolean');
@@ -192,14 +192,14 @@ Player2: posts big blind $2`;
     test('reset() でパーサー状態をリセットできる', () => {
       const parser = new TestConcreteParser();
       parser.parse(sampleHandHistory);
-      
+
       // リセット前は何かしらのデータがある
       expect(parser.testLines.length).toBeGreaterThan(0);
       expect(parser.testCurrentLineIndex).toBeGreaterThanOrEqual(0);
-      
+
       // リセット実行
       parser.testReset();
-      
+
       // リセット後は初期状態
       expect(parser.testLines).toEqual([]);
       expect(parser.testCurrentLineIndex).toBe(0);
@@ -222,7 +222,7 @@ Player2: posts big blind $2`;
     test('parse後は適切に行が設定される', () => {
       const parser = new TestConcreteParser();
       parser.parse(sampleHandHistory);
-      
+
       expect(parser.testLines.length).toBeGreaterThan(0);
       expect(parser.testCurrentLineIndex).toBeGreaterThanOrEqual(0);
     });
@@ -232,12 +232,23 @@ Player2: posts big blind $2`;
     test('パース中の例外が適切にキャッチされる', () => {
       // エラーを発生させるパーサー
       class ErrorParser extends BaseHandHistoryParser {
-        getSupportedFormat(): PokerSiteFormat { return PokerSiteFormat.POKERSTARS; }
-        validateFormat(): boolean { return true; }
-        getParserInfo(): ParserInfo {
-          return { name: 'Error Parser', version: '1.0.0', supportedFeatures: [], siteFormat: PokerSiteFormat.POKERSTARS };
+        getSupportedFormat(): PokerSiteFormat {
+          return PokerSiteFormat.POKERSTARS;
         }
-        protected preprocessHandHistory(): string[] { return ['line1']; }
+        validateFormat(): boolean {
+          return true;
+        }
+        getParserInfo(): ParserInfo {
+          return {
+            name: 'Error Parser',
+            version: '1.0.0',
+            supportedFeatures: [],
+            siteFormat: PokerSiteFormat.POKERSTARS,
+          };
+        }
+        protected preprocessHandHistory(): string[] {
+          return ['line1'];
+        }
         protected parseHandInternal(): PokerHand {
           throw new Error('Parse failed');
         }
@@ -248,7 +259,7 @@ Player2: posts big blind $2`;
 
       const parser = new ErrorParser();
       const result = parser.parse('test');
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toBe('Parse failed');
     });
@@ -256,7 +267,7 @@ Player2: posts big blind $2`;
     test('エラー結果が正しい形式で返される', () => {
       const parser = new TestConcreteParser();
       const errorResult = parser.testCreateError('Test error message');
-      
+
       expect(errorResult.success).toBe(false);
       expect(errorResult.error?.message).toBe('Test error message');
       expect(errorResult.hand).toBeUndefined();

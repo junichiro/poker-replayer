@@ -123,18 +123,21 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
 
   // Remove redundant asyncOperation - we'll use retryState directly
 
+  // Memoized parser factory to avoid recreation on every parse
+  const parserFactory = useMemo(() => {
+    const factory = new HandHistoryParserFactory();
+    factory.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
+    return factory;
+  }, []);
+
   // Enhanced parsing with loading states and error recovery
   const parseHandHistory = useCallback(
     async (handHistoryText: string) => {
-      // Initialize parser factory with supported parsers
-      const factory = new HandHistoryParserFactory();
-      factory.registerParser(PokerSiteFormat.POKERSTARS, ExtensiblePokerStarsParser);
-
       if (!enableLoadingStates) {
         // Fallback to synchronous parsing for backward compatibility
         try {
-          const format = factory.detectFormat(handHistoryText);
-          const parser = factory.createParser(format);
+          const format = parserFactory.detectFormat(handHistoryText);
+          const parser = parserFactory.createParser(format);
           const result = parser.parse(handHistoryText);
 
           if (result.success) {
@@ -165,8 +168,8 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
         loading.updateProgress(10, 'Initializing parser...');
 
         // Detect format and create appropriate parser
-        const format = factory.detectFormat(handHistoryText);
-        const parser = factory.createParser(format);
+        const format = parserFactory.detectFormat(handHistoryText);
+        const parser = parserFactory.createParser(format);
 
         loading.updateProgress(30, 'Parsing hand history...');
         const parseResult = parser.parse(handHistoryText);
@@ -208,7 +211,7 @@ export const PokerHandReplay: React.FC<PokerHandReplayProps> = ({
         onReplayEvent?.('parseError', { error: result.error });
       }
     },
-    [retryState, loading, autoPlay, onReplayEvent, enableLoadingStates]
+    [parserFactory, retryState, loading, autoPlay, onReplayEvent, enableLoadingStates]
   );
 
   // Parse hand history on mount or when handHistory changes

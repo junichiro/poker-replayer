@@ -3,7 +3,7 @@
  * TDD approach - GREEN phase: 実装をテストする
  */
 
-import { PokerSiteFormat, IHandHistoryParser, IHandHistoryParserFactory } from '../../types';
+import { PokerSiteFormat, IHandHistoryParser } from '../../types';
 import { HandHistoryParserFactory } from '../HandHistoryParserFactory';
 
 describe('HandHistoryParserFactory', () => {
@@ -18,17 +18,49 @@ Table Test (Real Money)`;
 
   // Mock parser class for testing
   class MockParser implements IHandHistoryParser {
-    parse(handHistory: string): any { 
-      return { success: true, hand: { id: 'test' } }; 
+    parse(_handHistory: string): any {
+      return { success: true, hand: { id: 'test' } };
     }
-    getSupportedFormat(): PokerSiteFormat { 
-      return PokerSiteFormat.POKERSTARS; 
+    getSupportedFormat(): PokerSiteFormat {
+      return PokerSiteFormat.POKERSTARS;
     }
-    validateFormat(handHistory: string): boolean { 
-      return true; 
+    validateFormat(_handHistory: string): boolean {
+      return true;
     }
-    getParserInfo(): any { 
-      return { name: 'Mock Parser', version: '1.0.0' }; 
+    getParserInfo(): any {
+      return { name: 'Mock Parser', version: '1.0.0' };
+    }
+  }
+
+  // Mock PokerStars parser for testing
+  class MockPokerStarsParser implements IHandHistoryParser {
+    parse(_handHistory: string): any {
+      return { success: true, hand: { id: 'pokerstars' } };
+    }
+    getSupportedFormat(): PokerSiteFormat {
+      return PokerSiteFormat.POKERSTARS;
+    }
+    validateFormat(handHistory: string): boolean {
+      return handHistory.includes('PokerStars Hand #');
+    }
+    getParserInfo(): any {
+      return { name: 'Mock PokerStars Parser', version: '1.0.0' };
+    }
+  }
+
+  // Mock PartyPoker parser for testing
+  class MockPartyPokerParser implements IHandHistoryParser {
+    parse(_handHistory: string): any {
+      return { success: true, hand: { id: 'partypoker' } };
+    }
+    getSupportedFormat(): PokerSiteFormat {
+      return PokerSiteFormat.PARTYPOKER;
+    }
+    validateFormat(handHistory: string): boolean {
+      return handHistory.includes('***** PartyPoker Hand History');
+    }
+    getParserInfo(): any {
+      return { name: 'Mock PartyPoker Parser', version: '1.0.0' };
     }
   }
 
@@ -36,33 +68,39 @@ Table Test (Real Money)`;
     test('登録されたパーサーを作成できる', () => {
       const factory = new HandHistoryParserFactory();
       factory.registerParser(PokerSiteFormat.POKERSTARS, MockParser);
-      
+
       const parser = factory.createParser(PokerSiteFormat.POKERSTARS);
       expect(parser).toBeInstanceOf(MockParser);
     });
 
     test('サポートされていないフォーマットの場合はエラーを投げる', () => {
       const factory = new HandHistoryParserFactory();
-      
-      expect(() => factory.createParser(PokerSiteFormat.POKERSTARS)).toThrow('Unsupported format: pokerstars');
+
+      expect(() => factory.createParser(PokerSiteFormat.POKERSTARS)).toThrow(
+        'Unsupported format: pokerstars'
+      );
     });
   });
 
   describe('detectFormat()', () => {
     test('PokerStars のハンド履歴フォーマットを検出できる', () => {
       const factory = new HandHistoryParserFactory();
+      factory.registerParser(PokerSiteFormat.POKERSTARS, MockPokerStarsParser);
       const format = factory.detectFormat(samplePokerStarsHand);
       expect(format).toBe(PokerSiteFormat.POKERSTARS);
     });
 
     test('PartyPoker のハンド履歴フォーマットを検出できる', () => {
       const factory = new HandHistoryParserFactory();
+      factory.registerParser(PokerSiteFormat.PARTYPOKER, MockPartyPokerParser);
       const format = factory.detectFormat(samplePartyPokerHand);
       expect(format).toBe(PokerSiteFormat.PARTYPOKER);
     });
 
     test('不明なフォーマットの場合は GENERIC を返す', () => {
       const factory = new HandHistoryParserFactory();
+      factory.registerParser(PokerSiteFormat.POKERSTARS, MockPokerStarsParser);
+      factory.registerParser(PokerSiteFormat.PARTYPOKER, MockPartyPokerParser);
       const format = factory.detectFormat('Unknown format');
       expect(format).toBe(PokerSiteFormat.GENERIC);
     });
@@ -71,32 +109,48 @@ Table Test (Real Money)`;
   describe('registerParser()', () => {
     test('新しいパーサーを登録できる', () => {
       const factory = new HandHistoryParserFactory();
-      
+
       // 登録前はサポートされていない
       expect(factory.getSupportedFormats()).not.toContain(PokerSiteFormat.POKERSTARS);
-      
+
       // パーサーを登録
       factory.registerParser(PokerSiteFormat.POKERSTARS, MockParser);
-      
+
       // 登録後はサポートされている
       expect(factory.getSupportedFormats()).toContain(PokerSiteFormat.POKERSTARS);
     });
 
     test('同じフォーマットのパーサーを上書き登録できる', () => {
       const factory = new HandHistoryParserFactory();
-      
+
       class MockParser1 implements IHandHistoryParser {
-        parse(handHistory: string): any { return {}; }
-        getSupportedFormat(): PokerSiteFormat { return PokerSiteFormat.POKERSTARS; }
-        validateFormat(handHistory: string): boolean { return true; }
-        getParserInfo(): any { return { name: 'Parser1' }; }
+        parse(_handHistory: string): any {
+          return {};
+        }
+        getSupportedFormat(): PokerSiteFormat {
+          return PokerSiteFormat.POKERSTARS;
+        }
+        validateFormat(_handHistory: string): boolean {
+          return true;
+        }
+        getParserInfo(): any {
+          return { name: 'Parser1' };
+        }
       }
 
       class MockParser2 implements IHandHistoryParser {
-        parse(handHistory: string): any { return {}; }
-        getSupportedFormat(): PokerSiteFormat { return PokerSiteFormat.POKERSTARS; }
-        validateFormat(handHistory: string): boolean { return true; }
-        getParserInfo(): any { return { name: 'Parser2' }; }
+        parse(_handHistory: string): any {
+          return {};
+        }
+        getSupportedFormat(): PokerSiteFormat {
+          return PokerSiteFormat.POKERSTARS;
+        }
+        validateFormat(_handHistory: string): boolean {
+          return true;
+        }
+        getParserInfo(): any {
+          return { name: 'Parser2' };
+        }
       }
 
       // 最初のパーサーを登録
@@ -114,14 +168,14 @@ Table Test (Real Money)`;
   describe('getSupportedFormats()', () => {
     test('サポートされているフォーマットのリストを取得できる', () => {
       const factory = new HandHistoryParserFactory();
-      
+
       // 初期状態では空
       expect(factory.getSupportedFormats()).toEqual([]);
-      
+
       // パーサーを登録
       factory.registerParser(PokerSiteFormat.POKERSTARS, MockParser);
       factory.registerParser(PokerSiteFormat.PARTYPOKER, MockParser);
-      
+
       const formats = factory.getSupportedFormats();
       expect(formats).toContain(PokerSiteFormat.POKERSTARS);
       expect(formats).toContain(PokerSiteFormat.PARTYPOKER);

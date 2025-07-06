@@ -26,7 +26,7 @@ Seat 2: Player2 collected ($3)`;
 
     test('PokerStars フォーマットを正しく検証する', () => {
       const parser = new ExtensiblePokerStarsParser();
-      
+
       expect(parser.validateFormat(samplePokerStarsHand)).toBe(true);
       expect(parser.validateFormat('PartyPoker hand history')).toBe(false);
       expect(parser.validateFormat('Random text')).toBe(false);
@@ -35,12 +35,12 @@ Seat 2: Player2 collected ($3)`;
     test('パーサー情報を返す', () => {
       const parser = new ExtensiblePokerStarsParser();
       const info = parser.getParserInfo();
-      
+
       expect(info.name).toBe('PokerStars Parser');
       expect(info.version).toBe('2.0.0');
       expect(info.siteFormat).toBe(PokerSiteFormat.POKERSTARS);
-      expect(info.supportedFeatures).toContain(PokerFeature.SIDE_POTS);
-      expect(info.supportedFeatures).toContain(PokerFeature.RAKE_TRACKING);
+      expect(info.supportedFeatures).toContain(PokerFeature.TOURNAMENT_SUPPORT);
+      expect(info.supportedFeatures).toContain(PokerFeature.ANTES);
     });
   });
 
@@ -48,10 +48,10 @@ Seat 2: Player2 collected ($3)`;
     test('基本的なハンド履歴をパースできる', () => {
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(samplePokerStarsHand);
-      
+
       expect(result.success).toBe(true);
       expect(result.hand).toBeDefined();
-      
+
       if (result.success) {
         expect(result.hand.id).toBe('123456789');
         expect(result.hand.stakes).toBe('$1/$2 USD');
@@ -67,7 +67,7 @@ Seat 2: Player2 collected ($3)`;
     test('無効なフォーマットの場合はエラーを返す', () => {
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse('Invalid hand history');
-      
+
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
       expect(result.error?.message).toContain('Invalid hand header format');
@@ -86,28 +86,28 @@ Player2: checks
 
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(handWithActions);
-      
+
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         const actions = result.hand.actions;
         expect(actions).toHaveLength(4);
-        
+
         // Small blind action
         expect(actions[0].type).toBe('blind');
         expect(actions[0].player).toBe('Player1');
         expect(actions[0].amount).toBe(1);
-        
+
         // Big blind action
         expect(actions[1].type).toBe('blind');
         expect(actions[1].player).toBe('Player2');
         expect(actions[1].amount).toBe(2);
-        
+
         // Call action
         expect(actions[2].type).toBe('call');
         expect(actions[2].player).toBe('Player1');
         expect(actions[2].amount).toBe(1);
-        
+
         // Check action
         expect(actions[3].type).toBe('check');
         expect(actions[3].player).toBe('Player2');
@@ -132,12 +132,12 @@ Player1: folds
 
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(handWithBoard);
-      
+
       expect(result.success).toBe(true);
-      
+
       if (result.success) {
         const hand = result.hand;
-        
+
         // ボードカードがパースされている
         expect(hand.board).toHaveLength(5);
         expect(hand.board[0]).toBe('Ah');
@@ -145,17 +145,17 @@ Player1: folds
         expect(hand.board[2]).toBe('Qc');
         expect(hand.board[3]).toBe('4s');
         expect(hand.board[4]).toBe('2h');
-        
+
         // Deal アクションが追加されている
         const dealActions = hand.actions.filter(action => action.type === 'deal');
         expect(dealActions).toHaveLength(3); // フロップ、ターン、リバー
-        
+
         expect(dealActions[0].street).toBe('flop');
         expect(dealActions[0].cards).toEqual(['Ah', 'Kd', 'Qc']);
-        
+
         expect(dealActions[1].street).toBe('turn');
         expect(dealActions[1].cards).toEqual(['4s']);
-        
+
         expect(dealActions[2].street).toBe('river');
         expect(dealActions[2].cards).toEqual(['2h']);
       }
@@ -169,7 +169,7 @@ Table 'TestTable' 6-max Seat #1 is the button`;
 
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(invalidHand);
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toContain('Invalid hand header format');
     });
@@ -180,7 +180,7 @@ Invalid table format`;
 
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(invalidHand);
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toContain('Invalid table format');
     });
@@ -192,7 +192,7 @@ Table 'TestTable' 6-max Seat #1 is the button
 
       const parser = new ExtensiblePokerStarsParser();
       const result = parser.parse(invalidHand);
-      
+
       expect(result.success).toBe(false);
       expect(result.error?.message).toContain('No players found');
     });
