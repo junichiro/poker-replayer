@@ -53,8 +53,11 @@ export class AnimationComposer implements IAnimationComposer {
   /**
    * カスタムコンポジションロジックで実行
    */
-  async composeCustom(composer: (animations: AnimationStep[]) => Promise<void>): Promise<void> {
-    await composer([]);
+  async composeCustom(
+    animations: AnimationStep[],
+    composer: (animations: AnimationStep[]) => Promise<void>
+  ): Promise<void> {
+    await composer(animations);
   }
 
   /**

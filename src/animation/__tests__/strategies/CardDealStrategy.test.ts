@@ -3,67 +3,27 @@
  * TDD approach - RED phase: カードディール戦略の動作をテストする
  */
 
-import { Action } from '../../../types';
-
-// テスト用のインターフェース定義（実装前）
-interface IAnimationStrategy {
-  name: string;
-  version: string;
-  animate(element: HTMLElement, action: Action, config: AnimationConfig): Promise<void>;
-  canAnimate(action: Action): boolean;
-  getDefaultConfig(): AnimationConfig;
-  cleanup(): void;
-}
-
-interface AnimationConfig {
-  duration: number;
-  easing: string;
-  delay?: number;
-  iterations?: number;
-  fillMode?: 'forwards' | 'backwards' | 'both' | 'none';
-  customProperties?: Record<string, unknown>;
-}
-
-// モック実装（テスト用）
-class MockCardDealStrategy implements IAnimationStrategy {
-  name = 'Card Deal Animation';
-  version = '1.0.0';
-
-  canAnimate(action: Action): boolean {
-    return action.type === 'deal' && !!action.cards && action.cards.length > 0;
-  }
-
-  getDefaultConfig(): AnimationConfig {
-    return {
-      duration: 800,
-      easing: 'cubic-bezier(0.4, 0.0, 0.2, 1)',
-      delay: 0,
-      fillMode: 'forwards',
-    };
-  }
-
-  async animate(element: HTMLElement, action: Action, config: AnimationConfig): Promise<void> {
-    return new Promise(resolve => {
-      // カードディールアニメーションをシミュレート
-      element.style.transition = `transform ${config.duration}ms ${config.easing}`;
-      element.style.transform = 'translateX(0) rotateY(0)';
-
-      setTimeout(resolve, config.duration + (config.delay || 0));
-    });
-  }
-
-  cleanup(): void {
-    // リソースのクリーンアップ
-  }
-}
+import { Action, ExtendedAnimationConfig } from '../../../types';
+import { CardDealStrategy } from '../../strategies/CardDealStrategy';
 
 describe('CardDealStrategy', () => {
-  let strategy: MockCardDealStrategy;
+  let strategy: CardDealStrategy;
   let element: HTMLElement;
 
   beforeEach(() => {
-    strategy = new MockCardDealStrategy();
+    strategy = new CardDealStrategy();
     element = document.createElement('div');
+    // Add element to body for proper testing
+    document.body.appendChild(element);
+  });
+
+  afterEach(() => {
+    // Clean up card elements after each test
+    strategy.cleanup();
+    // Remove test element from body
+    if (element.parentNode) {
+      element.parentNode.removeChild(element);
+    }
   });
 
   describe('strategy info', () => {
@@ -143,7 +103,7 @@ describe('CardDealStrategy', () => {
 
   describe('getDefaultConfig', () => {
     test('適切なデフォルト設定を返す', () => {
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       expect(config.duration).toBe(800);
       expect(config.easing).toBe('cubic-bezier(0.4, 0.0, 0.2, 1)');
@@ -152,7 +112,7 @@ describe('CardDealStrategy', () => {
     });
 
     test('設定値が適切な範囲内にある', () => {
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       expect(config.duration).toBeGreaterThan(0);
       expect(config.duration).toBeLessThan(5000); // 5秒以内
@@ -168,7 +128,7 @@ describe('CardDealStrategy', () => {
         type: 'deal',
         cards: ['Ah', 'Kd'],
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       const animationPromise = strategy.animate(element, action, config);
       expect(animationPromise).toBeInstanceOf(Promise);
@@ -176,21 +136,24 @@ describe('CardDealStrategy', () => {
       await expect(animationPromise).resolves.toBeUndefined();
     });
 
-    test('CSSプロパティが正しく設定される', async () => {
+    test('カード要素が正しく作成される', async () => {
       const action: Action = {
         index: 0,
         street: 'preflop',
         type: 'deal',
         cards: ['Ah', 'Kd'],
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await strategy.animate(element, action, config);
 
-      expect(element.style.transition).toContain('transform');
-      expect(element.style.transition).toContain('800ms');
-      expect(element.style.transition).toContain('cubic-bezier(0.4, 0.0, 0.2, 1)');
-      expect(element.style.transform).toBe('translateX(0) rotateY(0)');
+      // 作成されたカード要素を確認
+      const cardElements = document.querySelectorAll('.card-deal-animation');
+      expect(cardElements.length).toBe(2);
+
+      const firstCard = cardElements[0] as HTMLElement;
+      expect(firstCard.getAttribute('data-card')).toBe('Ah');
+      expect(firstCard.style.position).toBe('absolute');
     });
 
     test('カスタム設定でアニメーションを実行できる', async () => {
@@ -200,7 +163,7 @@ describe('CardDealStrategy', () => {
         type: 'deal',
         cards: ['Ah', 'Kd'],
       };
-      const customConfig: AnimationConfig = {
+      const customConfig: ExtendedAnimationConfig = {
         duration: 1000,
         easing: 'ease-in-out',
         delay: 100,
@@ -209,8 +172,9 @@ describe('CardDealStrategy', () => {
 
       await strategy.animate(element, action, customConfig);
 
-      expect(element.style.transition).toContain('1000ms');
-      expect(element.style.transition).toContain('ease-in-out');
+      // カード要素が作成されることを確認
+      const cardElements = document.querySelectorAll('.card-deal-animation');
+      expect(cardElements.length).toBe(2);
     });
 
     test('遅延設定が考慮される', async () => {
@@ -220,7 +184,7 @@ describe('CardDealStrategy', () => {
         type: 'deal',
         cards: ['Ah', 'Kd'],
       };
-      const configWithDelay: AnimationConfig = {
+      const configWithDelay: ExtendedAnimationConfig = {
         duration: 100,
         easing: 'ease',
         delay: 50,
@@ -242,7 +206,7 @@ describe('CardDealStrategy', () => {
         type: 'deal',
         cards: ['Ah', 'Kd', 'Qc'],
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, flopAction, config)).resolves.toBeUndefined();
     });

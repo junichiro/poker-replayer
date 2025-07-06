@@ -91,9 +91,11 @@ export class AnimationManager implements IAnimationManager {
   }
 
   /**
-   * すべてのアニメーションを停止
+   * すべてのアニメーション状態をクリア
    */
   stopAllAnimations(): void {
+    // Note: This only clears the tracking set, it doesn't actually stop running animations
+    // Actual animation stopping would require keeping references to animation controllers
     this.activeAnimations.clear();
   }
 

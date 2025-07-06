@@ -3,160 +3,15 @@
  * TDD approach - RED phase: チップ移動戦略の動作をテストする
  */
 
-import { Action } from '../../../types';
-
-// テスト用のインターフェース定義（実装前）
-interface IAnimationStrategy {
-  name: string;
-  version: string;
-  animate(element: HTMLElement, action: Action, config: AnimationConfig): Promise<void>;
-  canAnimate(action: Action): boolean;
-  getDefaultConfig(): AnimationConfig;
-  cleanup(): void;
-}
-
-interface AnimationConfig {
-  duration: number;
-  easing: string;
-  delay?: number;
-  iterations?: number;
-  fillMode?: 'forwards' | 'backwards' | 'both' | 'none';
-  customProperties?: Record<string, unknown>;
-}
-
-interface Point {
-  x: number;
-  y: number;
-}
-
-// モック実装（テスト用）
-class MockChipMoveStrategy implements IAnimationStrategy {
-  name = 'Chip Movement Animation';
-  version = '1.0.0';
-  private createdChips: HTMLElement[] = [];
-
-  canAnimate(action: Action): boolean {
-    return (
-      ['bet', 'call', 'raise', 'collected'].includes(action.type) &&
-      action.amount !== undefined &&
-      action.amount > 0
-    );
-  }
-
-  getDefaultConfig(): AnimationConfig {
-    return {
-      duration: 600,
-      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-      delay: 0,
-      fillMode: 'forwards',
-      customProperties: {
-        chipScale: 1.0,
-        pathCurve: 0.3,
-      },
-    };
-  }
-
-  async animate(element: HTMLElement, action: Action, config: AnimationConfig): Promise<void> {
-    const chipElement = this.createChipElement(action.amount!);
-    const path = this.calculateChipPath(element, action);
-
-    document.body.appendChild(chipElement);
-
-    try {
-      await this.animateAlongPath(chipElement, path, config);
-    } finally {
-      document.body.removeChild(chipElement);
-    }
-  }
-
-  private createChipElement(amount: number): HTMLElement {
-    const chip = document.createElement('div');
-    chip.className = 'chip-animation';
-    chip.textContent = `$${amount}`;
-    chip.style.position = 'absolute';
-    chip.style.width = '40px';
-    chip.style.height = '40px';
-    chip.style.borderRadius = '50%';
-    chip.style.backgroundColor = '#2563eb';
-    chip.style.color = 'white';
-    chip.style.display = 'flex';
-    chip.style.alignItems = 'center';
-    chip.style.justifyContent = 'center';
-    chip.style.fontSize = '12px';
-    chip.style.fontWeight = 'bold';
-    chip.style.zIndex = '1000';
-
-    this.createdChips.push(chip);
-    return chip;
-  }
-
-  private calculateChipPath(element: HTMLElement, action: Action): Point[] {
-    const rect = element.getBoundingClientRect();
-    const startPoint = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
-
-    // プレイヤーからポット、またはポットからプレイヤーへのパスを計算
-    if (action.type === 'collected') {
-      // ポットからプレイヤーへ
-      return [
-        { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // ポット位置
-        startPoint, // プレイヤー位置
-      ];
-    } else {
-      // プレイヤーからポットへ
-      return [
-        startPoint, // プレイヤー位置
-        { x: window.innerWidth / 2, y: window.innerHeight / 2 }, // ポット位置
-      ];
-    }
-  }
-
-  private async animateAlongPath(
-    element: HTMLElement,
-    path: Point[],
-    config: AnimationConfig
-  ): Promise<void> {
-    return new Promise(resolve => {
-      if (path.length < 2) {
-        resolve();
-        return;
-      }
-
-      const start = path[0];
-      const end = path[path.length - 1];
-
-      // 初期位置を設定
-      element.style.left = `${start.x}px`;
-      element.style.top = `${start.y}px`;
-      element.style.transition = `all ${config.duration}ms ${config.easing}`;
-
-      // アニメーション実行
-      setTimeout(() => {
-        element.style.left = `${end.x}px`;
-        element.style.top = `${end.y}px`;
-      }, config.delay || 0);
-
-      // アニメーション完了を待つ
-      setTimeout(resolve, config.duration + (config.delay || 0));
-    });
-  }
-
-  cleanup(): void {
-    // 作成されたチップ要素をクリーンアップ
-    this.createdChips.forEach(chip => {
-      if (chip.parentNode) {
-        chip.parentNode.removeChild(chip);
-      }
-    });
-    this.createdChips = [];
-  }
-}
+import { Action, ExtendedAnimationConfig } from '../../../types';
+import { ChipMoveStrategy } from '../../strategies/ChipMoveStrategy';
 
 describe('ChipMoveStrategy', () => {
-  let strategy: MockChipMoveStrategy;
+  let strategy: ChipMoveStrategy;
   let element: HTMLElement;
 
   beforeEach(() => {
-    strategy = new MockChipMoveStrategy();
+    strategy = new ChipMoveStrategy();
     element = document.createElement('div');
     document.body.appendChild(element);
   });
@@ -283,7 +138,7 @@ describe('ChipMoveStrategy', () => {
 
   describe('getDefaultConfig', () => {
     test('適切なデフォルト設定を返す', () => {
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       expect(config.duration).toBe(600);
       expect(config.easing).toBe('cubic-bezier(0.25, 0.46, 0.45, 0.94)');
@@ -294,7 +149,7 @@ describe('ChipMoveStrategy', () => {
     });
 
     test('設定値が適切な範囲内にある', () => {
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       expect(config.duration).toBeGreaterThan(0);
       expect(config.duration).toBeLessThan(3000); // 3秒以内
@@ -313,7 +168,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 50,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       const animationPromise = strategy.animate(element, betAction, config);
       expect(animationPromise).toBeInstanceOf(Promise);
@@ -329,7 +184,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player2',
         amount: 50,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, callAction, config)).resolves.toBeUndefined();
     });
@@ -342,7 +197,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 100,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, raiseAction, config)).resolves.toBeUndefined();
     });
@@ -355,7 +210,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 200,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, collectedAction, config)).resolves.toBeUndefined();
     });
@@ -368,7 +223,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 75,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       // アニメーション実行中にチップ要素をチェック
       const animationPromise = strategy.animate(element, betAction, config);
@@ -393,7 +248,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 100,
       };
-      const customConfig: AnimationConfig = {
+      const customConfig: ExtendedAnimationConfig = {
         duration: 800,
         easing: 'ease-in-out',
         delay: 50,
@@ -415,7 +270,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 1000,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, bigBetAction, config)).resolves.toBeUndefined();
     });
@@ -428,7 +283,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 1,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await expect(strategy.animate(element, smallBetAction, config)).resolves.toBeUndefined();
     });
@@ -447,7 +302,7 @@ describe('ChipMoveStrategy', () => {
         player: 'Player1',
         amount: 50,
       };
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await strategy.animate(element, betAction, config);
 
@@ -542,7 +397,7 @@ describe('ChipMoveStrategy', () => {
         amount: 50,
       };
 
-      const config = strategy.getDefaultConfig();
+      const config: ExtendedAnimationConfig = strategy.getDefaultConfig();
 
       await Promise.all([
         strategy.animate(element, firstBet, config),

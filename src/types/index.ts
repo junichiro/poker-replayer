@@ -623,7 +623,10 @@ export interface IAnimationComposer {
   /**
    * Execute animations with custom composition logic
    */
-  composeCustom(composer: (animations: AnimationStep[]) => Promise<void>): Promise<void>;
+  composeCustom(
+    animations: AnimationStep[],
+    composer: (animations: AnimationStep[]) => Promise<void>
+  ): Promise<void>;
 }
 
 /**
