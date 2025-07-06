@@ -38,9 +38,9 @@ Seat 2: Player2 collected ($3)`;
 
       expect(info.name).toBe('PokerStars Parser');
       expect(info.version).toBe('2.0.0');
-      expect(info.siteFormat).toBe(PokerSiteFormat.POKERSTARS);
-      expect(info.supportedFeatures).toContain(PokerFeature.TOURNAMENT_SUPPORT);
-      expect(info.supportedFeatures).toContain(PokerFeature.ANTES);
+      expect(info.supportedFormats).toContain(PokerSiteFormat.POKERSTARS);
+      expect(info.features).toContain(PokerFeature.TOURNAMENT_SUPPORT);
+      expect(info.features).toContain(PokerFeature.ANTES);
     });
   });
 

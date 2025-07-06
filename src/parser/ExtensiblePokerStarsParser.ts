@@ -81,8 +81,8 @@ export class ExtensiblePokerStarsParser extends BaseHandHistoryParser {
     return {
       name: 'PokerStars Parser',
       version: '2.0.0',
-      supportedFeatures: [PokerFeature.TOURNAMENT_SUPPORT, PokerFeature.ANTES],
-      siteFormat: PokerSiteFormat.POKERSTARS,
+      supportedFormats: [PokerSiteFormat.POKERSTARS],
+      features: [PokerFeature.TOURNAMENT_SUPPORT, PokerFeature.ANTES],
     };
   }
 
