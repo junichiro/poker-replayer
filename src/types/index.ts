@@ -494,3 +494,155 @@ export interface SizeConfig {
  * @public
  */
 export type ExtendedComponentSize = ComponentSize | 'extra-small' | 'extra-large' | SizeConfig;
+
+// =============================================================================
+// PARSER ARCHITECTURE TYPES (OPEN/CLOSED PRINCIPLE)
+// =============================================================================
+
+/**
+ * Supported poker site formats for extensible parser architecture
+ * @public
+ */
+export enum PokerSiteFormat {
+  POKERSTARS = 'pokerstars',
+  PARTYPOKER = 'partypoker',
+  EIGHT88POKER = '888poker',
+  WINAMAX = 'winamax',
+  GENERIC = 'generic',
+}
+
+/**
+ * Supported poker features that can vary by site
+ * @public
+ */
+export enum PokerFeature {
+  SIDE_POTS = 'side_pots',
+  RAKE_TRACKING = 'rake_tracking',
+  TOURNAMENT_SUPPORT = 'tournament_support',
+  MULTI_TABLE = 'multi_table',
+  ANTES = 'antes',
+  STRADDLES = 'straddles',
+  RUN_IT_TWICE = 'run_it_twice',
+  TIME_BANKS = 'time_banks',
+}
+
+/**
+ * Information about a parser implementation
+ * @public
+ */
+export interface ParserInfo {
+  /** Human-readable name of the parser */
+  name: string;
+  /** Version of the parser implementation */
+  version: string;
+  /** List of features supported by this parser */
+  supportedFeatures: PokerFeature[];
+  /** The poker site format this parser handles */
+  siteFormat: PokerSiteFormat;
+}
+
+/**
+ * Core interface that all hand history parsers must implement
+ * Enables Open/Closed Principle by allowing new parsers to be added
+ * without modifying existing code
+ * @public
+ */
+export interface IHandHistoryParser {
+  /**
+   * Parse a hand history string into a structured PokerHand object
+   * @param handHistory - Raw hand history text to parse
+   * @returns Parsing result with success/error information
+   */
+  parse(handHistory: string): ParserResult;
+
+  /**
+   * Get the poker site format that this parser supports
+   * @returns The supported format enum value
+   */
+  getSupportedFormat(): PokerSiteFormat;
+
+  /**
+   * Validate if a hand history string matches this parser's format
+   * @param handHistory - Raw hand history text to validate
+   * @returns True if the format is supported, false otherwise
+   */
+  validateFormat(handHistory: string): boolean;
+
+  /**
+   * Get information about this parser implementation
+   * @returns Parser metadata including name, version, and features
+   */
+  getParserInfo(): ParserInfo;
+}
+
+/**
+ * Factory interface for creating parser instances
+ * Implements Factory pattern for extensible parser creation
+ * @public
+ */
+export interface IHandHistoryParserFactory {
+  /**
+   * Create a parser instance for the specified format
+   * @param format - The poker site format to create a parser for
+   * @returns Parser instance capable of handling the specified format
+   * @throws Error if the format is not supported
+   */
+  createParser(format: PokerSiteFormat): IHandHistoryParser;
+
+  /**
+   * Detect the poker site format from a hand history string
+   * @param handHistory - Raw hand history text to analyze
+   * @returns The detected format, or GENERIC if unknown
+   */
+  detectFormat(handHistory: string): PokerSiteFormat;
+
+  /**
+   * Register a new parser implementation for a specific format
+   * @param format - The format this parser handles
+   * @param parserClass - Constructor for the parser class
+   */
+  registerParser(format: PokerSiteFormat, parserClass: new () => IHandHistoryParser): void;
+
+  /**
+   * Get a list of all currently supported formats
+   * @returns Array of supported poker site formats
+   */
+  getSupportedFormats(): PokerSiteFormat[];
+}
+
+/**
+ * Configuration options for parser behavior
+ * @public
+ */
+export interface ParserConfiguration {
+  /** Whether to track rake information */
+  enableRakeTracking: boolean;
+  /** Whether to calculate side pots */
+  enableSidePots: boolean;
+  /** Whether to support tournament-specific features */
+  enableTournamentSupport: boolean;
+  /** Date format parsing pattern */
+  dateFormat: string;
+  /** Currency format for monetary amounts */
+  currencyFormat: string;
+  /** Custom regex patterns for site-specific parsing */
+  customRegexPatterns?: Record<string, RegExp>;
+}
+
+/**
+ * Interface for parsers that support configuration
+ * @public
+ */
+export interface IConfigurableParser extends IHandHistoryParser {
+  /**
+   * Configure the parser with specific options
+   * @param config - Configuration options to apply
+   */
+  configure(config: ParserConfiguration): void;
+
+  /**
+   * Get the current parser configuration
+   * @returns Current configuration object
+   */
+  getConfiguration(): ParserConfiguration;
+}
