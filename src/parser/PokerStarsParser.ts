@@ -182,27 +182,17 @@ export class PokerStarsParser {
     );
 
     // Validate the date is actually valid
-    if (isNaN(date.getTime())) {
-      throw new Error('Invalid header: Date is not a valid date');
-    }
-
-    // Additional validation for reasonable date ranges
     const year = parseInt(dateMatch[1]);
     const month = parseInt(dateMatch[2]);
     const day = parseInt(dateMatch[3]);
-    const hour = parseInt(dateMatch[4]);
 
     if (
-      year < 2000 ||
-      year > 2100 ||
-      month < 1 ||
-      month > 12 ||
-      day < 1 ||
-      day > 31 ||
-      hour < 0 ||
-      hour >= 24
+      isNaN(date.getTime()) ||
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 || // Date.getMonth() is 0-indexed
+      date.getDate() !== day
     ) {
-      throw new Error('Invalid header: Date values are out of reasonable range');
+      throw new Error('Invalid header: Date is not a valid date');
     }
 
     this.nextLine();

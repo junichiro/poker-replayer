@@ -177,10 +177,10 @@ describe('LSP Validation Tests', () => {
           // 基底クラスの契約: 例外を投げるか、エラー結果を返すかは一貫している必要がある
           if (input === null || input === undefined) {
             // nullやundefinedの場合は例外を投げることが期待される
-            expect(() => parser.parse(input)).toThrow();
+            expect(() => parser.parse(input as string)).toThrow();
           } else {
             // 文字列の場合は結果オブジェクトを返すべき
-            const result = parser.parse(input);
+            const result = parser.parse(input as string);
             expect(result).toHaveProperty('success');
             expect(typeof result.success).toBe('boolean');
           }
