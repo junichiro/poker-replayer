@@ -490,7 +490,7 @@ export interface ExtendedAnimationConfig {
   /** Fill mode for animation */
   fillMode?: 'forwards' | 'backwards' | 'both' | 'none';
   /** Custom properties for specific strategies */
-  customProperties?: Record<string, any>;
+  customProperties?: Record<string, unknown>;
 }
 
 /**
@@ -690,10 +690,10 @@ export interface ParserInfo {
   name: string;
   /** Version of the parser implementation */
   version: string;
+  /** List of poker site formats supported by this parser */
+  supportedFormats: PokerSiteFormat[];
   /** List of features supported by this parser */
-  supportedFeatures: PokerFeature[];
-  /** The poker site format this parser handles */
-  siteFormat: PokerSiteFormat;
+  features: PokerFeature[];
 }
 
 /**
