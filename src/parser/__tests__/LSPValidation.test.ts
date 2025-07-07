@@ -257,12 +257,12 @@ describe('LSP Validation Tests', () => {
   });
 
   describe('Performance契約の検証', () => {
-    test('すべてのパーサーが妥当な時間内で処理を完了する', async () => {
+    test('すべてのパーサーが妥当な時間内で処理を完了する', () => {
       const testInput =
         "PokerStars Hand #123456789: Tournament #987654321, $10+$1 USD Hold'em No Limit";
       const testParsers = [new TestConcreteParser(), new ExtensiblePokerStarsParser()];
 
-      testParsers.forEach(async parser => {
+      for (const parser of testParsers) {
         const startTime = performance.now();
         parser.parse(testInput);
         const endTime = performance.now();
@@ -270,7 +270,7 @@ describe('LSP Validation Tests', () => {
         const duration = endTime - startTime;
         // 契約: パース処理は1秒以内に完了する
         expect(duration).toBeLessThan(1000);
-      });
+      }
     });
   });
 
