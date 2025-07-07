@@ -50,7 +50,10 @@ export class CardDealStrategy implements IAnimationStrategy {
 
     // 複数カードの場合は各カード用の要素を作成してアニメーション
     const cards = action.cards;
-    const stackDelay = config.customProperties?.stackDelay || 100;
+    const stackDelay =
+      typeof config.customProperties?.stackDelay === 'number'
+        ? config.customProperties.stackDelay
+        : 100;
 
     const animations = cards.map((card, index) => {
       const cardElement = this.createCardElement(element, card, index);

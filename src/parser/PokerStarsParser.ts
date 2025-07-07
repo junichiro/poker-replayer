@@ -181,6 +181,20 @@ export class PokerStarsParser {
       `${dateMatch[1]}-${dateMatch[2]}-${dateMatch[3]}T${dateMatch[4].padStart(2, '0')}:${dateMatch[5]}:${dateMatch[6]}`
     );
 
+    // Validate the date is actually valid
+    const year = parseInt(dateMatch[1]);
+    const month = parseInt(dateMatch[2]);
+    const day = parseInt(dateMatch[3]);
+
+    if (
+      isNaN(date.getTime()) ||
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 || // Date.getMonth() is 0-indexed
+      date.getDate() !== day
+    ) {
+      throw new Error('Invalid header: Date is not a valid date');
+    }
+
     this.nextLine();
 
     return {
@@ -828,7 +842,9 @@ export class PokerStarsParser {
         const winner = match[1];
         const amount = parseFloat(match[2]);
 
-        // TODO: Create collected actions (will implement this properly later)
+        // This winner information is already captured in extractCollectedActions()
+        // The parseSummaryWinners method supplements pot.players but the main
+        // collection logic is handled elsewhere
 
         // Find appropriate pot for this winner
         for (const pot of pots) {

@@ -126,8 +126,14 @@ export class PlayerActionStrategy implements IAnimationStrategy {
     config: ExtendedAnimationConfig
   ): Promise<void> {
     return new Promise(resolve => {
-      const highlightColor = config.customProperties?.highlightColor || '#fbbf24';
-      const pulseScale = config.customProperties?.pulseScale || 1.05;
+      const highlightColor =
+        typeof config.customProperties?.highlightColor === 'string'
+          ? config.customProperties.highlightColor
+          : '#fbbf24';
+      const pulseScale =
+        typeof config.customProperties?.pulseScale === 'number'
+          ? config.customProperties.pulseScale
+          : 1.05;
 
       // 元の状態を保存
       const originalBoxShadow = element.style.boxShadow || '';

@@ -6,7 +6,7 @@
 
 import { PokerStarsParser } from '../../src/parser/PokerStarsParser';
 import { PLAYING_CARD_REGEX } from '../../src/types';
-import { TestDataFactory, TestMocks } from '../utils/test-data-factory';
+import { TestMocks } from '../utils/test-data-factory';
 
 describe('PokerStarsParser Edge Cases and Error Handling', () => {
   let parser: PokerStarsParser;
@@ -26,10 +26,17 @@ describe('PokerStarsParser Edge Cases and Error Handling', () => {
 
       // Test a subset of invalid cards to verify validation works
       invalidCards.slice(0, 3).forEach(invalidCard => {
-        const testHand = TestDataFactory.createMinimalHand({
-          handId: '123',
-          actions: [`deals [${invalidCard} Ah]`],
-        });
+        const testHand = `PokerStars Hand #123: Hold'em No Limit ($1/$2 USD) - 2024/01/15 20:00:00 ET
+Table 'TestTable' 2-max Seat #1 is the button
+Seat 1: Player1 (100 in chips)
+Seat 2: Player2 (100 in chips)
+Player1: posts small blind 1
+Player2: posts big blind 2
+*** HOLE CARDS ***
+Dealt to Player1 [${invalidCard} Ah]
+Player1: folds
+*** SUMMARY ***
+Total pot 3 | Rake 0`;
 
         const result = parser.parse(testHand);
         expect(result.success).toBe(false);

@@ -83,9 +83,18 @@ export class ChipMoveStrategy implements IAnimationStrategy {
     chip.textContent = `$${amount}`;
 
     // スタイルを設定
-    const chipColor = config.customProperties?.chipColor || '#2563eb';
-    const textColor = config.customProperties?.textColor || 'white';
-    const scale = config.customProperties?.chipScale || 1.0;
+    const chipColor =
+      typeof config.customProperties?.chipColor === 'string'
+        ? config.customProperties.chipColor
+        : '#2563eb';
+    const textColor =
+      typeof config.customProperties?.textColor === 'string'
+        ? config.customProperties.textColor
+        : 'white';
+    const scale =
+      typeof config.customProperties?.chipScale === 'number'
+        ? config.customProperties.chipScale
+        : 1.0;
 
     chip.style.position = 'absolute';
     chip.style.width = `${40 * scale}px`;

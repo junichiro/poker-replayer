@@ -86,6 +86,39 @@ const defaultProps = {
 } satisfies Partial<CardPropsTraditional>;
 
 /**
+ * Constant mappings for card suits and ranks - moved outside component for performance
+ */
+const suitSymbol: Record<CardSuit, string> = {
+  h: '♥',
+  d: '♦',
+  c: '♣',
+  s: '♠',
+};
+
+const suitName: Record<CardSuit, string> = {
+  h: 'hearts',
+  d: 'diamonds',
+  c: 'clubs',
+  s: 'spades',
+};
+
+const rankName: Record<string, string> = {
+  A: 'Ace',
+  K: 'King',
+  Q: 'Queen',
+  J: 'Jack',
+  T: 'Ten',
+  '9': 'Nine',
+  '8': 'Eight',
+  '7': 'Seven',
+  '6': 'Six',
+  '5': 'Five',
+  '4': 'Four',
+  '3': 'Three',
+  '2': 'Two',
+};
+
+/**
  * Type guard to check if props use the variant approach
  */
 function isVariantProps(props: CardProps): props is CardPropsVariant {
@@ -138,6 +171,8 @@ const CardComponent: React.FC<CardProps> = props => {
         className={`card card-hidden card-${size} ${className}`}
         style={style}
         data-testid={testId}
+        role="img"
+        aria-label="Hidden card"
       >
         <div className="card-back"></div>
       </div>
@@ -164,12 +199,8 @@ const CardComponent: React.FC<CardProps> = props => {
   const rank = cardValue.slice(0, -1) as CardRank;
   const isRed = ['h', 'd'].includes(suit);
 
-  const suitSymbol: Record<CardSuit, string> = {
-    h: '♥',
-    d: '♦',
-    c: '♣',
-    s: '♠',
-  };
+  const cardLabel = `${rankName[rank] || rank} of ${suitName[suit]}`;
+  const shortCardLabel = `Card ${cardValue}`;
 
   return (
     <div
@@ -177,6 +208,9 @@ const CardComponent: React.FC<CardProps> = props => {
       style={style}
       data-testid={testId}
       data-suit={suit}
+      role="img"
+      aria-label={cardLabel}
+      title={shortCardLabel}
     >
       <div className="card-rank">{rank}</div>
       <div className="card-suit">{suitSymbol[suit]}</div>
